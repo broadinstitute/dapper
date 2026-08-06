@@ -1,79 +1,30 @@
-# NIH-DAPP 3.0 — worked example of a REVEAL hypothesis as a FAIR digital object,
-# published as a signed nanopublication.
+# A single Hypothesis instance, EXTRACTED VERBATIM from
+# example_claim_provenance_trace.yaml.
 #
-#   PCSK9 gain-of-function  ->  LDL receptor degradation  ->  familial hypercholesterolemia
+# Extracted rather than hand-written so every reference below is a real
+# `dapper:` id of an object that actually exists in that document. A standalone
+# example with invented references would name things that do not exist, and the
+# identifiers would be lies.
 #
-# Exercises all three 3.0 blocks:
-#   (A) DISMECH harmonization — `dismech_*` pointers on the Hypothesis
-#   (B) Nanopublication      — the Head/assertion/provenance/pubinfo quad
-#   (C) Hypothesis           — the gene -> mechanism -> disease chain
+#   uv run --with linkml linkml-validate \
+#     -s schema/dapper.yaml -C Hypothesis schema/examples/example_hypothesis.yaml
 #
-# Every ontology CURIE below was resolved against a live service before being
-# written here (MONDO/GO via EBI OLS4, HGNC via rest.genenames.org), per the
-# schema's PREFIX POLICY. Validate with:
-#
-#   uv run --with linkml linkml-validate -s dapper.yaml \
-#       -C Hypothesis examples/example_hypothesis.yaml
+# Regenerate after re-minting: see schema/examples/README.md
 
-id: dapper:Hypothesis.Rd6eO_OEsWNyQvxwWY-MSd5ChEvSKVTg
-name: PCSK9 gain-of-function drives familial hypercholesterolemia via LDLR degradation
-hypothesis_label: PCSK9 GOF -> LDLR degradation -> FH
-
-statement: >-
-  Gain-of-function variants in PCSK9 increase degradation of the hepatic LDL
-  receptor, which reduces clearance of circulating LDL cholesterol and causes
-  familial hypercholesterolemia.
-
-description: >-
-  PCSK9 binds the EGF-A domain of the LDL receptor at the hepatocyte surface and
-  redirects the receptor to the lysosome instead of the recycling endosome.
-  Gain-of-function variants raise the rate of that diversion, lowering steady-state
-  surface LDLR density and therefore hepatic LDL-C clearance. The mechanism is
-  supported in the causal direction by loss-of-function variants producing the
-  mirror-image phenotype and by the therapeutic effect of PCSK9 inhibition.
-
+id: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
+hypothesis_label: CLCN5 LOF -> PT dysfunction -> Dent disease
+statement: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial
+  cells, causing the proximal tubule dysfunction that manifests as Dent disease.
 status: canonical
-confidence: 0.92
-
-# --- the chain: generic ends, plus the gene/disease convenience accessors ---
-subject_entity: HGNC:20001
-subject_gene: HGNC:20001
-object_entity: MONDO:0005439
-object_disease: MONDO:0005439
-
-has_causal_step:
-  - nih:causalstep/reveal-pcsk9-ldlr-fh-0001/0
-  - nih:causalstep/reveal-pcsk9-ldlr-fh-0001/1
-
-has_evidence:
-  - nih:evidence/pmid-16554528
-  - nih:evidence/pmid-25773607
-
-# --- (A) DISMECH harmonization: pointers, not copies -----------------------
-# The curated pathophysiology stays upstream in DISMECH. `dismech_disease_term`
-# is the stable join key; `dismech_entry_key` preserves DISMECH's own string id
-# so the round trip is lossless in both directions.
+subject_entity: HGNC:2023
+subject_gene: HGNC:2023
+object_entity: MONDO:0015612
+object_disease: MONDO:0015612
 dismech_class: dismech:MechanisticHypothesis
-dismech_entry_key: pcsk9_gof_ldlr_degradation
-dismech_disease_term: MONDO:0005439
-dismech_source_url: https://dismech.monarchinitiative.org/MONDO_0005439
-
-# --- (B) published as a nanopublication ------------------------------------
-asserted_in:
-  - nih:np/reveal-pcsk9-ldlr-fh-0001
-
-# --- attribution, via the ProvenancedResource mixin (the FAIR part) --------
-# These are the same authoritative slots a Dataset carries, which is the point:
-# a hypothesis is citable on exactly the same terms as a dataset.
+dismech_disease_term: MONDO:0015612
 access_level: public
-has_creator:
-  - orcid:0000-0002-1825-0097
-funded_by:
-  - nih:award/U24HG000000
-is_described_by:
-  - PMID:25773607
-has_license: https://creativecommons.org/licenses/by/4.0/
-was_generated_by: nih:activity/reveal-run-2026-08-04
-was_derived_from:
-  - nih:geneset/402cf4a1f3682a2e5bf1b002
-has_recommended_citation: nih:citation/reveal-pcsk9-ldlr-fh-0001
+supported_by_nanopub:
+- dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+asserted_in:
+- dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt

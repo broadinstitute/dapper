@@ -7,33 +7,33 @@
 
 # ---- Agents (creators / contributors) ----
 persons:
-  - id: orcid:0000-0002-1825-0097
+  - id: dapper:Person.nVVfQgDBetxff6PYxDiZrH9lrs6Zk1YG
     name: Jane A. Smith
     given_name: Jane
     family_name: Smith
-    orcid: orcid:0000-0002-1825-0097
+    orcid: dapper:Person.nVVfQgDBetxff6PYxDiZrH9lrs6Zk1YG
     affiliation:
       - ror:012345678
     creator_role: PrincipalInvestigator
-  - id: orcid:0000-0003-1234-5678
+  - id: dapper:Person.15B6HcCazp_08smpTsS_3dqHqTDcFPjx
     name: Alex R. Lee
     given_name: Alex
     family_name: Lee
-    orcid: orcid:0000-0003-1234-5678
+    orcid: dapper:Person.15B6HcCazp_08smpTsS_3dqHqTDcFPjx
     contributor_role: DataCurator
 
 organizations:
-  - id: ror:0155zta11
+  - id: dapper:Organization.INxs46BXeqZKYlcZDojrL3607UKs-va6
     name: National Institutes of Health
-    ror: ror:0155zta11
-  - id: ror:04abcde12
+    ror: dapper:Organization.INxs46BXeqZKYlcZDojrL3607UKs-va6
+  - id: dapper:Organization.7GdsJqwcvYO2uSDpo37g-bipsQRAvgHp
     name: Example NIH Consortium
-    ror: ror:04abcde12
+    ror: dapper:Organization.7GdsJqwcvYO2uSDpo37g-bipsQRAvgHp
     creator_role: Consortium
 
 # ---- Award (authoritative — mirror_mutable: false) ----
 awards:
-  - id: nih:award/U54-EXAMPLE-123456
+  - id: dapper:Award.-96r_yUY9nGhZqtqPCp3UDtaas-wkicZ
     name: Example NIH Consortium Data Coordination Center
     funder_name: National Institutes of Health
     funder_identifier: doi:10.13039/100000002
@@ -45,7 +45,7 @@ awards:
 
 # ---- Publication (authoritative) ----
 publications:
-  - id: nih:publication/10.1000-example.publication
+  - id: dapper:Publication.gvvxTwVj50tFcRS4R7HsCCu3eSQHptzK
     name: A multi-omics atlas from the Example NIH Consortium
     title: A multi-omics atlas from the Example NIH Consortium
     doi: doi:10.1000/example.publication
@@ -57,7 +57,7 @@ publications:
 
 # ---- License ----
 licenses:
-  - id: nih:license/cc-by-4.0
+  - id: dapper:License.x3eovLQ0VYpz5G0K7AhgYdTjkdvCpMfv
     name: CC BY 4.0
     url: https://creativecommons.org/licenses/by/4.0/
     usage_terms: >-
@@ -65,29 +65,29 @@ licenses:
 
 # ---- Provenance activity + lineage ----
 activities:
-  - id: nih:activity/mcp-gateway-packaging-2026
+  - id: dapper:Activity.I1ssZi1jZCZNj80yIalfRM5cf0D1x_aa
     name: NIH MCP Gateway dataset packaging
     activity_type: MCPResourceSerialization
     software_name: nih-mcp-gateway
     software_version: 1.0.0
     generated_at_time: "2026-07-22T00:00:00Z"
     has_lineage_step:
-      - nih:lineage/1
-      - nih:lineage/2
-      - nih:lineage/3
+      - dapper:LineageStep.HWWXdyNbHt2NvupVwapzRB5gy42RPpci
+      - dapper:LineageStep.NKqJUtQVP3yph7XkxONXzJjQx5c36Z39
+      - dapper:LineageStep.5KEfylsgJhyQAyy9WoX02llCXSlwEUeI
 
 lineage_steps:
-  - id: nih:lineage/1
+  - id: dapper:LineageStep.HWWXdyNbHt2NvupVwapzRB5gy42RPpci
     name: Raw data acquisition
     step: 1
     activity: Raw data acquisition
     responsible_party: Example NIH Consortium
-  - id: nih:lineage/2
+  - id: dapper:LineageStep.NKqJUtQVP3yph7XkxONXzJjQx5c36Z39
     name: Quality control and normalization
     step: 2
     activity: Quality control and normalization
     responsible_party: Example Data Coordination Center
-  - id: nih:lineage/3
+  - id: dapper:LineageStep.5KEfylsgJhyQAyy9WoX02llCXSlwEUeI
     name: Public release packaging
     step: 3
     activity: Public release packaging
@@ -95,7 +95,7 @@ lineage_steps:
 
 # ---- Recommended citation (authoritative) ----
 recommended_citations:
-  - id: nih:citation/example.dataset.v2
+  - id: dapper:RecommendedCitation.c1GMFzWcd887Rqwh55TLFETlo1iSg-RY
     name: Recommended citation for Example NIH Multi-Omics Dataset
     citation_text: >-
       Smith JA, Lee AR, Example NIH Consortium. Example NIH Multi-Omics Dataset.
@@ -112,7 +112,7 @@ recommended_citations:
 
 # ---- 2.0: DRS, DUO, RO-Crate, BioCompute ----
 drs_objects:
-  - id: nih:drs/example-object-1
+  - id: dapper:DrsObject.X8x2qXKC_q1guH6BnWOY8RNKXN4OY2rt
     name: raw sequencing bundle
     drs_id: example-object-1
     self_uri: drs://drs.example.nih.gov/example-object-1
@@ -125,29 +125,29 @@ drs_objects:
 
 data_use_terms:
   # A permission (child of DUO:0000001)
-  - id: nih:duo/DUO_0000042
+  - id: dapper:DataUseTerm.aQITUepHCPDzhbarOQSlHFFYeiChOC5n
     name: general research use
     duo_id: duo:0000042
     duo_label: general research use
     permission: general_research_use
   # A modifier (child of DUO:0000017)
-  - id: nih:duo/DUO_0000019
+  - id: dapper:DataUseTerm.fl93QVlLuAx9D2f3Yv3KXJEEde5X1QoJ
     name: publication required
     duo_id: duo:0000019
     duo_label: publication required
     modifier: publication_required
 
 ro_crate_packages:
-  - id: nih:rocrate/example.dataset.v2
+  - id: dapper:RoCratePackage.9zxxksJUBcpd6A-_FVKVWBRs8B3Clu4U
     name: Example dataset RO-Crate
     conforms_to: https://w3id.org/ro/crate/1.1
-    ro_crate_metadata_ref: nih:rocrate/example.dataset.v2/ro-crate-metadata.json
+    ro_crate_metadata_ref: ro-crate-metadata.json
     root_dataset_ref: doi:10.12345/example.dataset.v2
 
 bio_compute_objects:
-  - id: nih:bco/example-pipeline-v2
+  - id: dapper:BioComputeObject.6XqeSIVR1UecaZSb9yOtYg-l99d4Nclw
     name: Example multi-omics pipeline BCO
-    bco_id: nih:bco/example-pipeline-v2
+    bco_id: dapper:BioComputeObject.6XqeSIVR1UecaZSb9yOtYg-l99d4Nclw
     bco_spec_version: https://w3id.org/ieee/ieee-2791-schema/2791object.json
     etag: 11ee0f7b8c...
     usability_domain:
@@ -164,7 +164,7 @@ bio_compute_objects:
 # links on the Dataset). Compliant append only:
 # ===========================================================================
 mirror_provenances:
-  - id: nih:mirror/openai-us-west-1-2026-07-22
+  - id: dapper:MirrorProvenance.cYMKpnDdrs5zInUyC--6Qh4P7t1auMiE
     name: OpenAI us-west-1 mirror of example.dataset.v2
     mirror_provider: OpenAI
     mirror_region: us-west-1

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -39,21 +40,20 @@ LIB = HERE / "lib"   # NB: not "vendor/" — akleao sync silently ignores that n
 OUT = HERE / "index.html"
 
 # Load order matters: elkjs defines the global cytoscape-elk binds to.
-LIB_FILES = ["cytoscape.min.js", "elk.bundled.js", "cytoscape-elk.js"]
+LIB_FILES = ["cytoscape.min.js", "elk.bundled.js", "cytoscape-elk.js", "js-yaml.min.js"]
 
-# Node-list key -> LinkML class. Mirrors the groups used in the example docs.
-NODE_GROUPS = {
-    "c2m2_files": "C2M2File",
-    "activities": "Activity",
-    "gene_sets": "GeneSet",
-    "hypotheses": "Hypothesis",
-    "nanopublications": "Nanopublication",
-    "nanopub_assertions": "NanopubAssertion",
-    "nanopub_provenances": "NanopubProvenance",
-    "nanopub_publication_infos": "NanopubPublicationInfo",
-    "nanopub_signatures": "NanopubSignature",
-    "agentic_workspaces": "AgenticWorkspace",
-}
+# Node-list key -> LinkML class. Parsed out of the identity module rather than
+# duplicated here: the portal had drifted to 14 groups while the minter had 27,
+# so an uploaded document rendered 1 node instead of 18. Read as source rather
+# than imported so the portal keeps its light dependency set (no rdflib).
+def _node_groups() -> dict[str, str]:
+    src = (Path(__file__).parent.parent / "schema" / "identity" / "dapper_identity.py").read_text()
+    block = src[src.index("DOC_GROUPS = {"):]
+    block = block[: block.index("}") + 1]
+    return dict(re.findall(r'"([^"]+)":\s*"([^"]+)"', block))
+
+
+NODE_GROUPS = _node_groups()
 
 # Edge-list key -> (LinkML class, flow direction).
 #
@@ -251,7 +251,14 @@ def main() -> int:
     args = ap.parse_args()
 
     payload = {"schema": load_schema(),
-               "graphs": [build_graph(g) for g in GRAPH_DOCS]}
+               "graphs": [build_graph(g) for g in GRAPH_DOCS],
+               # Emitted so the in-browser uploader can build a graph from an
+               # arbitrary DAPPER document using the same rules as this script,
+               # rather than a second hand-maintained copy of them.
+               "config": {"nodeGroups": NODE_GROUPS,
+                          "edgeGroups": {k: list(v) for k, v in EDGE_GROUPS.items()},
+                          "inlineLinks": {k: list(v) for k, v in INLINE_LINKS.items()},
+                          "family": FAMILY}}
     html = render(payload, read_lib())
 
     if args.check:
@@ -359,6 +366,17 @@ h1 span { color: var(--muted); font-weight: 400; }
   margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
+#drop {
+  border: 1.5px dashed var(--rule-strong); border-radius: 4px; padding: 14px 10px;
+  text-align: center; cursor: pointer; color: var(--ink-soft); background: none;
+  transition: border-color .15s, background .15s;
+}
+#drop:hover, #drop.over { border-color: var(--focus); background: var(--paper-sunk); color: var(--ink); }
+#drop strong { display: block; font-size: 12.5px; font-weight: 600; }
+#drop span { display: block; font-family: var(--mono); font-size: 10px; margin-top: 3px; }
+.note.bad { border-left-color: var(--trace); color: var(--trace); }
+.note.good { border-left-color: var(--focus); }
+
 .legend-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; font-size: 12px; color: var(--ink-soft); }
 .legend-row svg { flex: none; }
 .note { font-size: 12px; color: var(--ink-soft); border-left: 2px solid var(--rule-strong); padding-left: 10px; margin: 0; }
@@ -421,6 +439,19 @@ button.action + button.action { margin-top: 6px; }
       <div class="rail-group">
         <span class="eyebrow">Graphs</span>
         <div id="graph-picker"></div>
+      </div>
+
+      <div class="rail-group">
+        <span class="eyebrow">Your data</span>
+        <div id="drop" tabindex="0" role="button"
+             aria-label="Open a DAPPER YAML file to inspect it">
+          <strong>Drop a DAPPER YAML</strong>
+          <span>or click to choose</span>
+        </div>
+        <input type="file" id="file" accept=".yaml,.yml" hidden>
+        <p class="note" id="upload-note" style="margin-top:8px">
+          Nothing is uploaded anywhere — the file is read in your browser.
+        </p>
       </div>
 
       <div class="rail-group">
@@ -773,6 +804,164 @@ document.getElementById("btn-reset").addEventListener("click", () => {
   state.selected = null;
   cy.animate({ fit: { padding: 30 } }, { duration: 260 });
   renderInspector(); renderRail();
+});
+
+/* ---- open a DAPPER document from disk ------------------------------------
+   Builds a graph from an arbitrary DAPPER YAML using DATA.config, which the
+   build script emits from the same constants it uses itself, so the browser and
+   the build agree by construction instead of by a second hand-kept copy.
+   The file is read with FileReader and never leaves the machine.
+--------------------------------------------------------------------------- */
+function graphFromDoc(raw, filename) {
+  const C = DATA.config;
+  const illustrative = new Set(raw._illustrative || []);
+  const nodes = [], edges = [];
+
+  for (const group in C.nodeGroups) {
+    const cls = C.nodeGroups[group];
+    for (const n of raw[group] || []) {
+      const fields = Object.assign({}, n);
+      delete fields.id;
+      nodes.push({
+        id: n.id, cls: cls, family: C.family[cls] || "part",
+        illustrative: illustrative.has(n.id),
+        label: n.name || n.filename || String(n.id).split(/[:.]/).pop(),
+        fields: fields
+      });
+    }
+  }
+  const ids = new Set(nodes.map(n => n.id));
+
+  for (const group in C.edgeGroups) {
+    const cls = C.edgeGroups[group][0], flow = C.edgeGroups[group][1];
+    for (const e of raw[group] || []) {
+      let src = e.subject, dst = e.object;
+      if (flow === "reverse") { const t = src; src = dst; dst = t; }
+      edges.push({ source: src, target: dst, cls: cls, predicate: e.predicate || "" });
+    }
+  }
+
+  const byId = {};
+  nodes.forEach(n => { byId[n.id] = n; });
+  const NESTED = ["has_assertion", "has_provenance",
+                  "has_publication_info", "has_signature_element"];
+  for (const n of nodes) {
+    if (n.cls !== "Nanopublication") continue;
+    for (const f of NESTED) {
+      const child = n.fields[f];
+      if (typeof child === "string" && byId[child]) byId[child].parent = n.id;
+    }
+  }
+
+  const seen = new Set(edges.map(e => e.source + " " + e.target));
+  for (const n of nodes) {
+    for (const field in C.inlineLinks) {
+      const predicate = C.inlineLinks[field][0], dir = C.inlineLinks[field][1];
+      const v = n.fields[field];
+      const targets = Array.isArray(v) ? v : [v];
+      for (const t of targets) {
+        if (typeof t !== "string" || !ids.has(t)) continue;
+        const src = dir === "in" ? t : n.id;
+        const dst = dir === "in" ? n.id : t;
+        const key = src + " " + dst;
+        if (src === dst || seen.has(key)) continue;
+        seen.add(key);
+        edges.push({ source: src, target: dst, cls: "(inline)", predicate: predicate });
+      }
+    }
+  }
+
+  const startNode = nodes.find(n => n.fields.supported_by_nanopub) || nodes[0];
+  return {
+    key: "__upload__", title: filename, blurb: "", source: filename,
+    start: startNode ? startNode.id : null,
+    nodes: nodes,
+    edges: edges.filter(e => ids.has(e.source) && ids.has(e.target))
+  };
+}
+
+/* Structural checks only, deliberately. Recomputing a digest here would need
+   byte-for-byte parity with rdflib's n-triples output, and a wrong green tick is
+   worse than none — `dapper_identity.py verify` is the authority. These checks
+   need no such parity and catch what actually breaks a graph. */
+function inspectDoc(g) {
+  const counts = {};
+  g.nodes.forEach(n => { counts[n.id] = (counts[n.id] || 0) + 1; });
+  const dupes = Object.keys(counts).filter(k => counts[k] > 1);
+
+  const ids = new Set(g.nodes.map(n => n.id));
+  const dangling = new Set();
+  const scan = v => {
+    if (typeof v === "string") {
+      if (v.indexOf("dapper:") === 0 && !ids.has(v)) dangling.add(v);
+    } else if (Array.isArray(v)) v.forEach(scan);
+    else if (v && typeof v === "object") Object.keys(v).forEach(k => scan(v[k]));
+  };
+  g.nodes.forEach(n => scan(n.fields));
+
+  const minted = g.nodes.filter(n => String(n.id).indexOf("dapper:") === 0).length;
+  const lines = [g.nodes.length + " nodes", g.edges.length + " edges",
+                 minted + "/" + g.nodes.length + " ids minted"];
+  if (dupes.length) lines.push(dupes.length + " duplicate id(s)");
+  if (dangling.size) lines.push(dangling.size + " dangling ref(s)");
+  return { lines: lines, ok: !dupes.length && !dangling.size };
+}
+
+function loadDoc(text, filename) {
+  const note = document.getElementById("upload-note");
+  let raw;
+  try {
+    raw = jsyaml.load(text);
+  } catch (err) {
+    note.className = "note bad";
+    note.textContent = "Could not parse " + filename + ": " + err.message;
+    return;
+  }
+  if (!raw || typeof raw !== "object") {
+    note.className = "note bad";
+    note.textContent = filename + " is not a DAPPER document.";
+    return;
+  }
+  const g = graphFromDoc(raw, filename);
+  if (!g.nodes.length) {
+    note.className = "note bad";
+    note.textContent = "No DAPPER nodes in " + filename +
+      ". Expected keys like c2m2_files, activities, gene_sets — the shape mint.py writes.";
+    return;
+  }
+  const report = inspectDoc(g);
+  g.blurb = filename + " — " + report.lines.join(" · ");
+  DATA.graphs = DATA.graphs.filter(x => x.key !== "__upload__");
+  DATA.graphs.unshift(g);
+  state.graphKey = "__upload__";
+  state.selected = null;
+  state.traced = null;
+  renderGraph(); clearTrace(); renderRail(); renderInspector();
+  note.className = report.ok ? "note good" : "note bad";
+  note.textContent = report.ok
+    ? filename + ": " + report.lines.join(", ") + ". Structure checks out."
+    : filename + ": " + report.lines.join(", ") + ".";
+}
+
+const dropZone = document.getElementById("drop");
+const filePicker = document.getElementById("file");
+dropZone.addEventListener("click", () => filePicker.click());
+dropZone.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); filePicker.click(); }
+});
+filePicker.addEventListener("change", e => {
+  const f = e.target.files[0];
+  if (f) f.text().then(t => loadDoc(t, f.name));
+});
+["dragenter", "dragover"].forEach(ev => dropZone.addEventListener(ev, e => {
+  e.preventDefault(); dropZone.classList.add("over");
+}));
+["dragleave", "drop"].forEach(ev => dropZone.addEventListener(ev, e => {
+  e.preventDefault(); dropZone.classList.remove("over");
+}));
+dropZone.addEventListener("drop", e => {
+  const f = e.dataTransfer.files[0];
+  if (f) f.text().then(t => loadDoc(t, f.name));
 });
 
 renderRail();

@@ -85,11 +85,20 @@ CLASS_PRED = URIRef("urn:dapper:class")
 MAX_TRIPLES = 10_000
 
 # Node-list key -> class, matching how the graph examples group their nodes.
+# Node-list key -> class. Covers EVERY concrete HashableNode class, so any
+# DAPPER document mints completely. An incomplete map silently skips nodes:
+# example_graph.yaml carried 12 unminted groups until this was filled in.
+# Node-list key -> class. Covers EVERY concrete HashableNode class, so any
+# DAPPER document mints completely. An incomplete map silently skips nodes:
+# example_graph.yaml carried 12 unminted groups until this was filled in.
+# Written out rather than derived — naive pluralisation produced `activitys`
+# and would have renamed a key the examples already use.
 DOC_GROUPS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",
     "datasets": "Dataset",
+    "sets": "Set",
     "hypotheses": "Hypothesis",
     "causal_steps": "CausalStep",
     "mechanisms": "Mechanism",
@@ -100,6 +109,18 @@ DOC_GROUPS = {
     "nanopub_publication_infos": "NanopubPublicationInfo",
     "nanopub_signatures": "NanopubSignature",
     "agentic_workspaces": "AgenticWorkspace",
+    "persons": "Person",
+    "organizations": "Organization",
+    "awards": "Award",
+    "publications": "Publication",
+    "licenses": "License",
+    "lineage_steps": "LineageStep",
+    "recommended_citations": "RecommendedCitation",
+    "drs_objects": "DrsObject",
+    "data_use_terms": "DataUseTerm",
+    "ro_crate_packages": "RoCratePackage",
+    "bio_compute_objects": "BioComputeObject",
+    "mirror_provenances": "MirrorProvenance",
 }
 
 

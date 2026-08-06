@@ -1,0 +1,65 @@
+name: Deploy provenance portal to Pages
+
+# Publishes portal/ to https://broadinstitute.github.io/dapper/
+#
+# The portal is a single self-contained index.html — Cytoscape, ELK and js-yaml
+# are inlined, so there is nothing to build here and no npm install. This
+# workflow only checks the committed page is current and uploads the folder.
+#
+# `build.py --check` is the guard that matters: it regenerates index.html from
+# schema/dapper.yaml plus the examples and fails if the committed copy differs.
+# Without it a stale portal could be published showing identifiers that no
+# longer match the schema it claims to render.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "portal/**"
+      - "schema/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it midway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Fail if the committed portal is stale
+        run: uv run portal/build.py --check
+
+      - name: Check identity invariants
+        run: uv run schema/identity/lint_identity.py
+
+      - name: Replay identifier test vectors
+        run: uv run schema/identity/dapper_identity.py verify-vectors
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: portal
+
+  deploy:
+    needs: verify-and-upload
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
