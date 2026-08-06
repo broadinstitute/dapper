@@ -1,0 +1,260 @@
+# Illustrative full NIH-DAPP graph for the HuBMAP HZ2 gene set — the nodes and
+# reified edges that example_geneset.yaml's CURIEs resolve to. Transcribed from
+# the REAL provenance graph at
+#   examples/geneset-hubmap-hz2/geneset.provenance.json
+# This is a reference document (a mixed set of node/edge types), not a
+# single-class instance; validate individual nodes with `linkml-validate -C
+# <ClassName>` if desired.
+#
+# It shows the genuine two-Activity DAG:
+#   input_matrix + human_gene_info --[hubmap_asctb_augmented]--> unsigned_term_gene.tsv
+#   unsigned_term_gene.tsv --[unsigned_term_gene converter]--> GeneSet (+ .gmt, .tsv, ...)
+# and maps the dig.geneset edge labels:
+#   "data input"  -> Used   (prov:used;         edge_role: data_input)
+#   "data output" -> WasGeneratedBy (prov:wasGeneratedBy)
+#
+# Everything here is transcribed from the real provenance EXCEPT the
+# `agentic_workspaces` block near the bottom, which is illustrative and marked
+# as such — dig.geneset carries no agentic workspace today.
+
+# ---- C2M2 source / intermediate / output files (dig.geneset File nodes) ----
+c2m2_files:
+  - id: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+    name: gene_attribute_matrix.txt.gz
+    filename: gene_attribute_matrix.txt.gz
+    persistent_id: 6b757af6-b9b0-583e-8846-b0e16b3e57c4
+    c2m2_uuid: 1579915c-f3a0-536d-ad25-3e04a593a050
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ1/workflow/gene_attribute_matrix.txt.gz
+    md5: 96aZvXyRQHqydJoeaC351g==
+    size_in_bytes: 31222
+    dcc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ1/workflow/gene_attribute_matrix.txt.gz
+    drc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ1/workflow/gene_attribute_matrix.txt.gz
+
+  - id: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+    name: human_gene_info
+    filename: human_gene_info
+    persistent_id: 48b9abef-1545-5e87-9e26-bef6dbd36c09
+    c2m2_uuid: d90c5919-caf8-53e4-abe6-71f854bf4301
+    local_id: https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+    md5: hvzbVLFaJJSRJutxecW6lQ==
+    size_in_bytes: 34989436
+    dcc_url: https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+    drc_url: https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+
+  - id: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    name: hubmap_unsigned_term_gene.tsv
+    filename: hubmap_unsigned_term_gene.tsv
+    persistent_id: c5da16f0-d42c-52c4-ba9e-9221acb9effd
+    c2m2_uuid: f3bf9c73-7184-582d-ac2b-b39fa6f4baad
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/hubmap_unsigned_term_gene.tsv
+    md5: /a9nJVKGLpwp/A+RP0F6xQ==
+    size_in_bytes: 385544
+    dcc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/hubmap_unsigned_term_gene.tsv
+    drc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/hubmap_unsigned_term_gene.tsv
+
+  - id: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+    name: genesets.gmt
+    filename: genesets.gmt
+    persistent_id: 576cdadd-7d0b-55d8-917f-a9ea29456f28
+    c2m2_uuid: 0f08d646-3f2a-5870-90b4-498f7c72a724
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/genesets.gmt
+    md5: lpgmArYDypVqkRWP/KQ9Zw==
+    size_in_bytes: 55157
+    dcc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/genesets.gmt
+    drc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/genesets.gmt
+
+  # Remaining outputs of the two activities. The converter emits a whole
+  # bundle, not just the .gmt — every one is a C2M2 file with its own
+  # checksum, and every one is part of the gene set's provenance.
+  - id: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+    name: asctb_geneshot_augmented_genes.tsv
+    filename: asctb_geneshot_augmented_genes.tsv
+    persistent_id: 62453e36-d5b8-5fb5-8fe8-76bc77ae806f
+    c2m2_uuid: 913fc28e-c10f-5529-83cc-412abfafdb89
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/asctb_geneshot_augmented_genes.tsv
+    md5: TuCrBzqQGNv+HtCqJCZ1QA==
+    size_in_bytes: 22026266
+
+  - id: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+    name: geneset.tsv
+    filename: geneset.tsv
+    persistent_id: 3f9cfc06-3275-594d-a1cf-1af3cd14539e
+    c2m2_uuid: 98519f9e-070d-5a60-af1e-be2ab6e8c33f
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/geneset.tsv
+    md5: i+RX9V+qA0HHxRjgJW4g6A==
+    size_in_bytes: 520234
+
+  - id: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+    name: geneset.full.tsv
+    filename: geneset.full.tsv
+    persistent_id: 0ddb17ca-f9a0-5e82-baf9-7ca1475eba80
+    c2m2_uuid: 9c043e8b-7369-5bf4-8a66-cbb2d4b13dd6
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/geneset.full.tsv
+    md5: i+RX9V+qA0HHxRjgJW4g6A==
+    size_in_bytes: 520234
+
+  - id: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+    name: signature_summary.tsv
+    filename: signature_summary.tsv
+    persistent_id: ef8f04dd-1c8c-5c37-ac69-d9d493d7c2d5
+    c2m2_uuid: 25e9a396-c5ed-536e-aedd-c543f4cfd890
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/signature_summary.tsv
+    md5: Zqbcc0HXE3PZdxemBkbY9w==
+    size_in_bytes: 30480
+
+  - id: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+    name: geneset.meta.json
+    filename: geneset.meta.json
+    persistent_id: f06b158a-d13c-5827-9d7b-d787e01e9cc9
+    c2m2_uuid: b3b0b7b6-c253-5aaf-9606-2eaf45b30a34
+    local_id: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/extractor/geneset.meta.json
+    md5: s5a0fBfnlNslvsPtWCNr0A==
+    size_in_bytes: 10332
+
+# ---- Analysis steps (dig.geneset AnalysisType -> NIH-DAPP Activity) ----
+activities:
+  # upstream workflow step
+  - id: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+    name: prepare_hubmap_unsigned_term_gene
+    activity_type: workflow
+    command: >-
+      python -m geneset_extractors.cli workflows hubmap_asctb_augmented
+      --input_matrix s3://.../HZ1/workflow/gene_attribute_matrix.txt.gz
+      --human_gene_info https://ftp.ncbi.nih.gov/.../Homo_sapiens.gene_info.gz
+      --augmentation_threshold 0.67 --cap_multiplier 4
+    entrypoint: geneset-extractors workflows hubmap_asctb_augmented
+    repo_url: https://github.com/flannick/dig-gene-set-extractors
+    script_url: https://github.com/flannick/dig-gene-set-extractors
+    code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
+    has_agentic_workspace:
+      - nih:workspace/dig-geneset-hubmap-hz2
+    dcc_url: https://github.com/flannick/dig-gene-set-extractors
+    drc_url: https://github.com/flannick/dig-gene-set-extractors
+
+  # converter step that emits the gene set
+  - id: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    name: generate_402cf4a1f3682a2e5bf1b002
+    activity_type: converter_invocation
+    command: >-
+      python -m geneset_extractors.cli convert unsigned_term_gene
+      --emit_small_gene_sets false --gene_id_column gene_id
+      --gene_symbol_column gene_symbol --gmt_min_genes 5 --score_column score
+      --term_column term --term_prefix HuBMAP
+    observed_command: >-
+      python -m geneset_extractors.cli convert unsigned_term_gene
+      --table_tsv s3://.../HZ2/workflow/hubmap_unsigned_term_gene.tsv
+      --out_dir s3://.../HZ2/extractor --organism human --genome_build hg38
+    entrypoint: geneset-extractors convert unsigned_term_gene
+    repo_url: https://github.com/flannick/dig-gene-set-extractors
+    script_url: https://github.com/flannick/dig-gene-set-extractors
+    code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
+    has_agentic_workspace:
+      - nih:workspace/dig-geneset-hubmap-hz2
+    container_image: null
+    dcc_url: https://github.com/flannick/dig-gene-set-extractors
+    drc_url: https://github.com/flannick/dig-gene-set-extractors
+
+# ===========================================================================
+# ILLUSTRATIVE — the agentic replay path for the gene-set pipeline.
+#
+# ONE workspace serves BOTH activities: they are two steps of the same
+# dig-gene-set-extractors run, so a single fork regenerates the pair. The
+# Activities keep their own `command` and `code_version` for exact machine
+# replay; this is the "ask an agent to redo it" path alongside them.
+#
+# The fork slug is a placeholder — no such fork exists yet. The pipeline
+# parameters inside the prompt are REAL, taken from the two activities below.
+# ===========================================================================
+agentic_workspaces:
+  - id: nih:workspace/dig-geneset-hubmap-hz2
+    name: dig-gene-set-extractors — HuBMAP HZ2
+    platform: akleao
+    workspace_url: https://www.akleao.com/fork/dig-geneset-hubmap-hz2
+    workspace_key: dig-geneset-hubmap-hz2
+    agent_model: claude-fable-5
+    regeneration_prompt: >-
+      Regenerate HuBMAP gene-set library 402cf4a1f3682a2e5bf1b002 (ASCT+B
+      augmented markers, model HZ2, human, hg38) by re-running both steps of
+      the dig-gene-set-extractors pipeline pinned to commit
+      2fb57130136a8fa25211ef1e77fe13d220e4b115.
+
+      Step 1 — `geneset-extractors workflows hubmap_asctb_augmented`: take the
+      released ASCT+B marker table (gene_attribute_matrix.txt.gz) and NCBI
+      human_gene_info as inputs, with augmentation_threshold 0.67 and
+      cap_multiplier 4. It should emit hubmap_unsigned_term_gene.tsv and
+      asctb_geneshot_augmented_genes.tsv.
+
+      Step 2 — `geneset-extractors convert unsigned_term_gene` over that table,
+      with emit_small_gene_sets false, gene_id_column gene_id,
+      gene_symbol_column gene_symbol, gmt_min_genes 5, score_column score,
+      term_column term, term_prefix HuBMAP. It should emit the gene set plus
+      genesets.gmt, geneset.tsv, geneset.full.tsv, signature_summary.tsv and
+      geneset.meta.json.
+
+      Record each step as a NEW Activity with its own C2M2 file outputs and
+      checksums. Do not overwrite the existing provenance. Then compare the
+      regenerated checksums against the originals and report any that differ —
+      a divergence is a finding, not a failure to hide.
+
+# ---- The derived gene set (see example_geneset.yaml for the full node) ----
+gene_sets:
+  - id: geneset:402cf4a1f3682a2e5bf1b002
+    name: HuBMAP ASCT+B augmented marker gene-set library (model HZ2)
+    member_type: gene
+    n_genes: 1747
+    n_sets: 487
+    organism: human
+    genome_build: hg38
+
+# ---- Reified provenance edges (dig.geneset edges -> NIH-DAPP Edge classes) ----
+# "data input" edges -> Used (prov:used). Edge instances carry
+# subject/predicate/object (+ edge_role) — the Dock Edge base defines no `id`.
+used_edges:
+  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+    predicate: prov:used
+    object: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+    edge_role: data_input
+  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+    predicate: prov:used
+    object: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+    edge_role: data_input
+  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    predicate: prov:used
+    object: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    edge_role: data_input
+
+# "data output" edges -> WasGeneratedBy (prov:wasGeneratedBy)
+was_generated_by_edges:
+  - subject: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    predicate: prov:wasGeneratedBy
+    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: geneset:402cf4a1f3682a2e5bf1b002
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+    predicate: prov:wasGeneratedBy
+    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+    predicate: prov:wasGeneratedBy
+    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+
+# activities -> the one workspace that can re-run them both
+has_agentic_workspace_edges:
+  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+    predicate: nih:hasAgenticWorkspace
+    object: nih:workspace/dig-geneset-hubmap-hz2
+  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    predicate: nih:hasAgenticWorkspace
+    object: nih:workspace/dig-geneset-hubmap-hz2

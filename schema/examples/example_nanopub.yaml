@@ -1,0 +1,35 @@
+# NIH-DAPP 3.0 — the nanopublication wrapping example_hypothesis.yaml.
+#
+# Shape checked against a real published nanopub from the Knowledge Pixels
+# network (https://w3id.org/np/RAwUp0SmZZwQNOY1zbSPhR21aQoImiUyQrDlyXj5QYXmQ),
+# fetched as JSON-LD: four named graphs (Head / assertion / provenance /
+# pubinfo), np:hasAssertion + np:hasProvenance + np:hasPublicationInfo in the
+# Head, and an npx signature element in the pubinfo.
+#
+# NOTE ON IDS. `id` here is a local pre-publication URI. On publication the
+# nanopub is assigned a TRUSTY URI — the base URI plus a hash of the content
+# (https://w3id.org/np/RA...) — which makes it immutable and content-addressed.
+# You never edit a published nanopub; you publish a successor that
+# npx:supersedes it.
+#
+#   uv run --with linkml linkml-validate -s dapper.yaml \
+#       -C Nanopublication examples/example_nanopub.yaml
+
+id: nih:np/reveal-pcsk9-ldlr-fh-0001
+name: "REVEAL hypothesis: PCSK9 gain-of-function -> LDLR degradation -> familial hypercholesterolemia"
+label: "REVEAL hypothesis: PCSK9 GOF -> LDLR degradation -> FH"
+
+# --- Head graph: the three functional links --------------------------------
+has_assertion: nih:np/reveal-pcsk9-ldlr-fh-0001/assertion
+has_provenance: nih:np/reveal-pcsk9-ldlr-fh-0001/provenance
+has_publication_info: nih:np/reveal-pcsk9-ldlr-fh-0001/pubinfo
+
+# --- pubinfo graph ---------------------------------------------------------
+nanopub_type:
+  - DraftNanopub
+created: "2026-08-04T21:40:00Z"
+creator:
+  - orcid:0000-0002-1825-0097
+nanopub_license: https://creativecommons.org/licenses/by/4.0/
+was_created_at: https://nanodash.knowledgepixels.com/
+has_signature_element: nih:np/reveal-pcsk9-ldlr-fh-0001/sig

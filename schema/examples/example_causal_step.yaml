@@ -1,0 +1,31 @@
+# NIH-DAPP 3.0 — step 0 of the chain in example_hypothesis.yaml.
+#
+# Deliberately shaped as DISMECH's `CausalEdge`: `step_object` is DISMECH's
+# `target`, and `causal_link_type` uses DISMECH's CausalLinkTypeEnum values
+# VERBATIM (DIRECT / INDIRECT_KNOWN_INTERMEDIATES /
+# INDIRECT_UNKNOWN_INTERMEDIATES / UNKNOWN) so this round-trips into a DISMECH
+# entry with no value translation.
+#
+# GO CURIE resolved against EBI OLS4: GO:0032805 is "positive regulation of
+# low-density lipoprotein particle receptor catabolic process".
+#
+#   uv run --with linkml linkml-validate -s dapper.yaml \
+#       -C CausalStep examples/example_causal_step.yaml
+
+id: nih:causalstep/reveal-pcsk9-ldlr-fh-0001/0
+name: PCSK9 GOF increases LDLR lysosomal degradation
+step_index: 0
+step_subject: HGNC:20001
+step_object: nih:mechanism/ldlr-lysosomal-degradation
+causal_link_type: DIRECT
+description: >-
+  Secreted PCSK9 binds the EGF-A domain of the LDL receptor at the hepatocyte
+  surface and redirects the bound receptor to the lysosome rather than the
+  recycling endosome. Gain-of-function variants raise the rate of this
+  diversion.
+via_mechanism:
+  - nih:mechanism/ldlr-lysosomal-degradation
+has_evidence:
+  - nih:evidence/pmid-16554528
+dismech_class: dismech:CausalEdge
+dismech_disease_term: MONDO:0005439
