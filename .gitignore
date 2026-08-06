@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Converter output
+out/
+dapp-out/
+
+# macOS
+.DS_Store
