@@ -100,14 +100,11 @@ FAMILY = {
 }
 
 # Which nodes are transcribed from a real pipeline run vs. drawn to show shape.
-# Explicit rather than inferred: honesty about this is the point of the example,
-# so it should not rest on a heuristic.
-ILLUSTRATIVE_PREFIXES = (
-    "analysis:reveal-enrichment",
-    "nih:hypothesis/",
-    "nih:np/",
-    "nih:workspace/",
-)
+# Read from the example's own `_illustrative:` list rather than inferred from the
+# id, because ids are now content digests (`dapper:Class.digest`) and carry no
+# provenance hint. Honesty about this distinction is the point of the examples,
+# so it is declared explicitly rather than guessed.
+
 
 GRAPH_DOCS = [
     {
@@ -134,8 +131,8 @@ GRAPH_DOCS = [
     },
 ]
 
-def is_illustrative(node_id: str) -> bool:
-    return node_id.startswith(ILLUSTRATIVE_PREFIXES)
+def is_illustrative(node_id: str, illustrative: set[str]) -> bool:
+    return node_id in illustrative
 
 
 def load_schema() -> dict:
@@ -167,6 +164,7 @@ def load_schema() -> dict:
 
 def build_graph(spec: dict) -> dict:
     raw = yaml.safe_load((EXAMPLES / spec["file"]).read_text())
+    illustrative = set(raw.get("_illustrative") or [])
     nodes, edges = [], []
     for key, cls in NODE_GROUPS.items():
         for node in raw.get(key) or []:
@@ -174,7 +172,7 @@ def build_graph(spec: dict) -> dict:
                 "id": node["id"],
                 "cls": cls,
                 "family": FAMILY.get(cls, "part"),
-                "illustrative": is_illustrative(node["id"]),
+                "illustrative": is_illustrative(node["id"], illustrative),
                 "label": node.get("name") or node.get("filename") or node["id"].split(":")[-1],
                 "fields": {k: v for k, v in node.items() if k != "id"},
             })
@@ -657,7 +655,7 @@ function valueHtml(v, ids) {
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
   if (/^https?:\/\//.test(s))
     return `<a class="ref" href="${esc(s)}" target="_blank" rel="noopener noreferrer">${esc(s)}</a>`;
-  const looksId = /^(file:|analysis:|geneset:|nih:|MONDO:|HGNC:|CL:|GO:|PMID:|orcid:|s3:)/.test(s);
+  const looksId = /^(dapper:|nih:|MONDO:|HGNC:|CL:|GO:|PMID:|orcid:|s3:)/.test(s);
   return `<span class="${looksId ? "mono" : ""}">${esc(s)}</span>`;
 }
 

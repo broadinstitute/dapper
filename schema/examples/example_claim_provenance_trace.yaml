@@ -46,8 +46,28 @@
 # ===========================================================================
 # REAL — C2M2 source / intermediate / output files
 # ===========================================================================
+# Nodes that are ILLUSTRATIVE rather than transcribed from a real run.
+# Identifiers are content digests now, so the old `nih:hypothesis/` style prefix
+# no longer signals this — the portal reads this list instead.
+_illustrative:
+  - dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
+  - dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
+  - dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+  - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+  - dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+  - dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
+  - dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+  - dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
+  - dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+  - dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
+  - dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
+  - dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
+  - dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
+  - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
+  - dapper:AgenticWorkspace.437GE1YwXUCUgO1cM1DFBmf98uPnko0_
+
 c2m2_files:
-  - id: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+  - id: dapper:C2M2File.zmm9HPij4ShMcqSp9FKSQJpjoZwnhPS7
     name: gene_attribute_matrix.txt.gz
     filename: gene_attribute_matrix.txt.gz
     persistent_id: 6b757af6-b9b0-583e-8846-b0e16b3e57c4
@@ -56,7 +76,7 @@ c2m2_files:
     md5: 96aZvXyRQHqydJoeaC351g==
     size_in_bytes: 31222
 
-  - id: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+  - id: dapper:C2M2File._3fjt8tpJj3hXLW2SLsAF2jiVf_MdA25
     name: human_gene_info
     filename: human_gene_info
     persistent_id: 48b9abef-1545-5e87-9e26-bef6dbd36c09
@@ -65,7 +85,7 @@ c2m2_files:
     md5: hvzbVLFaJJSRJutxecW6lQ==
     size_in_bytes: 34989436
 
-  - id: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+  - id: dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
     name: hubmap_unsigned_term_gene.tsv
     filename: hubmap_unsigned_term_gene.tsv
     persistent_id: c5da16f0-d42c-52c4-ba9e-9221acb9effd
@@ -78,7 +98,7 @@ c2m2_files:
   # gene set: the .gmt library, the selected program, the full score table,
   # a signature summary, and its own metadata sidecar. Each is a C2M2 file
   # with its own checksum, and each is part of what the claim rests on.
-  - id: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+  - id: dapper:C2M2File.Ar46DjfZNYvNDdrp9ayp6amQ1swHCClu
     name: asctb_geneshot_augmented_genes.tsv
     filename: asctb_geneshot_augmented_genes.tsv
     persistent_id: 62453e36-d5b8-5fb5-8fe8-76bc77ae806f
@@ -87,7 +107,7 @@ c2m2_files:
     md5: TuCrBzqQGNv+HtCqJCZ1QA==
     size_in_bytes: 22026266
 
-  - id: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+  - id: dapper:C2M2File.o3nliLvFvGExup49WZvoQbmupUnztc5e
     name: genesets.gmt
     filename: genesets.gmt
     persistent_id: 576cdadd-7d0b-55d8-917f-a9ea29456f28
@@ -96,7 +116,7 @@ c2m2_files:
     md5: lpgmArYDypVqkRWP/KQ9Zw==
     size_in_bytes: 55157
 
-  - id: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+  - id: dapper:C2M2File.xso09-EbHyvR3wWHYz_NYBEbGGbwhPTn
     name: geneset.tsv
     filename: geneset.tsv
     persistent_id: 3f9cfc06-3275-594d-a1cf-1af3cd14539e
@@ -105,7 +125,7 @@ c2m2_files:
     md5: i+RX9V+qA0HHxRjgJW4g6A==
     size_in_bytes: 520234
 
-  - id: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+  - id: dapper:C2M2File.fdGaORD8yU_jB6Kd6FcGGuo4JHBXyPKj
     name: geneset.full.tsv
     filename: geneset.full.tsv
     persistent_id: 0ddb17ca-f9a0-5e82-baf9-7ca1475eba80
@@ -114,7 +134,7 @@ c2m2_files:
     md5: i+RX9V+qA0HHxRjgJW4g6A==
     size_in_bytes: 520234
 
-  - id: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+  - id: dapper:C2M2File.YYtxcmZxlq08XfVKp3AVnVeW8eIT5V0V
     name: signature_summary.tsv
     filename: signature_summary.tsv
     persistent_id: ef8f04dd-1c8c-5c37-ac69-d9d493d7c2d5
@@ -123,7 +143,7 @@ c2m2_files:
     md5: Zqbcc0HXE3PZdxemBkbY9w==
     size_in_bytes: 30480
 
-  - id: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+  - id: dapper:C2M2File.YkoSyNeV0Y-cQELnJVI5yaTHjKobkrLU
     name: geneset.meta.json
     filename: geneset.meta.json
     persistent_id: f06b158a-d13c-5827-9d7b-d787e01e9cc9
@@ -136,41 +156,41 @@ c2m2_files:
 # Analyses. First two REAL; the third ILLUSTRATIVE (the REVEAL step).
 # ===========================================================================
 activities:
-  - id: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - id: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
     name: prepare_hubmap_unsigned_term_gene
     activity_type: workflow
     entrypoint: geneset-extractors workflows hubmap_asctb_augmented
     repo_url: https://github.com/flannick/dig-gene-set-extractors
     code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
     has_agentic_workspace:
-      - nih:workspace/dig-geneset-hubmap-hz2
+      - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
 
-  - id: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - id: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
     name: generate_402cf4a1f3682a2e5bf1b002
     activity_type: converter_invocation
     entrypoint: geneset-extractors convert unsigned_term_gene
     repo_url: https://github.com/flannick/dig-gene-set-extractors
     code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
     has_agentic_workspace:
-      - nih:workspace/dig-geneset-hubmap-hz2
+      - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
 
   # ILLUSTRATIVE — the analysis that turns the gene set into a claim. This is
   # the step that has no counterpart in dig.geneset today, and it is modelled
   # with exactly the same Activity class as the converter steps above, so it
   # joins the existing provenance DAG rather than starting a new one.
-  - id: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+  - id: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
     name: reveal_enrichment_dent_disease
     activity_type: enrichment_analysis
     entrypoint: reveal enrichment
     command: >-
-      reveal enrichment --geneset geneset:402cf4a1f3682a2e5bf1b002
+      reveal enrichment --geneset dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
       --disease MONDO:0015612 --method fishers-exact --fdr 0.05
     # quoted: an unquoted all-digit SHA is parsed by YAML as an integer
     code_version: "<reveal-git-sha>"
     generated_at_time: "2026-08-04T20:00:00Z"
     # the agentic replay path — see agentic_workspaces below
     has_agentic_workspace:
-      - nih:workspace/reveal-enrichment-dent
+      - dapper:AgenticWorkspace.437GE1YwXUCUgO1cM1DFBmf98uPnko0_
 
 # ===========================================================================
 # ILLUSTRATIVE — how to re-run the analysis with an agent.
@@ -190,7 +210,7 @@ activities:
 # `container_image` + `code_version` on the Activity.
 # ===========================================================================
 agentic_workspaces:
-  - id: nih:workspace/dig-geneset-hubmap-hz2
+  - id: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
     name: dig-gene-set-extractors — HuBMAP HZ2
     platform: akleao
     workspace_url: https://www.akleao.com/fork/dig-geneset-hubmap-hz2
@@ -220,7 +240,7 @@ agentic_workspaces:
       regenerated checksums against the originals and report any that differ —
       a divergence is a finding, not a failure to hide.
 
-  - id: nih:workspace/reveal-enrichment-dent
+  - id: dapper:AgenticWorkspace.437GE1YwXUCUgO1cM1DFBmf98uPnko0_
     name: REVEAL enrichment — Dent disease
     platform: akleao
     # an agentic workspace is a FORK — one shareable slug, not a project/branch path
@@ -230,7 +250,7 @@ agentic_workspaces:
     last_run: "2026-08-04T20:00:00Z"
     regeneration_prompt: >-
       Re-run the REVEAL enrichment for Dent disease. Load gene set
-      geneset:402cf4a1f3682a2e5bf1b002 (HuBMAP ASCT+B augmented marker library,
+      dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ (HuBMAP ASCT+B augmented marker library,
       model HZ2, human/hg38) from its C2M2 provenance. Test each named marker
       set for over-representation among genes implicated in Dent disease
       (MONDO:0015612) using Fisher's exact test with Benjamini-Hochberg FDR at
@@ -244,7 +264,7 @@ agentic_workspaces:
 # REAL — the derived gene set
 # ===========================================================================
 gene_sets:
-  - id: geneset:402cf4a1f3682a2e5bf1b002
+  - id: dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     name: HuBMAP ASCT+B augmented marker gene-set library (model HZ2)
     member_type: gene
     n_genes: 1747
@@ -265,7 +285,7 @@ gene_sets:
 # vocabulary, so no special traversal is needed.
 # ===========================================================================
 hypotheses:
-  - id: nih:hypothesis/reveal-hubmap-pt-dent-enrichment
+  - id: dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
     name: Proximal tubule marker genes are enriched among Dent disease genes
     hypothesis_label: HuBMAP PT markers enriched in Dent disease
     statement: >-
@@ -277,18 +297,18 @@ hypotheses:
     object_entity: MONDO:0015612
     object_disease: MONDO:0015612
     # provenance back into the analysis DAG — ProvenancedResource slots
-    was_generated_by: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+    was_generated_by: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
     was_derived_from:
-      - geneset:402cf4a1f3682a2e5bf1b002
+      - dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     access_level: public
     has_license: https://creativecommons.org/licenses/by/4.0/
     asserted_in:
-      - nih:np/reveal-hubmap-pt-dent-enrichment
+      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
 
   # ILLUSTRATIVE — the composite hypothesis the atomic claim supports.
   # This is the REVEAL-shaped gene -> mechanism -> disease object; the
   # enrichment claim above is one leg of its support.
-  - id: nih:hypothesis/clcn5-pt-dysfunction-dent
+  - id: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
     name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
     hypothesis_label: CLCN5 LOF -> PT dysfunction -> Dent disease
     statement: >-
@@ -305,9 +325,9 @@ hypotheses:
     access_level: public
     # the two directions, kept distinct
     supported_by_nanopub:
-      - nih:np/reveal-hubmap-pt-dent-enrichment
+      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
     asserted_in:
-      - nih:np/clcn5-pt-dysfunction-dent
+      - dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
 
 # ===========================================================================
 # ILLUSTRATIVE — the nanopublication publishing the atomic claim.
@@ -317,12 +337,12 @@ hypotheses:
 # gene set and the C2M2 file. Both are already nodes in the DAG above.
 # ===========================================================================
 nanopublications:
-  - id: nih:np/reveal-hubmap-pt-dent-enrichment
+  - id: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
     name: "Claim: HuBMAP proximal tubule markers are enriched among Dent disease genes"
     label: PT marker enrichment in Dent disease
-    has_assertion: nih:np/reveal-hubmap-pt-dent-enrichment/assertion
-    has_provenance: nih:np/reveal-hubmap-pt-dent-enrichment/provenance
-    has_publication_info: nih:np/reveal-hubmap-pt-dent-enrichment/pubinfo
+    has_assertion: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
+    has_provenance: dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
+    has_publication_info: dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
     nanopub_type:
       - DraftNanopub
     created: "2026-08-04T20:05:00Z"
@@ -330,23 +350,23 @@ nanopublications:
       - orcid:0000-0002-1825-0097
     nanopub_license: https://creativecommons.org/licenses/by/4.0/
     was_created_at: https://nanodash.knowledgepixels.com/
-    has_signature_element: nih:np/reveal-hubmap-pt-dent-enrichment/sig
+    has_signature_element: dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
 
   # The composite hypothesis gets its own nanopub too — this is the
   # `asserted_in` direction. Note it is a SEPARATE nanopub from the supporting
   # one: publishing a hypothesis and supporting a hypothesis are different
   # acts, by potentially different people, at different times.
-  - id: nih:np/clcn5-pt-dysfunction-dent
+  - id: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
     name: "Hypothesis: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction"
     label: CLCN5 LOF -> PT dysfunction -> Dent disease
     # All THREE links are mandatory, not just the assertion: the nanopublication
     # well-formedness rules require exactly one quad for each of hasAssertion,
     # hasProvenance and hasPublicationInfo. A nanopub carrying only an assertion
     # is malformed and will be rejected by the network.
-    has_assertion: nih:np/clcn5-pt-dysfunction-dent/assertion
-    has_provenance: nih:np/clcn5-pt-dysfunction-dent/provenance
-    has_publication_info: nih:np/clcn5-pt-dysfunction-dent/pubinfo
-    has_signature_element: nih:np/clcn5-pt-dysfunction-dent/sig
+    has_assertion: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+    has_provenance: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+    has_publication_info: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
+    has_signature_element: dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
     nanopub_type:
       - DraftNanopub
     created: "2026-08-04T20:10:00Z"
@@ -355,17 +375,17 @@ nanopublications:
     nanopub_license: https://creativecommons.org/licenses/by/4.0/
 
 nanopub_assertions:
-  - id: nih:np/reveal-hubmap-pt-dent-enrichment/assertion
+  - id: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
     name: Assertion — the claim being made
     # the assertion IS the atomic hypothesis above
-    asserts: nih:hypothesis/reveal-hubmap-pt-dent-enrichment
+    asserts: dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
     as_sentence: >-
       The HuBMAP ASCT+B marker gene set for epithelial cells of the proximal
       tubule is enriched among genes implicated in Dent disease.
 
-  - id: nih:np/clcn5-pt-dysfunction-dent/assertion
+  - id: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
     name: Assertion — the claim being made
-    asserts: nih:hypothesis/clcn5-pt-dysfunction-dent
+    asserts: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
     as_sentence: >-
       Loss-of-function variants in CLCN5 impair endosomal acidification in
       proximal tubule epithelial cells, causing the proximal tubule dysfunction
@@ -380,144 +400,149 @@ nanopub_assertions:
 # points at the nanopub that supports it and at the literature. Both are valid
 # provenance; they just answer "where did this come from?" differently.
 nanopub_provenances:
-  - id: nih:np/reveal-hubmap-pt-dent-enrichment/provenance
+  - id: dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
     name: Provenance — where the claim came from
-    provenance_of: nih:np/reveal-hubmap-pt-dent-enrichment/assertion
+    provenance_of: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
     # who asserted it — a software agent, since REVEAL generated it
     was_attributed_to:
       - orcid:0000-0002-1825-0097
     # ---> lands directly on a node of the dig.geneset provenance DAG
-    generated_by_activity: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+    generated_by_activity: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
     derived_from:
-      - geneset:402cf4a1f3682a2e5bf1b002
-      - file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+      - dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
+      - dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
 
-  - id: nih:np/clcn5-pt-dysfunction-dent/provenance
+  - id: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
     name: Provenance — where the claim came from
-    provenance_of: nih:np/clcn5-pt-dysfunction-dent/assertion
+    provenance_of: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
     # a curated claim: attributed to a person, with no generating activity
     was_attributed_to:
       - orcid:0000-0002-1825-0097
     derived_from:
-      - nih:np/reveal-hubmap-pt-dent-enrichment
+      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
       - PMID:25773607
 
 # The fourth graph. Thin here, but it is where the signature lives, and the
 # signature is what makes the whole trace tamper-evident rather than merely
 # stated.
 nanopub_publication_infos:
-  - id: nih:np/reveal-hubmap-pt-dent-enrichment/pubinfo
-    name: Publication info — who published it
-    pubinfo_of: nih:np/reveal-hubmap-pt-dent-enrichment
+  - id: dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
+    name: Publication info — the PT marker enrichment claim
+    pubinfo_of: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
 
-  - id: nih:np/clcn5-pt-dysfunction-dent/pubinfo
-    name: Publication info — who published it
-    pubinfo_of: nih:np/clcn5-pt-dysfunction-dent
+  - id: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
+    name: Publication info — the CLCN5 mechanism hypothesis
+    pubinfo_of: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
 
 nanopub_signatures:
-  - id: nih:np/reveal-hubmap-pt-dent-enrichment/sig
-    name: Signature — RSA, seals the whole nanopub
+  - id: dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
+    name: Signature — seals the PT marker enrichment claim
     has_algorithm: RSA
+    # Placeholder, deliberately not base64-shaped: the real value is minted by
+    # nanopub-java at publication. Two signatures over different nanopubs have
+    # different bytes, which is why they get different content addresses.
+    has_signature: <rsa-signature-over-reveal-hubmap-pt-dent-enrichment>
     signed_by: orcid:0000-0002-1825-0097
-    has_signature_target: nih:np/reveal-hubmap-pt-dent-enrichment
+    has_signature_target: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
 
-  - id: nih:np/clcn5-pt-dysfunction-dent/sig
-    name: Signature — RSA, seals the whole nanopub
+  - id: dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
+    name: Signature — seals the CLCN5 mechanism hypothesis
     has_algorithm: RSA
+    has_signature: <rsa-signature-over-clcn5-pt-dysfunction-dent>
     signed_by: orcid:0000-0002-1825-0097
-    has_signature_target: nih:np/clcn5-pt-dysfunction-dent
+    has_signature_target: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
 
 # ===========================================================================
 # Reified edges. The first three groups are REAL (identical to
 # example_geneset_graph.yaml); the rest continue the same DAG.
 # ===========================================================================
 used_edges:
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
     predicate: prov:used
-    object: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+    object: dapper:C2M2File.zmm9HPij4ShMcqSp9FKSQJpjoZwnhPS7
     edge_role: data_input
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
     predicate: prov:used
-    object: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+    object: dapper:C2M2File._3fjt8tpJj3hXLW2SLsAF2jiVf_MdA25
     edge_role: data_input
-  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
     predicate: prov:used
-    object: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    object: dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
     edge_role: data_input
   # ILLUSTRATIVE — REVEAL consumes the gene set. Same Used edge class, same
   # predicate, same edge_role vocabulary as the converter steps.
-  - subject: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+  - subject: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
     predicate: prov:used
-    object: geneset:402cf4a1f3682a2e5bf1b002
+    object: dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     edge_role: data_input
 
 was_generated_by_edges:
-  - subject: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+  - subject: dapper:C2M2File.Ar46DjfZNYvNDdrp9ayp6amQ1swHCClu
     predicate: prov:wasGeneratedBy
-    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
-  - subject: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+    object: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
+  - subject: dapper:C2M2File.o3nliLvFvGExup49WZvoQbmupUnztc5e
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
+  - subject: dapper:C2M2File.xso09-EbHyvR3wWHYz_NYBEbGGbwhPTn
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
+  - subject: dapper:C2M2File.fdGaORD8yU_jB6Kd6FcGGuo4JHBXyPKj
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
+  - subject: dapper:C2M2File.YYtxcmZxlq08XfVKp3AVnVeW8eIT5V0V
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
+  - subject: dapper:C2M2File.YkoSyNeV0Y-cQELnJVI5yaTHjKobkrLU
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
+  - subject: dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
     predicate: prov:wasGeneratedBy
-    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
-  - subject: geneset:402cf4a1f3682a2e5bf1b002
+    object: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
+  - subject: dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    object: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
   # ILLUSTRATIVE — the claim is an output of the REVEAL analysis exactly the
   # way the gene set is an output of the converter.
-  - subject: nih:hypothesis/reveal-hubmap-pt-dent-enrichment
+  - subject: dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
     predicate: prov:wasGeneratedBy
-    object: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+    object: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
 
 # activity -> the workspace that can re-run it
 has_agentic_workspace_edges:
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
     predicate: nih:hasAgenticWorkspace
-    object: nih:workspace/dig-geneset-hubmap-hz2
-  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
+  - subject: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
     predicate: nih:hasAgenticWorkspace
-    object: nih:workspace/dig-geneset-hubmap-hz2
-  - subject: analysis:reveal-enrichment:0f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+    object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
+  - subject: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
     predicate: nih:hasAgenticWorkspace
-    object: nih:workspace/reveal-enrichment-dent
+    object: dapper:AgenticWorkspace.437GE1YwXUCUgO1cM1DFBmf98uPnko0_
 
 # claim -> its nanopub, and nanopub -> its three graphs
 asserted_in_edges:
-  - subject: nih:hypothesis/reveal-hubmap-pt-dent-enrichment
+  - subject: dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
     predicate: hycl:claims
-    object: nih:np/reveal-hubmap-pt-dent-enrichment
+    object: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
 
 has_assertion_edges:
-  - subject: nih:np/reveal-hubmap-pt-dent-enrichment
+  - subject: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
     predicate: np:hasAssertion
-    object: nih:np/reveal-hubmap-pt-dent-enrichment/assertion
-  - subject: nih:np/clcn5-pt-dysfunction-dent
+    object: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
+  - subject: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
     predicate: np:hasAssertion
-    object: nih:np/clcn5-pt-dysfunction-dent/assertion
+    object: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
 
 has_provenance_edges:
-  - subject: nih:np/reveal-hubmap-pt-dent-enrichment
+  - subject: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
     predicate: np:hasProvenance
-    object: nih:np/reveal-hubmap-pt-dent-enrichment/provenance
-  - subject: nih:np/clcn5-pt-dysfunction-dent
+    object: dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
+  - subject: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
     predicate: np:hasProvenance
-    object: nih:np/clcn5-pt-dysfunction-dent/provenance
+    object: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
 
 # the composite hypothesis <- the supporting nanopub
 supported_by_nanopub_edges:
-  - subject: nih:hypothesis/clcn5-pt-dysfunction-dent
+  - subject: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
     predicate: nih:supportedByNanopub
-    object: nih:np/reveal-hubmap-pt-dent-enrichment
+    object: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX

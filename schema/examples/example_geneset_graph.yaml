@@ -18,8 +18,14 @@
 # as such — dig.geneset carries no agentic workspace today.
 
 # ---- C2M2 source / intermediate / output files (dig.geneset File nodes) ----
+# Nodes that are ILLUSTRATIVE rather than transcribed from a real run.
+# Identifiers are content digests now, so the old `nih:hypothesis/` style prefix
+# no longer signals this — the portal reads this list instead.
+_illustrative:
+  - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
+
 c2m2_files:
-  - id: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+  - id: dapper:C2M2File.GC5Rm7rh8JsWUNVGx7dIuvu8DmCO7Yji
     name: gene_attribute_matrix.txt.gz
     filename: gene_attribute_matrix.txt.gz
     persistent_id: 6b757af6-b9b0-583e-8846-b0e16b3e57c4
@@ -30,7 +36,7 @@ c2m2_files:
     dcc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ1/workflow/gene_attribute_matrix.txt.gz
     drc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ1/workflow/gene_attribute_matrix.txt.gz
 
-  - id: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+  - id: dapper:C2M2File.K-ku9xiAMkowcxSHCZdEOYSQ15q6Vq5I
     name: human_gene_info
     filename: human_gene_info
     persistent_id: 48b9abef-1545-5e87-9e26-bef6dbd36c09
@@ -41,7 +47,7 @@ c2m2_files:
     dcc_url: https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
     drc_url: https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
 
-  - id: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+  - id: dapper:C2M2File.CXfIyIocwZWUCAERcmhJDfH8ZVtfVIF9
     name: hubmap_unsigned_term_gene.tsv
     filename: hubmap_unsigned_term_gene.tsv
     persistent_id: c5da16f0-d42c-52c4-ba9e-9221acb9effd
@@ -52,7 +58,7 @@ c2m2_files:
     dcc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/hubmap_unsigned_term_gene.tsv
     drc_url: s3://dig-gene-set-data/HuBMAP/genesets/all_signatures/models/HZ2/workflow/hubmap_unsigned_term_gene.tsv
 
-  - id: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+  - id: dapper:C2M2File.U9_ScfeqzGcdLkJC__frh396mPwO6yWo
     name: genesets.gmt
     filename: genesets.gmt
     persistent_id: 576cdadd-7d0b-55d8-917f-a9ea29456f28
@@ -66,7 +72,7 @@ c2m2_files:
   # Remaining outputs of the two activities. The converter emits a whole
   # bundle, not just the .gmt — every one is a C2M2 file with its own
   # checksum, and every one is part of the gene set's provenance.
-  - id: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+  - id: dapper:C2M2File.Ar46DjfZNYvNDdrp9ayp6amQ1swHCClu
     name: asctb_geneshot_augmented_genes.tsv
     filename: asctb_geneshot_augmented_genes.tsv
     persistent_id: 62453e36-d5b8-5fb5-8fe8-76bc77ae806f
@@ -75,7 +81,7 @@ c2m2_files:
     md5: TuCrBzqQGNv+HtCqJCZ1QA==
     size_in_bytes: 22026266
 
-  - id: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+  - id: dapper:C2M2File.xso09-EbHyvR3wWHYz_NYBEbGGbwhPTn
     name: geneset.tsv
     filename: geneset.tsv
     persistent_id: 3f9cfc06-3275-594d-a1cf-1af3cd14539e
@@ -84,7 +90,7 @@ c2m2_files:
     md5: i+RX9V+qA0HHxRjgJW4g6A==
     size_in_bytes: 520234
 
-  - id: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+  - id: dapper:C2M2File.fdGaORD8yU_jB6Kd6FcGGuo4JHBXyPKj
     name: geneset.full.tsv
     filename: geneset.full.tsv
     persistent_id: 0ddb17ca-f9a0-5e82-baf9-7ca1475eba80
@@ -93,7 +99,7 @@ c2m2_files:
     md5: i+RX9V+qA0HHxRjgJW4g6A==
     size_in_bytes: 520234
 
-  - id: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+  - id: dapper:C2M2File.YYtxcmZxlq08XfVKp3AVnVeW8eIT5V0V
     name: signature_summary.tsv
     filename: signature_summary.tsv
     persistent_id: ef8f04dd-1c8c-5c37-ac69-d9d493d7c2d5
@@ -102,7 +108,7 @@ c2m2_files:
     md5: Zqbcc0HXE3PZdxemBkbY9w==
     size_in_bytes: 30480
 
-  - id: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+  - id: dapper:C2M2File.YkoSyNeV0Y-cQELnJVI5yaTHjKobkrLU
     name: geneset.meta.json
     filename: geneset.meta.json
     persistent_id: f06b158a-d13c-5827-9d7b-d787e01e9cc9
@@ -114,7 +120,7 @@ c2m2_files:
 # ---- Analysis steps (dig.geneset AnalysisType -> NIH-DAPP Activity) ----
 activities:
   # upstream workflow step
-  - id: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - id: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
     name: prepare_hubmap_unsigned_term_gene
     activity_type: workflow
     command: >-
@@ -127,12 +133,12 @@ activities:
     script_url: https://github.com/flannick/dig-gene-set-extractors
     code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
     has_agentic_workspace:
-      - nih:workspace/dig-geneset-hubmap-hz2
+      - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
     dcc_url: https://github.com/flannick/dig-gene-set-extractors
     drc_url: https://github.com/flannick/dig-gene-set-extractors
 
   # converter step that emits the gene set
-  - id: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - id: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
     name: generate_402cf4a1f3682a2e5bf1b002
     activity_type: converter_invocation
     command: >-
@@ -149,7 +155,7 @@ activities:
     script_url: https://github.com/flannick/dig-gene-set-extractors
     code_version: 2fb57130136a8fa25211ef1e77fe13d220e4b115
     has_agentic_workspace:
-      - nih:workspace/dig-geneset-hubmap-hz2
+      - dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
     container_image: null
     dcc_url: https://github.com/flannick/dig-gene-set-extractors
     drc_url: https://github.com/flannick/dig-gene-set-extractors
@@ -166,7 +172,7 @@ activities:
 # parameters inside the prompt are REAL, taken from the two activities below.
 # ===========================================================================
 agentic_workspaces:
-  - id: nih:workspace/dig-geneset-hubmap-hz2
+  - id: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
     name: dig-gene-set-extractors — HuBMAP HZ2
     platform: akleao
     workspace_url: https://www.akleao.com/fork/dig-geneset-hubmap-hz2
@@ -198,7 +204,7 @@ agentic_workspaces:
 
 # ---- The derived gene set (see example_geneset.yaml for the full node) ----
 gene_sets:
-  - id: geneset:402cf4a1f3682a2e5bf1b002
+  - id: dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     name: HuBMAP ASCT+B augmented marker gene-set library (model HZ2)
     member_type: gene
     n_genes: 1747
@@ -210,51 +216,51 @@ gene_sets:
 # "data input" edges -> Used (prov:used). Edge instances carry
 # subject/predicate/object (+ edge_role) — the Dock Edge base defines no `id`.
 used_edges:
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
     predicate: prov:used
-    object: file:input_matrix:fa66b92a-28f2-56cc-abc3-511053f4f37e
+    object: dapper:C2M2File.GC5Rm7rh8JsWUNVGx7dIuvu8DmCO7Yji
     edge_role: data_input
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
     predicate: prov:used
-    object: file:human_gene_info:9202e2fa-eafc-5d12-a804-b653631f56f5
+    object: dapper:C2M2File.K-ku9xiAMkowcxSHCZdEOYSQ15q6Vq5I
     edge_role: data_input
-  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+  - subject: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
     predicate: prov:used
-    object: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+    object: dapper:C2M2File.CXfIyIocwZWUCAERcmhJDfH8ZVtfVIF9
     edge_role: data_input
 
 # "data output" edges -> WasGeneratedBy (prov:wasGeneratedBy)
 was_generated_by_edges:
-  - subject: file:unsigned_term_gene_tsv:ba2297f9-7b5a-5215-a32e-d96bfbf71170
+  - subject: dapper:C2M2File.CXfIyIocwZWUCAERcmhJDfH8ZVtfVIF9
     predicate: prov:wasGeneratedBy
-    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
-  - subject: geneset:402cf4a1f3682a2e5bf1b002
+    object: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
+  - subject: dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:gmt_library:b4c7e054-28fb-5374-a002-8010b1fa56ca
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
+  - subject: dapper:C2M2File.U9_ScfeqzGcdLkJC__frh396mPwO6yWo
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:asctb_geneshot_augmented_genes_tsv:b76ffd1f-2f15-5f61-8d51-25a4aedaa4a7
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
+  - subject: dapper:C2M2File.Ar46DjfZNYvNDdrp9ayp6amQ1swHCClu
     predicate: prov:wasGeneratedBy
-    object: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
-  - subject: file:selected_program:b2db1f99-5f1b-5384-96a1-ca8929dc6a0d
+    object: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
+  - subject: dapper:C2M2File.xso09-EbHyvR3wWHYz_NYBEbGGbwhPTn
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:full_scores:cdf7aa45-bc3a-5771-a289-31dd5fd56fc1
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
+  - subject: dapper:C2M2File.fdGaORD8yU_jB6Kd6FcGGuo4JHBXyPKj
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:signature_summary:0da22be4-4be3-5a02-bc7d-b8d4aec76827
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
+  - subject: dapper:C2M2File.YYtxcmZxlq08XfVKp3AVnVeW8eIT5V0V
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
-  - subject: file:metadata_json:b29e5127-0b91-54db-adb4-2e5be40d4237
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
+  - subject: dapper:C2M2File.YkoSyNeV0Y-cQELnJVI5yaTHjKobkrLU
     predicate: prov:wasGeneratedBy
-    object: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    object: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
 
 # activities -> the one workspace that can re-run them both
 has_agentic_workspace_edges:
-  - subject: analysis:hubmap_asctb_augmented:28f6ed71-cfa7-54c0-a3f6-bd38d3ab63df
+  - subject: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
     predicate: nih:hasAgenticWorkspace
-    object: nih:workspace/dig-geneset-hubmap-hz2
-  - subject: analysis:unsigned_term_gene:af57f812-9a29-559a-9683-4e2c3fd79d5b
+    object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
+  - subject: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
     predicate: nih:hasAgenticWorkspace
-    object: nih:workspace/dig-geneset-hubmap-hz2
+    object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN

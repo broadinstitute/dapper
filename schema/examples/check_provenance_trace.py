@@ -37,14 +37,25 @@ from pathlib import Path
 import yaml
 
 DEFAULT_FILE = Path(__file__).parent / "example_claim_provenance_trace.yaml"
-START = "nih:hypothesis/clcn5-pt-dysfunction-dent"
+def find_start(doc: dict) -> str:
+    """The composite hypothesis at the top of the trace.
+
+    Derived, not hardcoded: identifiers are content digests now, so pinning a
+    literal id here would break every time the example content changed. The
+    composite hypothesis is the one supported by a published nanopublication.
+    """
+    for h in doc.get("hypotheses") or []:
+        if h.get("supported_by_nanopub"):
+            return h["id"]
+    raise SystemExit("no hypothesis with supported_by_nanopub — nothing to trace from")
 
 NODE_GROUPS = [
     "c2m2_files", "activities", "gene_sets", "hypotheses", "nanopublications",
     "nanopub_assertions", "nanopub_provenances", "nanopub_publication_infos",
-    "nanopub_signatures",
+    "nanopub_signatures", "agentic_workspaces",
 ]
-ID_PREFIXES = ("file:", "analysis:", "geneset:", "nih:np/", "nih:hypothesis/")
+# Every node identifier is a DAPPER content digest: dapper:{ClassName}.{digest}
+ID_PREFIXES = ("dapper:",)
 
 
 def main() -> int:
@@ -115,7 +126,7 @@ def main() -> int:
 
     if not args.quiet:
         print("\nfull recursive trace:")
-    walk(START, 0, "", frozenset())
+    walk(find_start(doc), 0, "", frozenset())
 
     raw = {
         i for i, (g, _) in nodes.items()

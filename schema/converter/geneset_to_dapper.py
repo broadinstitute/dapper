@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["pyyaml"]
+# dependencies = ["pyyaml", "rdflib", "linkml-runtime"]
 # ///
 """Convert dig.geneset provenance into NIH-DAPP instances.
 
@@ -207,6 +207,20 @@ def _pull_s3(uri: str, dest: Path) -> Path:
     return dest
 
 
+def _mint_ids(doc: dict[str, Any]) -> None:
+    """Replace dig.geneset's identifiers with DAPPER content digests, in place.
+
+    dig.geneset mints UUIDv5 for files and analyses and a 24-hex id for the gene
+    set. Those are deterministic but opaque and computed by a recipe we do not
+    control. DAPPER re-mints everything as `dapper:{ClassName}.{digest}` so one
+    documented algorithm covers the whole corpus — see schema/identity/README.md.
+    """
+    sys.path.insert(0, str(Path(__file__).parent.parent / "identity"))
+    from dapper_identity import assign_ids, load_schema  # noqa: PLC0415
+
+    assign_ids(doc, load_schema(Path(__file__).parent.parent / "dapper.yaml"))
+
+
 def convert_one(prov_path: Path, meta_path: Path | None, out_dir: Path,
                 overlay: dict[str, Any]) -> list[Path]:
     payload = json.loads(prov_path.read_text())
@@ -216,10 +230,11 @@ def convert_one(prov_path: Path, meta_path: Path | None, out_dir: Path,
         if not isinstance(graph, dict) or "nodes" not in graph:
             continue
         doc = convert_graph(graph, meta)
+        _mint_ids(doc)
         # standalone focus GeneSet node (enriched with overlay attribution)
-        focus_id = (meta.get("provenance", {}) or {}).get("focus_node_id", geneset_id)
-        focus = next((g for g in doc.get("gene_sets", []) if g["id"] == focus_id),
-                     (doc.get("gene_sets") or [None])[0])
+        # ids were just re-minted, so the dig.geneset focus_node_id no longer
+        # matches; the focus is simply the gene set this payload is keyed by.
+        focus = (doc.get("gene_sets") or [None])[0]
         safe = geneset_id.replace(":", "_").replace("/", "_")
         graph_out = out_dir / f"{safe}.dapper.yaml"
         graph_out.write_text(_dump(doc))

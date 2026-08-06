@@ -12,7 +12,7 @@
 #   uv run --with linkml linkml-validate -s dapper.yaml \
 #       -C CausalStep examples/example_causal_step.yaml
 
-id: nih:causalstep/reveal-pcsk9-ldlr-fh-0001/0
+id: dapper:CausalStep.6bUD8m24SI0_GNHYC0dfrW4lU5JI_0dz
 name: PCSK9 GOF increases LDLR lysosomal degradation
 step_index: 0
 step_subject: HGNC:20001

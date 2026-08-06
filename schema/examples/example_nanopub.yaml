@@ -15,7 +15,7 @@
 #   uv run --with linkml linkml-validate -s dapper.yaml \
 #       -C Nanopublication examples/example_nanopub.yaml
 
-id: nih:np/reveal-pcsk9-ldlr-fh-0001
+id: dapper:Nanopublication.gsdDy2aqWDeg-NFAz3KmS4DhwV_5Vs0_
 name: "REVEAL hypothesis: PCSK9 gain-of-function -> LDLR degradation -> familial hypercholesterolemia"
 label: "REVEAL hypothesis: PCSK9 GOF -> LDLR degradation -> FH"
 

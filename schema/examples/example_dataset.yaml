@@ -7,7 +7,11 @@
 # Cross-references are CURIEs pointing at other nodes' `id` (see
 # example_graph.yaml for the full node set they resolve to).
 
-id: doi:10.12345/example.dataset.v2
+# `id` is the computed content address; the DOI it was published under is
+# preserved as an alternate_identifier rather than displaced by it.
+id: dapper:Dataset.RZN4pby80ynDBrXyIfFE_a6vfKJa7NgN
+alternate_identifier:
+  - doi:10.12345/example.dataset.v2
 name: Example NIH Multi-Omics Dataset
 identifier_type: DOI
 version: 2.1.0

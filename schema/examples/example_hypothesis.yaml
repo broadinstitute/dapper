@@ -15,7 +15,7 @@
 #   uv run --with linkml linkml-validate -s dapper.yaml \
 #       -C Hypothesis examples/example_hypothesis.yaml
 
-id: nih:hypothesis/reveal-pcsk9-ldlr-fh-0001
+id: dapper:Hypothesis.Rd6eO_OEsWNyQvxwWY-MSd5ChEvSKVTg
 name: PCSK9 gain-of-function drives familial hypercholesterolemia via LDLR degradation
 hypothesis_label: PCSK9 GOF -> LDLR degradation -> FH
 

@@ -12,7 +12,7 @@
 # gene set is citable and mirror-protected identically to a dataset.
 # Cross-references are CURIEs pointing at the nodes in example_geneset_graph.yaml.
 
-id: geneset:402cf4a1f3682a2e5bf1b002
+id: dapper:GeneSet.30c6Z0KUtq3SZZvcrn8aQ00XplIUSdj3
 name: HuBMAP ASCT+B augmented marker gene-set library (model HZ2)
 description: >-
   HuBMAP ASCT+B augmented marker gene-set library using model HZ2: library built

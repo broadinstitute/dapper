@@ -48,7 +48,7 @@ description: >-
   awards, publications, hypotheses, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://creativecommons.org/licenses/by/4.0/
-version: 3.1.0
+version: 3.2.0
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
@@ -433,6 +433,7 @@ slots:
     required: true
   name:
     is_a: literal
+    mixins: [hashable]
     slot_uri: rdfs:label
     exact_mappings:
       - schema:name
@@ -454,6 +455,20 @@ slots:
       Abstract base for cross-references between nodes. Concrete reference
       slots declare `is_a: relationship` with `range: uriorcurie` and point at
       another node's `id`.
+  # --- identity axis (DAPPER-ID-1) -----------------------------------------
+  # Orthogonal to literal/relationship above: that axis says what a slot IS,
+  # this one says whether it CONSTITUTES the instance's identity. Every
+  # attribute declares exactly one, enforced by schema/identity/lint_identity.py.
+  hashable:
+    description: >-
+      Marks a slot as constituting the identity of its instance. Changing its
+      value changes the instance's digest and therefore its `id`.
+  unhashable:
+    description: >-
+      Marks a slot as excluded from the digest: temporal, environmental,
+      signature, mirror-observed, or a back-reference derivable from a forward
+      edge. Changing it MUST NOT change the instance's `id`.
+
   subject:
     slot_uri: rdf:subject
     range: uriorcurie
@@ -483,6 +498,23 @@ classes:
       - id
       - name
 
+  HashableNode:
+    is_a: Node
+    abstract: true
+    description: >-
+      A Node whose `id` is a computed content address of the form
+      `dapper:{ClassName}.{digest}` — the full LinkML class name, a dot, then a
+      GA4GH `sha512t24u` digest over the slots marked `hashable`.
+
+      The digest covers hashable slots ONLY. Timestamps, signatures, mirror
+      observations, workspace locations, and back-references are marked
+      `unhashable` so that re-running, re-signing, mirroring, or re-hosting an
+      artifact never changes what it is. See schema/identity/README.md for the
+      DAPPER-ID-1 profile and schema/trusty-identifiers.md for why this is
+      deliberately NOT a Trusty URI `RA` code.
+    annotations:
+      dapper:id_profile: DAPPER-ID-1
+
   Edge:
     abstract: true
     class_uri: rdf:Statement
@@ -511,6 +543,7 @@ classes:
     attributes:
       dcc_url:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:url
         close_mappings:
@@ -522,6 +555,7 @@ classes:
         description: URL to the source DCC portal page for this resource.
       drc_url:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:url
         close_mappings:
@@ -545,20 +579,40 @@ classes:
     attributes:
       access_level:
         is_a: literal
+        mixins: [hashable]
         range: AccessLevelEnum
         slot_uri: dcterms:accessRights
         close_mappings:
           - schema:conditionsOfAccess
         aliases:
           - accessRights
+      alternate_identifier:
+        is_a: literal
+        mixins: [hashable]
+        multivalued: true
+        slot_uri: dcterms:identifier
+        exact_mappings:
+          - datacite:hasIdentifier
+        description: >-
+          Externally-assigned persistent identifiers for this resource — a DOI,
+          an accession, a Handle, an ARK. `id` is DAPPER's own computed content
+          address (`dapper:{ClassName}.{digest}`), which answers "what exactly
+          is this record?". A DOI answers "what does the publisher call this,
+          and how do I cite it?". Both are worth keeping, so neither displaces
+          the other. `identifier_type` names the scheme.
+        annotations:
+          nih:profile_level: "3.2"
+          nih:source_standard: DataCite kernel-4 identifier/alternateIdentifiers
       controlled_access:
         is_a: literal
+        mixins: [hashable]
         range: boolean
         close_mappings:
           - dcterms:accessRights
       # --- inline attribution/provenance links (each is a graph edge) ---
       has_creator:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: schema:creator
@@ -573,11 +627,13 @@ classes:
           nih:source_standard: DataCite kernel-4 creators
       has_contributor:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:contributor
       funded_by:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: schema:funding
@@ -595,6 +651,7 @@ classes:
           nih:source_standard: DataCite kernel-4 fundingReference
       is_described_by:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:isReferencedBy
@@ -609,6 +666,7 @@ classes:
           nih:source_standard: DataCite kernel-4 relatedIdentifier/IsDescribedBy
       has_license:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: dcterms:license
         exact_mappings:
@@ -618,21 +676,25 @@ classes:
         description: CURIE/URI of the License node.
       was_generated_by:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: prov:wasGeneratedBy
         description: The Activity that generated/packaged this returned result.
       was_derived_from:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasDerivedFrom
       was_attributed_to:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasAttributedTo
       has_recommended_citation:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: dcterms:bibliographicCitation
         description: The authoritative RecommendedCitation node.
@@ -642,6 +704,7 @@ classes:
       # --- mirror (append-only; NOT authoritative) ---
       has_mirror_provenance:
         is_a: relationship
+        mixins: [unhashable]  # mirror-observed
         range: uriorcurie
         multivalued: true
         description: >-
@@ -652,7 +715,7 @@ classes:
           nih:append_only: true
 
   Dataset:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - ProvenancedResource
       # 3.0: lets a Dataset point at the DISMECH entry describing its science.
@@ -684,6 +747,7 @@ classes:
     attributes:
       identifier_type:
         is_a: literal
+        mixins: [hashable]
         range: IdentifierTypeEnum
         close_mappings:
           - datacite:usesIdentifierScheme
@@ -694,12 +758,14 @@ classes:
         description: Type of the dataset's persistent identifier (e.g. DOI).
       version:
         is_a: literal
+        mixins: [hashable]
         slot_uri: schema:version
         exact_mappings:
           - dcterms:hasVersion
         description: Dataset version string (e.g. "2.1.0").
       resource_type:
         is_a: literal
+        mixins: [hashable]
         range: ResourceTypeEnum
         slot_uri: dcterms:type
         aliases:
@@ -708,6 +774,7 @@ classes:
           nih:source_standard: DataCite kernel-4 resourceTypeGeneral
       publication_year:
         is_a: literal
+        mixins: [hashable]
         range: integer
         slot_uri: schema:datePublished
         close_mappings:
@@ -718,6 +785,7 @@ classes:
           nih:source_standard: DataCite kernel-4 publicationYear
       description:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
@@ -725,6 +793,7 @@ classes:
           - abstract
       publisher:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: dcterms:publisher
         exact_mappings:
@@ -735,6 +804,7 @@ classes:
       # --- 2.0 links ---
       has_data_use_term:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         broad_mappings:
@@ -749,6 +819,7 @@ classes:
           nih:profile_level: "2.0"
       has_drs_object:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: dcat:distribution
@@ -758,6 +829,7 @@ classes:
           nih:profile_level: "2.0"
       packaged_as:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcterms:isPartOf
@@ -765,6 +837,7 @@ classes:
           nih:profile_level: "2.0"
       has_workflow_provenance:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         annotations:
@@ -776,7 +849,7 @@ classes:
   # sets, variant sets, etc. extend Set the same way GeneSet does.
   # ======================================================================
   Set:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - ProvenancedResource
       - PortalLinked
@@ -798,6 +871,7 @@ classes:
     attributes:
       description:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
@@ -805,6 +879,7 @@ classes:
           - abstract
       members:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:hadMember
@@ -816,9 +891,11 @@ classes:
           artifact rather than enumerating members inline.
       member_type:
         is_a: literal
+        mixins: [hashable]
         description: The kind of member the set collects (e.g. gene, protein, variant).
       n_members:
         is_a: literal
+        mixins: [hashable]
         range: integer
         close_mappings:
           - schema:numberOfItems
@@ -843,37 +920,45 @@ classes:
     attributes:
       assay:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - obo:OBI_0000070      # assay
         description: Assay the gene set derives from (e.g. bulk, sc).
       data_type:
         is_a: literal
+        mixins: [hashable]
         description: Molecular data type (e.g. transcriptomics).
       organism:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:taxonomicRange
         description: Organism (e.g. human).
       genome_build:
         is_a: literal
+        mixins: [hashable]
         description: Reference genome build (e.g. hg38).
       n_genes:
         is_a: literal
+        mixins: [hashable]
         range: integer
         aliases:
           - n_members
         description: Count of unique genes in the set/library.
       n_sets:
         is_a: literal
+        mixins: [hashable]
         range: integer
         aliases:
           - n_sets_emitted
         description: Number of named gene sets when this is a library.
       term:
         is_a: literal
+        mixins: [hashable]
         description: The term/label a named gene set corresponds to.
       term_prefix:
         is_a: literal
+        mixins: [hashable]
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
 
   Agent:
@@ -890,7 +975,7 @@ classes:
       party). Applied to Node subclasses.
 
   Person:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - Agent
     class_uri: schema:Person
@@ -903,6 +988,7 @@ classes:
     attributes:
       given_name:
         is_a: literal
+        mixins: [hashable]
         slot_uri: schema:givenName
         exact_mappings:
           - foaf:givenName
@@ -911,6 +997,7 @@ classes:
           - first name
       family_name:
         is_a: literal
+        mixins: [hashable]
         slot_uri: schema:familyName
         exact_mappings:
           - foaf:familyName
@@ -920,6 +1007,7 @@ classes:
           - last name
       orcid:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
@@ -931,6 +1019,7 @@ classes:
         description: ORCID iD (https://orcid.org/....).
       affiliation:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: schema:affiliation
@@ -939,11 +1028,13 @@ classes:
         description: CURIE/URI of an affiliated Organization.
       creator_role:
         is_a: literal
+        mixins: [hashable]
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
       contributor_role:
         is_a: literal
+        mixins: [hashable]
         range: ContributorRoleEnum
         close_mappings:
           - dcterms:contributor
@@ -951,7 +1042,7 @@ classes:
           - contributorType
 
   Organization:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - Agent
     class_uri: schema:Organization
@@ -964,6 +1055,7 @@ classes:
     attributes:
       ror:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
@@ -974,11 +1066,13 @@ classes:
         description: ROR identifier (https://ror.org/...).
       creator_role:
         is_a: literal
+        mixins: [hashable]
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
       contributor_role:
         is_a: literal
+        mixins: [hashable]
         range: ContributorRoleEnum
         close_mappings:
           - dcterms:contributor
@@ -986,7 +1080,7 @@ classes:
           - contributorType
 
   Award:
-    is_a: Node
+    is_a: HashableNode
     class_uri: schema:MonetaryGrant
     exact_mappings:
       - frapo:Grant
@@ -1008,6 +1102,7 @@ classes:
     attributes:
       funder_name:
         is_a: literal
+        mixins: [hashable]
         slot_uri: frapo:hasFundingAgency
         close_mappings:
           - schema:funder
@@ -1016,6 +1111,7 @@ classes:
           - funderName
       funder_identifier:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
@@ -1024,6 +1120,7 @@ classes:
           - funderIdentifier
       funder_identifier_type:
         is_a: literal
+        mixins: [hashable]
         range: FunderIdentifierTypeEnum
         close_mappings:
           - datacite:usesIdentifierScheme
@@ -1031,6 +1128,7 @@ classes:
           - funderIdentifierType
       award_number:
         is_a: literal
+        mixins: [hashable]
         slot_uri: frapo:hasGrantNumber
         close_mappings:
           - schema:identifier
@@ -1039,23 +1137,26 @@ classes:
           - grant number
       award_uri:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:url
         aliases:
           - awardURI
       award_title:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:title
         aliases:
           - awardTitle
       grant_administering_institute:
         is_a: literal
+        mixins: [hashable]
         aliases:
           - administering IC
         description: NIH institute/center administering the grant (e.g. NHLBI).
 
   Publication:
-    is_a: Node
+    is_a: HashableNode
     class_uri: schema:ScholarlyArticle
     exact_mappings:
       - fabio:ResearchPaper
@@ -1078,11 +1179,13 @@ classes:
     attributes:
       title:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:title
         exact_mappings:
           - schema:name
       doi:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
@@ -1091,6 +1194,7 @@ classes:
           - DOI
       pmid:
         is_a: literal
+        mixins: [hashable]
         slot_uri: fabio:hasPubMedId
         aliases:
           - PMID
@@ -1098,11 +1202,13 @@ classes:
         description: PubMed identifier.
       citation:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
       relationship_type:
         is_a: literal
+        mixins: [hashable]
         range: PublicationRelationshipEnum
         close_mappings:
           - dcterms:relation
@@ -1112,7 +1218,7 @@ classes:
           nih:source_standard: DataCite kernel-4 relationType
 
   License:
-    is_a: Node
+    is_a: HashableNode
     class_uri: dcterms:LicenseDocument
     exact_mappings:
       - spdx:License
@@ -1125,12 +1231,14 @@ classes:
     attributes:
       url:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:url
         close_mappings:
           - dcterms:license
       usage_terms:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:rights
         close_mappings:
           - schema:usageInfo
@@ -1139,7 +1247,7 @@ classes:
         description: Human-readable usage terms / obligations.
 
   Activity:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - PortalLinked
     class_uri: prov:Activity
@@ -1164,15 +1272,18 @@ classes:
     attributes:
       description:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
       activity_type:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:type
         description: e.g. MCPResourceSerialization.
       command:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:command
         annotations:
@@ -1180,11 +1291,13 @@ classes:
         description: The canonical (replay) command that ran this activity.
       observed_command:
         is_a: literal
+        mixins: [hashable]
         annotations:
           nih:source_standard: dig.geneset analysis.observed_command
         description: The original runtime command captured, if different from replay.
       script_url:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:codeRepository
@@ -1193,12 +1306,14 @@ classes:
         description: URL to the script/notebook implementing this activity.
       repo_url:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:codeRepository
         description: Source code repository URL.
       code_version:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:softwareVersion
         aliases:
@@ -1209,16 +1324,19 @@ classes:
         description: Version or git commit of the code that ran.
       entrypoint:
         is_a: literal
+        mixins: [hashable]
         annotations:
           nih:source_standard: dig.geneset analysis.environment.entrypoint
         description: CLI/module entrypoint invoked.
       container_image:
         is_a: literal
+        mixins: [hashable]
         annotations:
           nih:source_standard: dig.geneset analysis.environment.container_image
         description: Container image the activity ran in, if any.
       software_name:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:SoftwareApplication
           - prov:SoftwareAgent
@@ -1226,10 +1344,12 @@ classes:
           - software
       software_version:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:softwareVersion
       generated_at_time:
         is_a: literal
+        mixins: [unhashable]  # temporal
         range: datetime
         slot_uri: prov:generatedAtTime
         close_mappings:
@@ -1238,6 +1358,7 @@ classes:
           - generatedAtTime
       has_lineage_step:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:hasPart
@@ -1245,6 +1366,7 @@ classes:
           - prov:hadMember
       has_agentic_workspace:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: >-
@@ -1256,7 +1378,7 @@ classes:
           nih:profile_level: "3.1"
 
   AgenticWorkspace:
-    is_a: Node
+    is_a: HashableNode
     class_uri: prov:Plan
     description: >-
       A workspace in which an AI agent can re-run an Activity, plus the prompt
@@ -1284,6 +1406,7 @@ classes:
     attributes:
       workspace_url:
         is_a: literal
+        mixins: [unhashable]  # environmental
         range: uri
         slot_uri: schema:url
         description: >-
@@ -1297,6 +1420,7 @@ classes:
           nih:profile_level: "3.1"
       workspace_key:
         is_a: literal
+        mixins: [hashable]
         description: >-
           The hosting platform's own identifier for the workspace, when it
           differs from this node's `id` — for an akleao fork, the slug in its
@@ -1305,12 +1429,14 @@ classes:
           nih:profile_level: "3.1"
       platform:
         is_a: literal
+        mixins: [unhashable]  # environmental
         description: >-
           The system hosting the workspace, e.g. "akleao", "Claude Code".
         annotations:
           nih:profile_level: "3.1"
       regeneration_prompt:
         is_a: literal
+        mixins: [hashable]
         description: >-
           The prompt that asks an agent to regenerate this analysis. Write it
           self-contained: an agent opening the workspace cold should be able to
@@ -1319,6 +1445,7 @@ classes:
           nih:profile_level: "3.1"
       agent_model:
         is_a: literal
+        mixins: [hashable]
         description: >-
           Model that ran, or is expected to run, the prompt (e.g.
           "claude-fable-5"). Recorded so a divergent re-run can be explained.
@@ -1326,6 +1453,7 @@ classes:
           nih:profile_level: "3.1"
       agent_role:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           The software agent acting in this workspace — an npx:SoftwareAgent,
@@ -1337,13 +1465,14 @@ classes:
           nih:profile_level: "3.1"
       last_run:
         is_a: literal
+        mixins: [unhashable]  # temporal
         range: datetime
         description: When the prompt was last executed in this workspace.
         annotations:
           nih:profile_level: "3.1"
 
   LineageStep:
-    is_a: Node
+    is_a: HashableNode
     close_mappings:
       - prov:Activity
     aliases:
@@ -1353,6 +1482,7 @@ classes:
     attributes:
       step:
         is_a: literal
+        mixins: [hashable]
         range: integer
         close_mappings:
           - schema:position
@@ -1360,17 +1490,19 @@ classes:
           - order
       activity:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - prov:Activity
         description: What happened in this step.
       responsible_party:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - prov:wasAssociatedWith
         description: Party responsible for this step (name or CURIE).
 
   RecommendedCitation:
-    is_a: Node
+    is_a: HashableNode
     related_mappings:
       - dcterms:bibliographicCitation
     aliases:
@@ -1383,16 +1515,18 @@ classes:
     attributes:
       citation_text:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
       required_elements:
         is_a: literal
+        mixins: [hashable]
         multivalued: true
         description: Elements a compliant citation must include.
 
   MirrorProvenance:
-    is_a: Node
+    is_a: HashableNode
     class_uri: prov:Entity
     close_mappings:
       - prov:Bundle
@@ -1409,28 +1543,34 @@ classes:
     attributes:
       mirror_provider:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - prov:Agent
         description: e.g. OpenAI, Anthropic, Google, Microsoft, AWS.
       mirror_region:
         is_a: literal
+        mixins: [hashable]
       synced_from:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - prov:wasDerivedFrom
         description: Source system the object was synced from (e.g. nih-mcp-gateway).
       sync_time:
         is_a: literal
+        mixins: [unhashable]  # temporal
         range: datetime
         close_mappings:
           - prov:generatedAtTime
       source_manifest_hash:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
         description: sha256 of the authoritative source manifest.
       mirror_object_hash:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
         description: sha256 of the mirrored object.
@@ -1441,7 +1581,7 @@ classes:
   # ======================================================================
 
   DrsObject:
-    is_a: Node
+    is_a: HashableNode
     exact_mappings:
       - dcat:Distribution
     close_mappings:
@@ -1461,10 +1601,12 @@ classes:
     attributes:
       drs_id:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:identifier
       self_uri:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcat:accessURL
@@ -1473,18 +1615,21 @@ classes:
         description: The drs:// self URI.
       size:
         is_a: literal
+        mixins: [hashable]
         range: integer
         slot_uri: dcat:byteSize
         close_mappings:
           - schema:contentSize
       checksum_sha256:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
         aliases:
           - sha256
       mime_type:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcat:mediaType
         close_mappings:
           - schema:encodingFormat
@@ -1492,13 +1637,14 @@ classes:
           - mediaType
       access_methods:
         is_a: literal
+        mixins: [hashable]
         multivalued: true
         close_mappings:
           - dcat:accessService
         description: Access method descriptors (e.g. s3, gs, https).
 
   C2M2File:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - PortalLinked
     exact_mappings:
@@ -1522,17 +1668,20 @@ classes:
     attributes:
       description:
         is_a: literal
+        mixins: [hashable]
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
       filename:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - schema:name
         annotations:
           nih:source_standard: C2M2 filename
       persistent_id:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - datacite:hasIdentifier
         annotations:
@@ -1540,6 +1689,7 @@ classes:
         description: C2M2 persistent identifier (UUID).
       local_id:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcat:accessURL
@@ -1548,6 +1698,7 @@ classes:
         description: DCC-local identifier, typically a bucket path (gs://, s3://) or URL.
       c2m2_uuid:
         is_a: literal
+        mixins: [hashable]
         aliases:
           - _uuid
         annotations:
@@ -1555,6 +1706,7 @@ classes:
         description: Internal C2M2 UUID for the file node.
       md5:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
         annotations:
@@ -1562,6 +1714,7 @@ classes:
         description: Base64-encoded MD5 checksum of the file.
       sha256:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
         annotations:
@@ -1569,6 +1722,7 @@ classes:
         description: Hex SHA-256 checksum of the file (from the metadata sidecar).
       size_in_bytes:
         is_a: literal
+        mixins: [hashable]
         range: integer
         slot_uri: dcat:byteSize
         close_mappings:
@@ -1577,7 +1731,7 @@ classes:
           nih:source_standard: C2M2 size_in_bytes
 
   DataUseTerm:
-    is_a: Node
+    is_a: HashableNode
     broad_mappings:
       - duo:0000001      # data use permission
       - duo:0000017      # data use modifier
@@ -1595,6 +1749,7 @@ classes:
     attributes:
       duo_id:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:identifier
@@ -1603,23 +1758,26 @@ classes:
         description: DUO term CURIE (e.g. DUO:0000042).
       duo_label:
         is_a: literal
+        mixins: [hashable]
         slot_uri: rdfs:label
         description: Human-readable DUO term label (e.g. "general research use").
       permission:
         is_a: literal
+        mixins: [hashable]
         range: DataUsePermissionEnum
         broad_mappings:
           - duo:0000001
         description: The primary data use permission, if this term is a permission.
       modifier:
         is_a: literal
+        mixins: [hashable]
         range: DataUseModifierEnum
         broad_mappings:
           - duo:0000017
         description: The data use modifier, if this term is a modifier.
 
   RoCratePackage:
-    is_a: Node
+    is_a: HashableNode
     close_mappings:
       - schema:Dataset
       - dcat:Dataset
@@ -1636,6 +1794,7 @@ classes:
     attributes:
       conforms_to:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: dcterms:conformsTo
         aliases:
@@ -1643,19 +1802,21 @@ classes:
         description: RO-Crate spec/profile the crate conforms to.
       ro_crate_metadata_ref:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:mainEntity
         description: Reference to the ro-crate-metadata.json descriptor.
       root_dataset_ref:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:about
         description: Reference to the crate's root Dataset node.
 
   BioComputeObject:
-    is_a: Node
+    is_a: HashableNode
     close_mappings:
       - prov:Plan
       - schema:HowTo
@@ -1675,37 +1836,47 @@ classes:
     attributes:
       bco_id:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - schema:identifier
       bco_spec_version:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - dcterms:conformsTo
       etag:
         is_a: literal
+        mixins: [hashable]
         close_mappings:
           - spdx:checksum
       provenance_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
       usability_domain:
         is_a: literal
+        mixins: [hashable]
         multivalued: true
       description_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
       execution_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
       io_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
       parametric_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
       error_domain:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
 
   # ======================================================================
@@ -1788,6 +1959,7 @@ classes:
     attributes:
       edge_role:
         is_a: literal
+        mixins: [hashable]
         range: ProvEdgeRoleEnum
         description: Which dig.geneset edge label this reifies.
 
@@ -1906,6 +2078,7 @@ classes:
     attributes:
       dismech_class:
         is_a: literal
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           CURIE of the DISMECH class this node corresponds to, e.g.
@@ -1915,6 +2088,7 @@ classes:
           nih:profile_level: "3.0"
       dismech_entry_key:
         is_a: literal
+        mixins: [hashable]
         description: >-
           The upstream DISMECH string key for this entry — `Disease.name` for a
           disease, `hypothesis_group_id` for a mechanistic hypothesis. DISMECH
@@ -1924,6 +2098,7 @@ classes:
           nih:profile_level: "3.0"
       dismech_disease_term:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           The MONDO CURIE of the DISMECH disease this node attaches to (DISMECH
@@ -1934,6 +2109,7 @@ classes:
           nih:profile_level: "3.0"
       dismech_source_url:
         is_a: literal
+        mixins: [hashable]
         range: uri
         description: >-
           Deep link to the entry on https://dismech.monarchinitiative.org, for
@@ -1978,7 +2154,7 @@ classes:
 # ===========================================================================
 
   Nanopublication:
-    is_a: Node
+    is_a: HashableNode
     class_uri: np:Nanopublication
     description: >-
       A nanopublication: an assertion plus its provenance plus its publication
@@ -1994,6 +2170,7 @@ classes:
     attributes:
       has_assertion:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: np:hasAssertion
         description: >-
@@ -2003,6 +2180,7 @@ classes:
           nih:np_graph: Head
       has_provenance:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: np:hasProvenance
         description: >-
@@ -2013,6 +2191,7 @@ classes:
           nih:np_graph: Head
       has_publication_info:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: np:hasPublicationInfo
         description: >-
@@ -2022,6 +2201,7 @@ classes:
           nih:np_graph: Head
       nanopub_type:
         is_a: literal
+        mixins: [hashable]
         range: NanopubTypeEnum
         multivalued: true
         slot_uri: npx:hasNanopubType
@@ -2029,6 +2209,7 @@ classes:
           nih:np_graph: pubinfo
       has_signature_element:
         is_a: relationship
+        mixins: [unhashable]  # signature
         range: uriorcurie
         slot_uri: npx:hasSignatureElement
         description: The NanopubSignature covering this nanopub.
@@ -2036,6 +2217,7 @@ classes:
           nih:np_graph: pubinfo
       supersedes:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: npx:supersedes
         description: >-
@@ -2045,6 +2227,7 @@ classes:
           nih:np_graph: pubinfo
       invalidates:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: npx:invalidates
@@ -2052,6 +2235,7 @@ classes:
           nih:np_graph: pubinfo
       was_created_at:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: npx:wasCreatedAt
         description: >-
@@ -2061,6 +2245,7 @@ classes:
           nih:np_graph: pubinfo
       created_from_template:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: ntemplate:wasCreatedFromTemplate
@@ -2073,12 +2258,14 @@ classes:
           nih:np_graph: pubinfo
       created:
         is_a: literal
+        mixins: [unhashable]  # temporal
         range: datetime
         slot_uri: dcterms:created
         annotations:
           nih:np_graph: pubinfo
       creator:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:creator
@@ -2087,18 +2274,36 @@ classes:
           nih:np_graph: pubinfo
       nanopub_license:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: dcterms:license
         annotations:
           nih:np_graph: pubinfo
       label:
         is_a: literal
+        mixins: [hashable]
         slot_uri: rdfs:label
         annotations:
           nih:np_graph: pubinfo
+      trusty_uri:
+        is_a: literal
+        mixins: [unhashable]   # assigned after the content exists
+        range: uri
+        description: >-
+          The real Trusty URI (an `RA…` artifact code) minted by nanopub-java
+          when this nanopublication is actually published. NOT computed by
+          schema/identity — see schema/trusty-identifiers.md, which is explicit
+          that `RA` must not be reimplemented or approximated.
+
+          Distinct from `id`, which is this repository's own
+          `dapper:Nanopublication.{digest}` content address. Two identifiers,
+          two different guarantees: keep them separate and never conflate them.
+        annotations:
+          nih:profile_level: "3.2"
+          nih:np_graph: Head
 
   NanopubAssertion:
-    is_a: Node
+    is_a: HashableNode
     class_uri: np:Assertion
     description: >-
       The assertion graph — the claim being made, and the only part a reader is
@@ -2110,12 +2315,14 @@ classes:
     attributes:
       asserts:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: hycl:claims
         description: >-
           The claim carried by this assertion graph — typically a Hypothesis id.
       as_sentence:
         is_a: literal
+        mixins: [hashable]
         slot_uri: npx:asSentence
         description: >-
           An English rendering of the assertion. When it is a single
@@ -2125,7 +2332,7 @@ classes:
           - hycl:AIDA-Sentence
 
   NanopubProvenance:
-    is_a: Node
+    is_a: HashableNode
     class_uri: np:Provenance
     description: >-
       The provenance graph — where the ASSERTION came from (not where the
@@ -2137,10 +2344,12 @@ classes:
     attributes:
       provenance_of:
         is_a: relationship
+        mixins: [unhashable]  # back-reference
         range: uriorcurie
         description: The assertion graph this provenance describes.
       was_attributed_to:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasAttributedTo
@@ -2150,11 +2359,13 @@ classes:
           as REVEAL.
       generated_by_activity:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: prov:wasGeneratedBy
         description: NIH-DAPP Activity id that produced the assertion.
       derived_from:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasDerivedFrom
@@ -2163,7 +2374,7 @@ classes:
           Publication ids.
 
   NanopubPublicationInfo:
-    is_a: Node
+    is_a: HashableNode
     class_uri: np:PublicationInfo
     description: >-
       The publication-info graph — metadata about the NANOPUB itself: who
@@ -2175,11 +2386,12 @@ classes:
     attributes:
       pubinfo_of:
         is_a: relationship
+        mixins: [unhashable]  # back-reference
         range: uriorcurie
         description: The nanopub this publication info describes.
 
   NanopubSignature:
-    is_a: Node
+    is_a: HashableNode
     class_uri: npx:NanopubSignatureElement
     description: >-
       The cryptographic signature over a nanopublication. Published nanopubs in
@@ -2193,23 +2405,28 @@ classes:
     attributes:
       has_algorithm:
         is_a: literal
+        mixins: [hashable]
         slot_uri: npx:hasAlgorithm
         description: Signature algorithm, e.g. "RSA".
       has_public_key:
         is_a: literal
+        mixins: [hashable]
         slot_uri: npx:hasPublicKey
         description: Base64 public key of the signer.
       has_signature:
         is_a: literal
+        mixins: [hashable]
         slot_uri: npx:hasSignature
         description: Base64 signature value.
       signed_by:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         slot_uri: npx:signedBy
         description: Agent that signed — an ORCID.
       has_signature_target:
         is_a: relationship
+        mixins: [unhashable]  # signature + back-reference
         range: uriorcurie
         slot_uri: npx:hasSignatureTarget
         description: The nanopub this signature covers.
@@ -2331,7 +2548,7 @@ classes:
 # ===========================================================================
 
   Hypothesis:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - ProvenancedResource
       - DismechLinked
@@ -2351,11 +2568,13 @@ classes:
     attributes:
       hypothesis_label:
         is_a: literal
+        mixins: [hashable]
         description: Short human-readable label, e.g. "PCSK9 GOF -> LDLR degradation -> FH".
         exact_mappings:
           - dismech:hypothesis_label
       statement:
         is_a: literal
+        mixins: [hashable]
         slot_uri: npx:asSentence
         description: >-
           The hypothesis as one self-contained English sentence with an
@@ -2366,30 +2585,36 @@ classes:
           - hycl:AIDA-Sentence
       status:
         is_a: literal
+        mixins: [hashable]
         range: HypothesisStatusEnum
         close_mappings:
           - dismech:status
       description:
         is_a: literal
+        mixins: [hashable]
         description: Longer prose statement of the hypothesis and its rationale.
       subject_entity:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           The upstream end of the chain. Generic form; for REVEAL's initial
           scope this is a gene (see `subject_gene`).
       subject_gene:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           Convenience accessor for the gene at the upstream end, as an HGNC
           CURIE (e.g. `HGNC:20001` for PCSK9). When set, SHOULD equal `subject_entity`.
       object_entity:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: The downstream end of the chain. Generic form.
       object_disease:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           Convenience accessor for the disease at the downstream end, as a
@@ -2398,6 +2623,7 @@ classes:
           (`Disease.disease_term`).
       has_causal_step:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: >-
@@ -2406,6 +2632,7 @@ classes:
           so the chain survives set-valued RDF round trips.
       applies_to_subtypes:
         is_a: literal
+        mixins: [hashable]
         multivalued: true
         description: >-
           Disease subtypes this hypothesis is scoped to. Mirrors DISMECH
@@ -2414,6 +2641,7 @@ classes:
           - dismech:applies_to_subtypes
       confidence:
         is_a: literal
+        mixins: [hashable]
         range: float
         minimum_value: 0.0
         maximum_value: 1.0
@@ -2423,11 +2651,13 @@ classes:
           confidence and no `has_evidence` is not publishable.
       has_evidence:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: EvidenceItem ids supporting or refuting this hypothesis.
       asserted_in:
         is_a: relationship
+        mixins: [unhashable]  # back-reference
         range: uriorcurie
         multivalued: true
         description: >-
@@ -2436,6 +2666,7 @@ classes:
           direction (nanopubs that support it).
       supported_by_nanopub:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: >-
@@ -2454,6 +2685,7 @@ classes:
           claim stable while the body of support grows.
       refuted_by_nanopub:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: >-
@@ -2462,7 +2694,7 @@ classes:
           hypothesis can carry both and be judged on the balance.
 
   CausalStep:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - DismechLinked
     description: >-
@@ -2478,6 +2710,7 @@ classes:
     attributes:
       step_index:
         is_a: literal
+        mixins: [hashable]
         range: integer
         minimum_value: 0
         description: >-
@@ -2485,10 +2718,12 @@ classes:
           because RDF graphs are unordered.
       step_subject:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: Upstream end of this step (gene, variant, mechanism, phenotype, ...).
       step_object:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           Downstream end of this step. Corresponds to DISMECH `CausalEdge.target`.
@@ -2496,6 +2731,7 @@ classes:
           - dismech:target
       causal_link_type:
         is_a: literal
+        mixins: [hashable]
         range: CausalLinkTypeEnum
         description: >-
           Directness of the step. Values are DISMECH's verbatim.
@@ -2503,6 +2739,7 @@ classes:
           - dismech:causal_link_type
       intermediate_mechanisms:
         is_a: literal
+        mixins: [hashable]
         multivalued: true
         description: >-
           Known intervening mechanisms, required in spirit when
@@ -2511,19 +2748,22 @@ classes:
           - dismech:intermediate_mechanisms
       via_mechanism:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: Mechanism node ids for this step (structured counterpart of the above).
       description:
         is_a: literal
+        mixins: [hashable]
       has_evidence:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: EvidenceItem ids for this specific step.
 
   Mechanism:
-    is_a: Node
+    is_a: HashableNode
     mixins:
       - DismechLinked
     description: >-
@@ -2541,14 +2781,16 @@ classes:
     attributes:
       description:
         is_a: literal
+        mixins: [hashable]
       biological_process:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         multivalued: true
         description: GO biological process CURIE(s), e.g. `obo:GO_0006629`.
 
   EvidenceItem:
-    is_a: Node
+    is_a: HashableNode
     description: >-
       A single piece of evidence for or against a claim. Shaped as DISMECH's
       `EvidenceItem` so evidence transfers between the two models intact.
@@ -2562,6 +2804,7 @@ classes:
     attributes:
       reference:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           The publication this evidence comes from — a Publication node id, or
@@ -2570,31 +2813,37 @@ classes:
           - dismech:reference
       reference_title:
         is_a: literal
+        mixins: [hashable]
         exact_mappings:
           - dismech:reference_title
       direction:
         is_a: literal
+        mixins: [hashable]
         range: EvidenceDirectionEnum
         description: Whether this evidence supports or refutes the claim.
         close_mappings:
           - dismech:supports
       evidence_source:
         is_a: literal
+        mixins: [hashable]
         description: Where the evidence was drawn from (database, deep-research run, ...).
         exact_mappings:
           - dismech:evidence_source
       snippet:
         is_a: literal
+        mixins: [hashable]
         description: Verbatim quoted passage supporting the claim.
         exact_mappings:
           - dismech:snippet
       explanation:
         is_a: literal
+        mixins: [hashable]
         description: Curator/agent explanation of how the snippet bears on the claim.
         exact_mappings:
           - dismech:explanation
       from_nanopub:
         is_a: relationship
+        mixins: [hashable]
         range: uriorcurie
         description: >-
           The nanopublication this evidence is drawn from, when the evidence is

@@ -1,0 +1,155 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyyaml", "rdflib", "linkml-runtime"]
+# ///
+"""CI gate for DAPPER-ID-1 identity invariants.
+
+`linkml-validate` proves instances match the schema. It cannot prove that
+identifiers are *computable*, *stable* or *unique*, and every check below exists
+because its absence produced a real bug during implementation:
+
+  1. total marking     — every slot is hashable XOR unhashable
+  2. hierarchy         — every concrete Node descends from HashableNode
+  3. non-empty digest  — no class hashes over nothing
+                         (NanopubSignature was fully unhashable, so every
+                          signature in the corpus collided on one digest)
+  4. acyclic           — the hashable reference graph is a DAG
+                         (nanopub back-references formed 3 cycles)
+  5. ids match content — every example id equals its recomputed digest
+  6. unique ids        — no two nodes in a document share an id
+                         (two under-specified stubs earned the same address)
+
+Usage:
+    uv run schema/identity/lint_identity.py
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import yaml
+
+sys.path.insert(0, str(Path(__file__).parent))
+from dapper_identity import (  # noqa: E402
+    DOC_GROUPS,
+    SCHEMA_PATH,
+    _iter_nodes,
+    compute_id,
+    hashable_slot_names,
+    load_schema,
+    unmarked_slots,
+)
+
+EXAMPLES = Path(__file__).parent.parent / "examples"
+GRAPH_DOCS = ["example_geneset_graph.yaml", "example_claim_provenance_trace.yaml"]
+
+
+def main() -> int:
+    sv = load_schema(SCHEMA_PATH)
+    failures: list[str] = []
+
+    concrete = [
+        cn for cn in sv.all_classes()
+        if not sv.get_class(cn).abstract and not sv.get_class(cn).mixin
+    ]
+
+    # Only Node descendants get identifiers. Edge classes carry
+    # subject/predicate/object and are deliberately not content-addressed, so
+    # marking their slots would be meaningless.
+    node_desc = [cn for cn in concrete if "Node" in sv.class_ancestors(cn)]
+
+    # --- 1. total marking --------------------------------------------------
+    unmarked = {cn: unmarked_slots(sv, cn) for cn in node_desc}
+    unmarked = {cn: s for cn, s in unmarked.items() if s}
+    print(f"1. total marking      : {len(node_desc) - len(unmarked)}/{len(node_desc)} Node classes fully marked")
+    for cn, slots in sorted(unmarked.items()):
+        failures.append(f"{cn}: slots with neither hashable nor unhashable: {slots}")
+
+    # --- 2. hierarchy ------------------------------------------------------
+    missing = [cn for cn in node_desc if "HashableNode" not in sv.class_ancestors(cn)]
+    print(f"2. hierarchy          : {len(node_desc) - len(missing)}/{len(node_desc)} Node classes are HashableNode")
+    for cn in missing:
+        failures.append(f"{cn} descends from Node but not HashableNode — it would get no identifier")
+
+    # --- 3. non-empty digest input ----------------------------------------
+    empty = [cn for cn in node_desc if not hashable_slot_names(sv, cn)]
+    print(f"3. non-empty digest   : {len(node_desc) - len(empty)}/{len(node_desc)} classes hash over >=1 slot")
+    for cn in empty:
+        failures.append(
+            f"{cn} has NO hashable slots — every instance would collide on one constant digest"
+        )
+
+    # --- 4/5/6. per-document checks ---------------------------------------
+    for name in GRAPH_DOCS:
+        path = EXAMPLES / name
+        if not path.exists():
+            continue
+        doc = yaml.safe_load(path.read_text())
+        nodes = {n["id"]: (c, n) for _, c, n in _iter_nodes(doc)}
+
+        # 4. acyclic over hashable references
+        deps = {}
+        for nid, (cn, node) in nodes.items():
+            refs = set()
+            for slot in hashable_slot_names(sv, cn):
+                val = node.get(slot)
+                for item in (val if isinstance(val, list) else [val]):
+                    if isinstance(item, str) and item in nodes and item != nid:
+                        refs.add(item)
+            deps[nid] = refs
+        state, cycles = {}, []
+
+        def visit(nid, trail):
+            if state.get(nid) == 2:
+                return
+            if state.get(nid) == 1:
+                cycles.append(" -> ".join(trail[trail.index(nid):] + (nid,)))
+                return
+            state[nid] = 1
+            for d in sorted(deps[nid]):
+                visit(d, trail + (nid,))
+            state[nid] = 2
+
+        for nid in sorted(nodes):
+            visit(nid, ())
+        for c in cycles:
+            failures.append(f"{name}: cycle in hashable references: {c}")
+
+        # 5. ids match content — only meaningful once ids are minted
+        minted = [i for i in nodes if i.startswith("dapper:")]
+        mismatches = []
+        if minted:
+            for nid, (cn, node) in nodes.items():
+                expected = compute_id({k: v for k, v in node.items() if k != "id"}, cn, sv, self_id=nid)
+                if nid != expected:
+                    mismatches.append(f"{name}: {cn} id {nid} != content digest {expected}")
+        failures.extend(mismatches)
+
+        # 6. unique ids
+        seen, dupes = set(), set()
+        for _, _, node in _iter_nodes(doc):
+            if node["id"] in seen:
+                dupes.add(node["id"])
+            seen.add(node["id"])
+        for d in sorted(dupes):
+            failures.append(f"{name}: duplicate id {d} — two nodes share one address")
+
+        status = "minted" if minted else "not yet minted"
+        print(
+            f"   {name}: {len(nodes)} nodes, {len(cycles)} cycle(s), "
+            f"{len(mismatches)} id mismatch(es), {len(dupes)} duplicate(s) [{status}]"
+        )
+
+    print()
+    if failures:
+        for f in failures:
+            print(f"  FAIL {f}")
+        print(f"\n{len(failures)} failure(s)")
+        return 1
+    print("PASS — all identity invariants hold")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

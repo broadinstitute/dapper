@@ -15,9 +15,28 @@ repository tooling.
 schema/
   dapper.yaml               # current root model
   trusty-identifiers.md     # Trusty URI and nanopublication design notes
+  identity/                 # computed content identifiers (DAPPER-ID-1)
   examples/                 # LinkML instance and graph examples
   converter/                # Source-data to model converters
 ```
+
+## Identifiers
+
+Every object carries a computed content address, `dapper:{ClassName}.{digest}` — a GA4GH
+`sha512t24u` digest over the fields that constitute what the object *is*. Timestamps, signatures and
+mirror observations are excluded, so re-running a pipeline or re-signing a nanopublication does not
+change an identifier; changing the analysis does.
+
+**Identifiers are never written by hand.** Leave `id` out of your source data and let the tool mint
+it. To turn a pile of gene-set runs into one identified collection:
+
+```bash
+uv run schema/identity/mint.py /path/to/your/genesets -o collection.yaml
+uv run schema/identity/dapper_identity.py verify collection.yaml
+```
+
+`schema/identity/README.md` has the walkthrough, the full `DAPPER-ID-1` profile, and why this is
+deliberately *not* a Trusty URI.
 
 Additional model types should be added as separate YAML modules under
 `schema/`, with imports expressed relative to `schema/`. Shared vocabulary,
