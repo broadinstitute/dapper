@@ -7,7 +7,7 @@
 
 # ---- Agents (creators / contributors) ----
 persons:
-  - id: dapper:Person.nVVfQgDBetxff6PYxDiZrH9lrs6Zk1YG
+  - id: dapper:Person.cEyDrWdOBBmkLZox6LBUnu15fQgVHhVy
     name: Jane A. Smith
     given_name: Jane
     family_name: Smith
@@ -15,7 +15,7 @@ persons:
     affiliation:
       - ror:012345678
     creator_role: PrincipalInvestigator
-  - id: dapper:Person.15B6HcCazp_08smpTsS_3dqHqTDcFPjx
+  - id: dapper:Person.HUlrtGMGpwbY9k3QyHrZhHBolyjdYsI6
     name: Alex R. Lee
     given_name: Alex
     family_name: Lee
@@ -23,10 +23,10 @@ persons:
     contributor_role: DataCurator
 
 organizations:
-  - id: dapper:Organization.INxs46BXeqZKYlcZDojrL3607UKs-va6
+  - id: dapper:Organization.v0EMoT5DDWpNBPvsCkpGIr3hd4rhQPty
     name: National Institutes of Health
     ror: ror:0155zta11
-  - id: dapper:Organization.7GdsJqwcvYO2uSDpo37g-bipsQRAvgHp
+  - id: dapper:Organization.9m4Jx-OUIW81M97iE23jRNfyL151wHeW
     name: Example NIH Consortium
     ror: ror:04abcde12
     creator_role: Consortium
@@ -145,7 +145,7 @@ ro_crate_packages:
     root_dataset_ref: doi:10.12345/example.dataset.v2
 
 bio_compute_objects:
-  - id: dapper:BioComputeObject.6XqeSIVR1UecaZSb9yOtYg-l99d4Nclw
+  - id: dapper:BioComputeObject.2b2W38cLlswqso5rj54c9RMjzqVF55Z-
     name: Example multi-omics pipeline BCO
     bco_id: nih:bco/example-pipeline-v2
     bco_spec_version: https://w3id.org/ieee/ieee-2791-schema/2791object.json

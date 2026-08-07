@@ -22,6 +22,9 @@ because its absence produced a real bug during implementation:
   7. no stale refs     — no example still uses a pre-3.2 identifier scheme
                          (Jeremy caught example_nanopub pointing at nih:np/...
                           ids that name nothing; 26 such refs existed)
+  8. external ids kept  — minting never overwrites an ORCID, ROR or BCO id
+                         (broadinstitute/dapper#1: nodes whose id WAS their
+                          external identifier had both rewritten)
 
 Usage:
     uv run schema/identity/lint_identity.py
@@ -38,6 +41,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent))
 from dapper_identity import (  # noqa: E402
     DOC_GROUPS,
+    assign_ids,
     SCHEMA_PATH,
     _iter_nodes,
     compute_id,
@@ -171,6 +175,38 @@ def main() -> int:
         for h in hits:
             failures.append(f"{path.name}: stale pre-3.2 identifier at {h}")
     print(f"7. no stale refs      : {stale_total} pre-3.2 identifier(s) remaining")
+
+    # --- 8. minting must not clobber external identifiers -------------------
+    # Reconstructs the exact shape from broadinstitute/dapper#1: a node whose id
+    # IS its own external identifier. A substring rewriter turns the ORCID into a
+    # digest; a slot-aware one leaves it alone. Synthetic rather than read from
+    # an example, so the guard survives the examples being rewritten.
+    probe = {
+        "persons": [{"id": "orcid:0000-0002-1825-0097", "name": "Probe Person",
+                     "orcid": "orcid:0000-0002-1825-0097"}],
+        "organizations": [{"id": "ror:0155zta11", "name": "Probe Org",
+                           "ror": "ror:0155zta11"}],
+        "activities": [{"id": "analysis:probe", "name": "probe run",
+                        "command": "tool --person orcid:0000-0002-1825-0097"}],
+    }
+    assign_ids(probe, sv)
+    person, org, activity = (probe["persons"][0], probe["organizations"][0],
+                             probe["activities"][0])
+    kept = []
+    if person["orcid"] != "orcid:0000-0002-1825-0097":
+        failures.append(f"minting overwrote Person.orcid with {person['orcid']}")
+    else:
+        kept.append("orcid")
+    if org["ror"] != "ror:0155zta11":
+        failures.append(f"minting overwrote Organization.ror with {org['ror']}")
+    else:
+        kept.append("ror")
+    # the other half of the rule: an id MENTIONED in prose must still be rewritten
+    if "dapper:Person." not in activity["command"]:
+        failures.append("an id mentioned in Activity.command was not rewritten")
+    else:
+        kept.append("prose rewritten")
+    print(f"8. external ids kept  : {', '.join(kept)}")
 
     print()
     if failures:

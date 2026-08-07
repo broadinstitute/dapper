@@ -205,15 +205,26 @@ def unmarked_slots(sv, class_name: str) -> list[str]:
 # --------------------------------------------------------------------------
 # the digest itself
 # --------------------------------------------------------------------------
-def _blank_self(value: Any, self_id: str | None) -> Any:
+def _blank_self(value: Any, self_id: str | None, *, substring: bool = True) -> Any:
+    """Neutralise a node's own identifier inside its own content.
+
+    MUST mirror the rewrite rule exactly. A slot that is never rewritten must
+    never be blanked either: `dcc_url: urn:geneset:402cf4a1…` holds the upstream
+    system's own URN, which survives minting untouched. Blanking it by substring
+    made the digest depend on whether the id had already been minted, so the
+    same document hashed differently on a second run. Caught by the idempotence
+    check, not by anything else.
+    """
     if not self_id:
         return value
     if isinstance(value, str):
-        return value.replace(self_id, SELF_REF)
+        if substring:
+            return value.replace(self_id, SELF_REF)
+        return SELF_REF if value == self_id else value
     if isinstance(value, list):
-        return [_blank_self(v, self_id) for v in value]
+        return [_blank_self(v, self_id, substring=substring) for v in value]
     if isinstance(value, dict):
-        return {k: _blank_self(v, self_id) for k, v in value.items()}
+        return {k: _blank_self(v, self_id, substring=substring) for k, v in value.items()}
     return value
 
 
@@ -225,7 +236,13 @@ def _graph_for(instance: dict, class_name: str, sv, self_id: str | None = None) 
     g.add((SELF, CLASS_PRED, Literal(class_name)))
 
     for slot_name in hashable_slot_names(sv, class_name):
-        value = _blank_self(instance.get(slot_name), self_id)
+        raw_value = instance.get(slot_name)
+        # blank self-references only where a rewrite could land, so the digest
+        # cannot depend on whether minting has already happened
+        rewritable = (_is_reference_slot(sv, class_name, slot_name)
+                      or _looks_like_prose(raw_value)
+                      or isinstance(raw_value, (list, dict)))
+        value = _blank_self(raw_value, self_id, substring=rewritable)
         if value is None:
             continue
         if isinstance(value, list):
@@ -292,30 +309,85 @@ def _iter_nodes(document: dict) -> Iterable[tuple[str, str, dict]]:
             yield group, class_name, node
 
 
-def _rewrite(value: Any, mapping: dict[str, str]) -> Any:
-    """Rewrite ids, including ones embedded in prose.
+def _is_reference_slot(sv, class_name: str, slot_name: str) -> bool:
+    """True if this slot holds a pointer to another node, not a scalar value.
 
-    Substring, not equality. Identifiers appear inside free text as well as in
-    reference slots — an `Activity.command` reads
-    `reveal enrichment --geneset geneset:402cf4a1…` and an
-    `AgenticWorkspace.regeneration_prompt` names the gene set it regenerates.
-    Those are real references and must track the re-mint, so they are rewritten
-    too. This has to match `_referenced_ids` exactly, or a node's content would
-    change after its digest was computed. It did, once; that is why both
-    functions are substring-based.
-
-    Longest-first so no id is a prefix of another.
+    The schema marks every attribute `is_a: relationship` (a cross-reference) or
+    `is_a: literal` (a scalar). That distinction is what tells a DAPPER reference
+    apart from an external identifier that merely looks like one.
     """
+    try:
+        slot = sv.induced_slot(slot_name, class_name)
+    except Exception:
+        return False
+    return slot is not None and slot.is_a == "relationship"
+
+
+def _rewrite_scalar(value: Any, mapping: dict[str, str], *, substring: bool) -> Any:
     if isinstance(value, str):
+        if not substring:
+            return mapping.get(value, value)
         for old in sorted(mapping, key=len, reverse=True):
             if old in value:
                 value = value.replace(old, mapping[old])
         return value
     if isinstance(value, list):
-        return [_rewrite(v, mapping) for v in value]
+        return [_rewrite_scalar(v, mapping, substring=substring) for v in value]
     if isinstance(value, dict):
-        return {k: _rewrite(v, mapping) for k, v in value.items()}
+        return {k: _rewrite_scalar(v, mapping, substring=substring) for k, v in value.items()}
     return value
+
+
+def _looks_like_prose(value: Any) -> bool:
+    """Free text that may MENTION an id, as opposed to a value that IS one.
+
+    `Activity.command` reads `reveal enrichment --geneset geneset:402cf4a1…` and
+    a regeneration prompt names the gene set it regenerates; those references are
+    real and must track a re-mint. An `orcid:` or `ror:` value never contains a
+    space, which is what separates the two cases.
+    """
+    return isinstance(value, str) and (" " in value or "\n" in value)
+
+
+def _rewrite_node(node: dict, class_name: str, sv, mapping: dict[str, str]) -> dict:
+    """Rewrite ids in one node, respecting what each slot actually holds.
+
+    Three rules, and the middle one exists because of a real bug:
+
+      reference slots   exact-match rewrite — these point at other nodes
+      literal prose     substring rewrite — an id mentioned inside free text
+      literal scalars   LEFT ALONE
+
+    That last rule matters. In example_graph.yaml every Person, Organization and
+    BioComputeObject used its EXTERNAL identifier as its node id:
+
+        - id: orcid:0000-0002-1825-0097
+          orcid: orcid:0000-0002-1825-0097
+
+    A blanket substring rewrite replaced both, silently turning a real ORCID into
+    a DAPPER digest. An ORCID, ROR, BCO id, checksum or file path is not a DAPPER
+    reference and must never be rewritten, however much it looks like one.
+    Reported by Jeremy Arbesfeld (broadinstitute/dapper#1).
+    """
+    out = {}
+    for key, value in node.items():
+        if key == "id":
+            out[key] = value
+            continue
+        if _is_reference_slot(sv, class_name, key):
+            out[key] = _rewrite_scalar(value, mapping, substring=False)
+        elif _looks_like_prose(value) or isinstance(value, (list, dict)):
+            # lists/dicts may contain prose; recurse with the prose rule but only
+            # substitute whole-string matches for their scalar members
+            out[key] = _rewrite_scalar(value, mapping, substring=_looks_like_prose(value))
+        else:
+            out[key] = value
+    return out
+
+
+def _rewrite(value: Any, mapping: dict[str, str]) -> Any:
+    """Substring rewrite, for values with no slot context (document-level keys)."""
+    return _rewrite_scalar(value, mapping, substring=True)
 
 
 def _referenced_ids(value: Any, candidates: set[str]) -> set[str]:
@@ -353,7 +425,14 @@ def assign_ids(document: dict, sv) -> dict[str, str]:
     for nid, (class_name, node) in nodes.items():
         refs: set[str] = set()
         for slot_name in hashable_slot_names(sv, class_name):
-            refs |= _referenced_ids(node.get(slot_name), all_ids)
+            value = node.get(slot_name)
+            # mirror _rewrite_node: a scalar literal is never rewritten, so it
+            # never creates a dependency either
+            if not _is_reference_slot(sv, class_name, slot_name) \
+                    and not _looks_like_prose(value) \
+                    and not isinstance(value, (list, dict)):
+                continue
+            refs |= _referenced_ids(value, all_ids)
         refs.discard(nid)
         deps[nid] = refs
 
@@ -381,7 +460,8 @@ def assign_ids(document: dict, sv) -> dict[str, str]:
     mapping: dict[str, str] = {}
     for nid in order:
         class_name, node = nodes[nid]
-        resolved = {k: _rewrite(v, mapping) for k, v in node.items() if k != "id"}
+        resolved = _rewrite_node(node, class_name, sv, mapping)
+        resolved.pop("id", None)
         mapping[nid] = compute_id(resolved, class_name, sv, self_id=nid)
 
     # rewrite ids and every reference to them, document-wide
@@ -389,10 +469,11 @@ def assign_ids(document: dict, sv) -> dict[str, str]:
         node["id"] = mapping.get(node["id"], node["id"])
     for key in list(document):
         if key in DOC_GROUPS:
-            for node in document[key] or []:
-                for k in list(node):
-                    if k != "id":
-                        node[k] = _rewrite(node[k], mapping)
+            class_name = DOC_GROUPS[key]
+            for i, node in enumerate(document[key] or []):
+                rewritten = _rewrite_node(node, class_name, sv, mapping)
+                rewritten["id"] = node["id"]
+                document[key][i] = rewritten
         else:
             document[key] = _rewrite(document[key], mapping)
     return mapping
