@@ -11,7 +11,7 @@ persons:
     name: Jane A. Smith
     given_name: Jane
     family_name: Smith
-    orcid: dapper:Person.nVVfQgDBetxff6PYxDiZrH9lrs6Zk1YG
+    orcid: orcid:0000-0002-1825-0097
     affiliation:
       - ror:012345678
     creator_role: PrincipalInvestigator
@@ -19,16 +19,16 @@ persons:
     name: Alex R. Lee
     given_name: Alex
     family_name: Lee
-    orcid: dapper:Person.15B6HcCazp_08smpTsS_3dqHqTDcFPjx
+    orcid: orcid:0000-0003-1234-5678
     contributor_role: DataCurator
 
 organizations:
   - id: dapper:Organization.INxs46BXeqZKYlcZDojrL3607UKs-va6
     name: National Institutes of Health
-    ror: dapper:Organization.INxs46BXeqZKYlcZDojrL3607UKs-va6
+    ror: ror:0155zta11
   - id: dapper:Organization.7GdsJqwcvYO2uSDpo37g-bipsQRAvgHp
     name: Example NIH Consortium
-    ror: dapper:Organization.7GdsJqwcvYO2uSDpo37g-bipsQRAvgHp
+    ror: ror:04abcde12
     creator_role: Consortium
 
 # ---- Award (authoritative — mirror_mutable: false) ----
@@ -147,7 +147,7 @@ ro_crate_packages:
 bio_compute_objects:
   - id: dapper:BioComputeObject.6XqeSIVR1UecaZSb9yOtYg-l99d4Nclw
     name: Example multi-omics pipeline BCO
-    bco_id: dapper:BioComputeObject.6XqeSIVR1UecaZSb9yOtYg-l99d4Nclw
+    bco_id: nih:bco/example-pipeline-v2
     bco_spec_version: https://w3id.org/ieee/ieee-2791-schema/2791object.json
     etag: 11ee0f7b8c...
     usability_domain:
