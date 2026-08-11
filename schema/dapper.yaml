@@ -44,11 +44,22 @@ description: >-
         `ProvenancedResource`, so a hypothesis is citable exactly like a
         dataset.
 
+  This "4.0" profile is a SUPERSET of 3.2 and adds one block:
+
+    (E) SINGLE-CELL. `CellProgram` — a coordinated pattern of gene activity
+        representing a biological process, e.g. a factor from cNMF/NMF/
+        Spectra/WGCNA or a curated gene module — extends `Set` the same way
+        `GeneSet` does, with genes as members. `CellState` is the cellular
+        phenotype defined by the combination of `CellProgram`s active in a
+        cell (or cell population) at once, as distinct from a cell TYPE (a
+        Cell Ontology class), which is what lineage a cell belongs to rather
+        than what functional state it is in.
+
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, hypotheses, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://creativecommons.org/licenses/by/4.0/
-version: 3.2.0
+version: 4.0.0
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
@@ -960,6 +971,123 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
+
+  # ======================================================================
+  # CELL PROGRAM / CELL STATE (4.0) — single-cell functional units. A
+  # CellProgram is a coordinated pattern of gene activity — a factor/module
+  # inferred from expression covariance (e.g. cNMF, NMF, Spectra, WGCNA) or a
+  # curated gene module — representing a biological process a cell can turn
+  # on or off; it extends Set the same way GeneSet does, with genes as
+  # members. A CellState is the cellular phenotype defined by which
+  # CellPrograms are active in a cell (or cell population) at once —
+  # distinct from a cell TYPE (a Cell Ontology class), which is what lineage
+  # a cell belongs to rather than what state it is currently in.
+  # ======================================================================
+
+  CellProgram:
+    is_a: Set
+    aliases:
+      - gene program
+      - gene expression program
+      - GEP
+      - metagene
+    description: >-
+      A Set whose members are genes that co-vary as a coordinated unit and
+      together carry out a biological process — a factor from matrix
+      factorization (cNMF, NMF, Spectra, WGCNA) or a curated gene module. No
+      ontology term is asserted as class_uri — none resolves to "gene
+      program" / "gene expression program" (verified against EBI OLS4) — so
+      CellProgram grounds via `is_a: Set` (prov:Collection), the same way
+      GeneSet does. Distinct from GeneSet: a GeneSet is typically a static
+      annotation (e.g. an MSigDB term); a CellProgram is inferred from
+      expression covariance and is usually a quantitative loading over genes,
+      not just membership — a large program should reference its full
+      loading matrix via the member-manifest escape hatch `Set` already
+      provides rather than enumerate weights here.
+    annotations:
+      nih:profile_level: "4.0"
+    attributes:
+      assay:
+        is_a: literal
+        mixins: [hashable]
+        close_mappings:
+          - obo:OBI_0000070      # assay
+        description: Assay the program was inferred from (e.g. scRNA-seq).
+      organism:
+        is_a: literal
+        mixins: [hashable]
+        close_mappings:
+          - schema:taxonomicRange
+        description: Organism (e.g. human).
+      inference_method:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Method used to derive the program (e.g. cNMF, NMF, Spectra, WGCNA,
+          curated).
+      biological_process:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        description: >-
+          GO biological process CURIE(s) this program represents, e.g.
+          `obo:GO_0006629`.
+      n_genes:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        aliases:
+          - n_members
+        description: Count of unique genes in the program.
+
+  CellState:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    aliases:
+      - cellular phenotype
+      - cell type state
+    description: >-
+      A cellular phenotype defined by the combination of CellPrograms active
+      in a cell (or cell population) — e.g. "activated", "exhausted",
+      "hypoxic". Distinct from a cell TYPE (a Cell Ontology class, e.g.
+      `obo:CL_0000542`): a CellState is a functional/transcriptional state a
+      cell of a given type can transition into and out of, defined by which
+      programs are switched on — not which lineage the cell belongs to. No
+      ontology term is asserted as class_uri — no term resolving to "cell
+      state" as a generic, cross-cell-type phenotype was found (verified
+      against EBI OLS4) — so CellState grounds via `is_a: HashableNode`
+      directly. Mixes in `ProvenancedResource` so a CellState is citable and
+      attributable the same way a `CellProgram` (via `Set`) already is.
+    annotations:
+      nih:profile_level: "4.0"
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+      cell_type:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: >-
+          Cell Ontology (CL) CURIE of the cell type this state applies to,
+          e.g. `obo:CL_0000542`.
+      organism:
+        is_a: literal
+        mixins: [hashable]
+        close_mappings:
+          - schema:taxonomicRange
+        description: Organism (e.g. human).
+      has_program:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        slot_uri: nih:hasProgram
+        description: >-
+          CellProgram id(s) active in this state. The combination of these —
+          not any single program — is what defines the state.
 
   Agent:
     mixin: true

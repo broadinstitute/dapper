@@ -1,0 +1,41 @@
+# A minimal graph-shaped DAPPER document, preloaded by the portal alongside
+# the geneset and claim-provenance graphs. Same CellProgram/CellState
+# instances as example_cell_program.yaml and example_cell_state.yaml, but
+# wrapped in the group-keyed shape the portal (and mint.py) expect
+# (`cell_programs:` / `cell_states:` lists), rather than a bare single-
+# instance document. This is a reference document (mixed classes), not a
+# single-class instance; validate the individual nodes with
+# `linkml-validate -C <ClassName>` if desired.
+#
+# Both nodes are illustrative — neither is transcribed from a real pipeline
+# run, unlike the geneset graph — so both are listed below.
+
+_illustrative:
+  - dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC
+  - dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag
+
+cell_programs:
+  - id: dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC
+    name: T cell activation program (cNMF factor 12)
+    description: >-
+      Gene expression program capturing coordinated up-regulation of T-cell
+      receptor signaling and early activation-marker genes.
+    member_type: gene
+    n_genes: 56
+    assay: scRNA-seq
+    organism: human
+    inference_method: cNMF
+    biological_process:
+      - obo:GO_0042110      # T cell activation
+
+cell_states:
+  - id: dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag
+    name: Activated T cell state
+    description: >-
+      A T cell in which the T-cell-activation program is switched on, marking
+      a transition out of a quiescent/naive state rather than a change in
+      cell lineage.
+    cell_type: obo:CL_0000084      # T cell
+    organism: human
+    has_program:
+      - dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC

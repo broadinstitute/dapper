@@ -1,0 +1,19 @@
+# A single CellState instance — the cellular phenotype defined by the
+# combination of CellPrograms active in a cell (or cell population), as
+# distinct from a cell TYPE (a Cell Ontology class naming lineage rather than
+# functional state). Pairs with example_cell_program.yaml, whose `id` this
+# instance's `has_program` resolves to.
+#
+#   uv run --with linkml linkml-validate \
+#     -s ../dapper.yaml -C CellState example_cell_state.yaml
+
+id: dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag
+name: Activated T cell state
+description: >-
+  A T cell in which the T-cell-activation program is switched on, marking a
+  transition out of a quiescent/naive state rather than a change in cell
+  lineage.
+cell_type: obo:CL_0000084      # T cell
+organism: human
+has_program:
+  - dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC

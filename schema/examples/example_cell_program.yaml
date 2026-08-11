@@ -1,0 +1,24 @@
+# A single CellProgram instance — the 4.0 single-cell counterpart of
+# example_geneset.yaml. Illustrative: a gene expression program of the kind
+# produced by matrix factorization (cNMF/NMF/Spectra) over an scRNA-seq atlas,
+# capturing a coordinated, quantitative pattern of gene activity rather than a
+# curated static annotation (contrast with example_geneset.yaml).
+#
+#   uv run --with linkml linkml-validate \
+#     -s ../dapper.yaml -C CellProgram example_cell_program.yaml
+#
+# example_cell_state.yaml references this program's `id` via `has_program` —
+# it is one of the programs active in that cell state.
+
+id: dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC
+name: T cell activation program (cNMF factor 12)
+description: >-
+  Gene expression program capturing coordinated up-regulation of T-cell
+  receptor signaling and early activation-marker genes.
+member_type: gene
+n_genes: 56
+assay: scRNA-seq
+organism: human
+inference_method: cNMF
+biological_process:
+  - obo:GO_0042110      # T cell activation

@@ -81,12 +81,16 @@ INLINE_LINKS = {
     "asserts": ("hycl:claims", "in"),
     "has_agentic_workspace": ("nih:hasAgenticWorkspace", "in"),
     "provenance_of": ("np:hasProvenance", "out"),
+    # CellState -> CellProgram: the program is upstream of the state it
+    # constitutes, same "in" direction as generated_by_activity.
+    "has_program": ("nih:hasProgram", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
 FAMILY = {
     "C2M2File": "data",
     "GeneSet": "data",
+    "CellProgram": "data",
     "Dataset": "data",
     "Activity": "process",
     "Hypothesis": "claim",
@@ -128,6 +132,18 @@ GRAPH_DOCS = [
             "node is an illustrative agentic workspace that could re-run both steps."
         ),
         "start": "geneset:402cf4a1f3682a2e5bf1b002",
+    },
+    {
+        "file": "example_cell_graph.yaml",
+        "key": "cellstate",
+        "title": "Cell program to cell state",
+        "blurb": (
+            "The 4.0 single-cell block's two new node types: a cNMF-style "
+            "T-cell-activation gene program (CellProgram) and the cellular "
+            "phenotype it constitutes (CellState) — illustrative, not "
+            "transcribed from a real pipeline run."
+        ),
+        "start": "dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag",
     },
 ]
 
