@@ -1001,9 +1001,11 @@ classes:
       GeneSet does. Distinct from GeneSet: a GeneSet is typically a static
       annotation (e.g. an MSigDB term); a GeneProgram is inferred from
       expression covariance and is usually a quantitative loading over genes,
-      not just membership — a large program should reference its full
-      loading matrix via the member-manifest escape hatch `Set` already
-      provides rather than enumerate weights here.
+      not just membership. `member_weights`, when present, is that loading —
+      one number per gene in `members`, positionally paired. A very large
+      loading matrix should still reference its source file via the
+      member-manifest escape hatch `Set` already provides rather than
+      enumerate weights here.
     annotations:
       nih:profile_level: "4.0"
     attributes:
@@ -1040,6 +1042,22 @@ classes:
         aliases:
           - n_members
         description: Count of unique genes in the program.
+      member_weights:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        multivalued: true
+        aliases:
+          - loadings
+          - gene_weights
+        description: >-
+          Quantitative loading/weight for each gene in `members`, positionally
+          paired and equal in length to it (`members[i]` <->
+          `member_weights[i]`) — e.g. an NMF/cNMF factor loading, or another
+          continuous per-gene activity score. Not necessarily raw expression:
+          it is whatever per-gene number the `inference_method` produces.
+          Reordering or resizing one list without the other breaks the
+          pairing.
 
   CellState:
     is_a: HashableNode

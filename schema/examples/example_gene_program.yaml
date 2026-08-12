@@ -1,26 +1,42 @@
 # A single GeneProgram instance — the 4.0 single-cell counterpart of
-# example_geneset.yaml. Illustrative: a gene expression program of the kind
-# produced by matrix factorization (cNMF/NMF/Spectra) over an scRNA-seq atlas,
-# capturing a coordinated, quantitative pattern of gene activity rather than a
-# curated static annotation (contrast with example_geneset.yaml).
+# example_geneset.yaml. Populated from a real gene-by-program NMF loading
+# matrix to demonstrate `member_weights`: `members[i]` and
+# `member_weights[i]` describe the same gene, positionally paired. Contrast
+# with example_geneset.yaml, a static curated annotation with no weights.
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C GeneProgram example_gene_program.yaml
 #
-# Standalone — not referenced by example_cell_state.yaml or
-# example_cell_graph.yaml, which pair a curated cell state with a different
-# (curated, not factorized) marker-panel GeneProgram. Kept here as a second,
-# independent illustration of the class.
+# Referenced by example_cell_state.yaml and example_cell_graph.yaml via
+# `has_program`.
 
-id: dapper:GeneProgram.5pG0ElQGWPHRAKFicy7BfsMgH8DEXTME
-name: T cell activation program (cNMF factor 12)
+id: dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
+name: Factor 1 gene program
 description: >-
-  Gene expression program capturing coordinated up-regulation of T-cell
-  receptor signaling and early activation-marker genes.
+  Gene program corresponding to Factor_1 of a gene-by-program NMF loading
+  matrix. `member_weights` are the raw factor loadings for each gene in
+  `members`.
 member_type: gene
-n_genes: 56
-assay: scRNA-seq
 organism: human
-inference_method: cNMF
-biological_process:
-  - obo:GO_0042110      # T cell activation
+inference_method: NMF
+members:
+  - ACAP3
+  - KLHL21
+  - SPATA21
+  - ZNF593OS
+  - NUDC
+  - TSSK3
+  - HPCA
+  - SZT2
+  - P3R3URF-PIK3R3
+member_weights:
+  - 7.01433539589991
+  - 0
+  - 0
+  - 0
+  - 12.2178988599668
+  - 0
+  - 6.85234101964327
+  - 0
+  - 0
+n_genes: 9

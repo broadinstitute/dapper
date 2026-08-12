@@ -136,15 +136,16 @@ GRAPH_DOCS = [
     {
         "file": "example_cell_graph.yaml",
         "key": "cellstate",
-        "title": "Cell program to cell state",
+        "title": "Gene program to cell state",
         "blurb": (
-            "The 4.0 single-cell block's two new node types: a curated "
-            "pancreatic ductal epithelial marker panel (GeneProgram) and the "
-            "identity state it constitutes (CellState), populated with the "
-            "internal cell-state marker-curation schema fields. Both nodes "
-            "are illustrative, not transcribed from a real pipeline run."
+            "The 4.0 single-cell block's two new node types: a real NMF "
+            "gene-loading factor (GeneProgram, with member_weights) and a "
+            "curated pancreatic ductal epithelial identity state (CellState) "
+            "with the internal marker-curation schema fields. The pairing "
+            "between them is illustrative, exercising has_program rather "
+            "than asserting a biological claim."
         ),
-        "start": "dapper:CellState.q_1MTMlGQ-VXlTkoHmlUEDNSJS7wyid5",
+        "start": "dapper:CellState.IrgqH1icla6iIPI_xTyJPODa4V-qmGvj",
     },
 ]
 
@@ -434,6 +435,7 @@ button.action + button.action { margin-top: 6px; }
 .field dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
 .field dd { margin: 4px 0 0; font-size: 12.5px; word-break: break-word; }
 .field dd.mono { font-family: var(--mono); font-size: 11.5px; }
+.list-item:not(:last-child)::after { content: ", "; color: var(--ink-soft); }
 .field .why { font-size: 11.5px; color: var(--muted); margin-top: 3px; font-style: italic; }
 .lock { color: var(--trace); font-size: 10px; }
 .ref {
@@ -697,7 +699,8 @@ function splitId(id) {
 }
 
 function valueHtml(v, ids) {
-  if (Array.isArray(v)) return v.map(x => valueHtml(x, ids)).join("");
+  if (Array.isArray(v))
+    return `<span class="list-item">${v.map(x => valueHtml(x, ids)).join('</span><span class="list-item">')}</span>`;
   if (v && typeof v === "object") return `<span class="mono">${esc(JSON.stringify(v))}</span>`;
   const s = String(v);
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
