@@ -6,14 +6,12 @@ description: >-
   (NIH-DAPP). Every dataset returned through an NIH MCP server should carry
   enough structured metadata for an AI system to cite the dataset, identify its
   creators, link to the primary publication, report the NIH grant/award that
-  supported it, and describe the provenance of the returned result. The "2.0"
-  profile is the 1.0 citation/funding/provenance core (JSON-LD + DataCite +
+  supported it, and describe the provenance of the returned result. The
+  profile's core covers citation/funding/provenance (JSON-LD + DataCite +
   PROV-O + schema.org) plus GA4GH DRS object identity, DUO data-use terms,
   RO-Crate packaging, and BioCompute/IEEE-2791 executable workflow provenance.
 
-  This "3.0" profile is a SUPERSET of 2.0 — every 2.0 class, slot, and enum is
-  carried forward unchanged — and adds three blocks, each annotated
-  `nih:profile_level: "3.0"`:
+  On top of that core, the profile adds four further blocks:
 
     (A) DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
         DISMECH disease-pathophysiology schema
@@ -29,9 +27,9 @@ description: >-
         terms. Lets a NIH-DAPP object be emitted as, or minted from, a signed
         nanopublication.
 
-    (D) AGENTIC REPLAY (3.1). `AgenticWorkspace` — the workspace and prompt an
-        AI agent can use to re-run an `Activity`. The executable provenance a
-        1.0 Activity carries (`command`, `container_image`, `code_version`) is
+    (D) AGENTIC REPLAY. `AgenticWorkspace` — the workspace and prompt an
+        AI agent can use to re-run an `Activity`. The executable provenance an
+        Activity carries (`command`, `container_image`, `code_version`) is
         the machine replay path; this is the agentic one, alongside it rather
         than instead of it. A prompt is NOT a deterministic replay mechanism,
         so the two are deliberately not interchangeable.
@@ -48,7 +46,7 @@ description: >-
   awards, publications, hypotheses, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://creativecommons.org/licenses/by/4.0/
-version: 3.2.0
+version:
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
@@ -83,7 +81,7 @@ default_range: string
 #   `nih:source_standard` annotation. All obo/DUO/IAO CURIEs were verified
 #   against EBI OLS4; FRAPO/FaBiO/SPDX/SPAR-DataCite against their published
 #   specs.
-#   3.0 additions: the nanopublication prefixes below were each dereferenced
+#   Additions: the nanopublication prefixes below were each dereferenced
 #   and read before use (`np` and `npx` and `hycl` all serve Turtle at their
 #   namespace IRI); the terms mapped in block (B) are quoted from those live
 #   ontology documents, not recalled. `ntemplate` is the Nanodash template
@@ -95,7 +93,7 @@ prefixes:
   linkml: https://w3id.org/linkml/
   schema: http://schema.org/
   prov: http://www.w3.org/ns/prov#
-  # --- 3.0: nanopublication (verified by dereferencing each namespace) ---
+  # --- nanopublication (verified by dereferencing each namespace) ---
   # Nanopublication schema. Defines Nanopublication/Assertion/Provenance/
   # PublicationInfo and the three functional hasX properties.
   np: http://www.nanopub.org/nschema#
@@ -107,7 +105,7 @@ prefixes:
   hycl: http://purl.org/petapico/o/hycl#
   # Nanodash / Knowledge Pixels template vocabulary.
   ntemplate: https://w3id.org/np/o/ntemplate/
-  # --- 3.0: DISMECH cross-walk ---
+  # --- DISMECH cross-walk ---
   dismech: https://w3id.org/monarch-initiative/dismech/
   # SKOS — used for instance-level cross-walk predicates (closeMatch). Also
   # DISMECH's own declared prefix for the same namespace.
@@ -318,7 +316,7 @@ enums:
         description: An entity an activity generated (dig.geneset "data output").
 
   # =========================================================================
-  # 3.0 ENUMS — hypothesis + nanopublication
+  # ENUMS — hypothesis + nanopublication
   # =========================================================================
 
   CausalLinkTypeEnum:
@@ -331,7 +329,6 @@ enums:
     exact_mappings:
       - dismech:CausalLinkTypeEnum
     annotations:
-      nih:profile_level: "3.0"
       nih:source_standard: DISMECH CausalLinkTypeEnum
     permissible_values:
       DIRECT:
@@ -350,8 +347,6 @@ enums:
       Lifecycle state of a hypothesis. `canonical` / `alternative` mirror the
       role DISMECH's `MechanisticHypothesis.status` plays when organising
       causal edges into competing explanatory models.
-    annotations:
-      nih:profile_level: "3.0"
     permissible_values:
       proposed:
         description: Generated but not yet reviewed.
@@ -375,8 +370,6 @@ enums:
       allowing an explicit "mixed"/"unknown" rather than overloading a boolean.
     close_mappings:
       - dismech:EvidenceItem
-    annotations:
-      nih:profile_level: "3.0"
     permissible_values:
       supports:
       refutes:
@@ -389,7 +382,6 @@ enums:
       `npx:hasNanopubType`. Each `meaning` was read from the live npx ontology
       document at http://purl.org/nanopub/x/.
     annotations:
-      nih:profile_level: "3.0"
       nih:source_standard: Nanopub-X (http://purl.org/nanopub/x/)
     permissible_values:
       ExampleNanopub:
@@ -527,7 +519,7 @@ classes:
       - object
 
   # ======================================================================
-  # NODE (entity) classes — 1.0 CORE
+  # NODE (entity) classes — CORE
   # ======================================================================
 
   # ======================================================================
@@ -601,7 +593,6 @@ classes:
           and how do I cite it?". Both are worth keeping, so neither displaces
           the other. `identifier_type` names the scheme.
         annotations:
-          nih:profile_level: "3.2"
           nih:source_standard: DataCite kernel-4 identifier/alternateIdentifiers
       controlled_access:
         is_a: literal
@@ -718,7 +709,7 @@ classes:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
-      # 3.0: lets a Dataset point at the DISMECH entry describing its science.
+      # Lets a Dataset point at the DISMECH entry describing its science.
       - DismechLinked
     class_uri: schema:Dataset
     aliases:
@@ -730,7 +721,7 @@ classes:
       - dctype:Dataset
     close_mappings:
       - prov:Entity
-      # 3.0 cross-walk. Complementary halves of one idea: DISMECH's Dataset
+      # Cross-walk. Complementary halves of one idea: DISMECH's Dataset
       # describes the SCIENCE (organism, data_type, sample_types, platform,
       # findings); this one describes the ATTRIBUTION (creators, funding,
       # licence, DUO terms, DRS identity). Neither duplicates the other, and
@@ -800,8 +791,8 @@ classes:
           - schema:publisher
         description: CURIE/URI of the publishing Organization.
       # attribution/funding/provenance/license/access/mirror slots come from
-      # the ProvenancedResource mixin. Dataset-specific 2.0 links follow.
-      # --- 2.0 links ---
+      # the ProvenancedResource mixin. Dataset-specific links follow.
+      # --- additional links ---
       has_data_use_term:
         is_a: relationship
         mixins: [hashable]
@@ -815,8 +806,6 @@ classes:
         aliases:
           - data_use_limitations
         description: DUO term CURIEs constraining permitted use.
-        annotations:
-          nih:profile_level: "2.0"
       has_drs_object:
         is_a: relationship
         mixins: [hashable]
@@ -825,24 +814,17 @@ classes:
         slot_uri: dcat:distribution
         close_mappings:
           - schema:distribution
-        annotations:
-          nih:profile_level: "2.0"
       packaged_as:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcterms:isPartOf
-        annotations:
-          nih:profile_level: "2.0"
       has_workflow_provenance:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         multivalued: true
-        annotations:
-          nih:profile_level: "2.0"
-
   # ======================================================================
   # SET — a collection of members (prov:Collection). Distinct from Dataset
   # (a set of *data*, schema:Dataset). A gene set is a set of genes; protein
@@ -915,7 +897,6 @@ classes:
       "gene set" is frequently a *library* of many named term→genes sets (the
       .gmt); `n_genes` counts unique genes, `n_sets` the named subsets.
     annotations:
-      nih:profile_level: "2.0"
       nih:source_standard: dig.geneset 0.1.0 (flannick/dig-gene-set-extractors)
     attributes:
       assay:
@@ -1162,7 +1143,7 @@ classes:
       - fabio:ResearchPaper
     close_mappings:
       - schema:CreativeWork
-      # 3.0 cross-walk. DISMECH's PublicationReference is richer on USE
+      # Cross-walk. DISMECH's PublicationReference is richer on USE
       # (found_in, findings — which deep-research output cited it, and what it
       # showed) and thinner on IDENTITY (a bare PMID). This class is the
       # identity side; the use side belongs on the edge to the publication.
@@ -1253,7 +1234,7 @@ classes:
     class_uri: prov:Activity
     close_mappings:
       - schema:Action
-      # 3.0 cross-walk. DISMECH's CurationEvent (curation_timestamp /
+      # Cross-walk. DISMECH's CurationEvent (curation_timestamp /
       # curation_model / curation_action / curation_description) is a homegrown
       # mini-PROV for AI-assisted curation. This PROV-O Activity subsumes it:
       # curation_model -> an npx:SoftwareAgent attributed via the provenance
@@ -1374,9 +1355,6 @@ classes:
           AI agent. Complements `command` / `container_image`: those are the
           machine replay path, this is the agentic one. Multivalued because the
           same analysis may be reproducible in more than one workspace.
-        annotations:
-          nih:profile_level: "3.1"
-
   AgenticWorkspace:
     is_a: HashableNode
     class_uri: prov:Plan
@@ -1401,8 +1379,6 @@ classes:
       output — that is what `command` plus `container_image` plus
       `code_version` are for. Record the model and version actually used so a
       divergent re-run can at least be explained.
-    annotations:
-      nih:profile_level: "3.1"
     attributes:
       workspace_url:
         is_a: literal
@@ -1416,8 +1392,6 @@ classes:
           opens the workspace, rather than a path through project and branch
           ids. Required in spirit: a workspace nobody can reach is not
           provenance, it is a note.
-        annotations:
-          nih:profile_level: "3.1"
       workspace_key:
         is_a: literal
         mixins: [hashable]
@@ -1425,15 +1399,11 @@ classes:
           The hosting platform's own identifier for the workspace, when it
           differs from this node's `id` — for an akleao fork, the slug in its
           URL.
-        annotations:
-          nih:profile_level: "3.1"
       platform:
         is_a: literal
         mixins: [unhashable]  # environmental
         description: >-
           The system hosting the workspace, e.g. "akleao", "Claude Code".
-        annotations:
-          nih:profile_level: "3.1"
       regeneration_prompt:
         is_a: literal
         mixins: [hashable]
@@ -1441,16 +1411,12 @@ classes:
           The prompt that asks an agent to regenerate this analysis. Write it
           self-contained: an agent opening the workspace cold should be able to
           act on it without the surrounding conversation.
-        annotations:
-          nih:profile_level: "3.1"
       agent_model:
         is_a: literal
         mixins: [hashable]
         description: >-
           Model that ran, or is expected to run, the prompt (e.g.
           "claude-fable-5"). Recorded so a divergent re-run can be explained.
-        annotations:
-          nih:profile_level: "3.1"
       agent_role:
         is_a: relationship
         mixins: [hashable]
@@ -1461,16 +1427,11 @@ classes:
           non-human author.
         close_mappings:
           - prov:wasAssociatedWith
-        annotations:
-          nih:profile_level: "3.1"
       last_run:
         is_a: literal
         mixins: [unhashable]  # temporal
         range: datetime
         description: When the prompt was last executed in this workspace.
-        annotations:
-          nih:profile_level: "3.1"
-
   LineageStep:
     is_a: HashableNode
     close_mappings:
@@ -1576,8 +1537,8 @@ classes:
         description: sha256 of the mirrored object.
 
   # ======================================================================
-  # NODE classes — 2.0 ADDITIONS
-  # (best-effort interpretation ahead of George's final 2.0 schema)
+  # NODE classes — ADDITIONS
+  # (best-effort interpretation ahead of George's final schema)
   # ======================================================================
 
   DrsObject:
@@ -1596,7 +1557,6 @@ classes:
       no DRS class_uri — it is grounded in DCAT/schema.org instead, with the
       DRS field names preserved as aliases.
     annotations:
-      nih:profile_level: "2.0"
       nih:source_standard: GA4GH DRS v1.x DrsObject
     attributes:
       drs_id:
@@ -1663,7 +1623,6 @@ classes:
       preserved as attribute names + `nih:source_standard` annotations (the same
       pattern as DrsObject).
     annotations:
-      nih:profile_level: "2.0"
       nih:source_standard: CFDE C2M2 file
     attributes:
       description:
@@ -1744,8 +1703,6 @@ classes:
       A term is either a data use permission (child of DUO:0000001) or a data
       use modifier (child of DUO:0000017); use `permission` / `modifier`
       accordingly. Models George's `access.data_use_limitations`.
-    annotations:
-      nih:profile_level: "2.0"
     attributes:
       duo_id:
         is_a: literal
@@ -1789,7 +1746,6 @@ classes:
       in schema.org terms rather than a vocabulary of its own, so this class is
       grounded in schema.org/DCAT.
     annotations:
-      nih:profile_level: "2.0"
       nih:source_standard: RO-Crate 1.1
     attributes:
       conforms_to:
@@ -1831,7 +1787,6 @@ classes:
       carries no BCO class_uri; it is grounded in PROV/schema.org with the
       2791 domain names preserved as attribute names.
     annotations:
-      nih:profile_level: "2.0"
       nih:source_standard: IEEE 2791-2020 (BioCompute Object)
     attributes:
       bco_id:
@@ -2002,8 +1957,6 @@ classes:
   HasDataUseTerm:
     is_a: Edge
     description: Dataset → DataUseTerm (DUO).
-    annotations:
-      nih:profile_level: "2.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:hasDataUseTerm)
@@ -2011,8 +1964,6 @@ classes:
   HasDrsObject:
     is_a: Edge
     description: Dataset → DrsObject (GA4GH DRS).
-    annotations:
-      nih:profile_level: "2.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:hasDrsObject)
@@ -2020,8 +1971,6 @@ classes:
   PackagedAs:
     is_a: Edge
     description: Dataset → RoCratePackage.
-    annotations:
-      nih:profile_level: "2.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:packagedAs)
@@ -2029,14 +1978,12 @@ classes:
   HasWorkflowProvenance:
     is_a: Edge
     description: Dataset/Activity → BioComputeObject (IEEE 2791).
-    annotations:
-      nih:profile_level: "2.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:hasWorkflowProvenance)
 
 # ===========================================================================
-# 3.0 BLOCK (A) — DISMECH HARMONIZATION
+# BLOCK (A) — DISMECH HARMONIZATION
 #
 # DISMECH (https://w3id.org/monarch-initiative/dismech) is mirrored into this
 # repo VERBATIM from monarch-initiative/dismech and is refreshed by
@@ -2073,8 +2020,6 @@ classes:
       These are POINTERS, not copies — the curated content stays upstream in
       DISMECH and is fetched by following them. This keeps the two models
       harmonized without duplicating (and then drifting from) Monarch's data.
-    annotations:
-      nih:profile_level: "3.0"
     attributes:
       dismech_class:
         is_a: literal
@@ -2084,8 +2029,6 @@ classes:
           CURIE of the DISMECH class this node corresponds to, e.g.
           `dismech:MechanisticHypothesis`. Machine-readable restatement of the
           class-level `exact_mappings`, useful when only an instance is in hand.
-        annotations:
-          nih:profile_level: "3.0"
       dismech_entry_key:
         is_a: literal
         mixins: [hashable]
@@ -2094,8 +2037,6 @@ classes:
           disease, `hypothesis_group_id` for a mechanistic hypothesis. DISMECH
           uses plain strings as identifiers, so this is NOT a CURIE and MUST NOT
           be written into `id`.
-        annotations:
-          nih:profile_level: "3.0"
       dismech_disease_term:
         is_a: relationship
         mixins: [hashable]
@@ -2105,8 +2046,6 @@ classes:
           `Disease.disease_term` -> DiseaseDescriptor -> Term.id). This is the
           stable, resolvable join key between the two models; prefer it over
           `dismech_entry_key`.
-        annotations:
-          nih:profile_level: "3.0"
       dismech_source_url:
         is_a: literal
         mixins: [hashable]
@@ -2114,11 +2053,8 @@ classes:
         description: >-
           Deep link to the entry on https://dismech.monarchinitiative.org, for
           human review.
-        annotations:
-          nih:profile_level: "3.0"
-
 # ===========================================================================
-# 3.0 BLOCK (B) — NANOPUBLICATION (Nanodash / Knowledge Pixels)
+# BLOCK (B) — NANOPUBLICATION (Nanodash / Knowledge Pixels)
 #
 # A nanopublication is FOUR NAMED GRAPHS, not one document:
 #
@@ -2137,8 +2073,8 @@ classes:
 # WHY THIS FITS NIH-DAPP. The nanopub split is almost exactly the NIH-DAPP
 # split, which is why the two compose instead of competing:
 #   assertion   <- the scientific claim        (Hypothesis, block C)
-#   provenance  <- prov:wasAttributedTo, Activity, LineageStep  (NIH-DAPP 1.0)
-#   pubinfo     <- creator / license / created / RecommendedCitation (1.0)
+#   provenance  <- prov:wasAttributedTo, Activity, LineageStep
+#   pubinfo     <- creator / license / created / RecommendedCitation
 # So `ProvenancedResource` already carries most of what the provenance and
 # pubinfo graphs need; the nanopub classes below mostly add IDENTITY (trusty
 # URIs), SIGNATURE, and LIFECYCLE.
@@ -2164,7 +2100,6 @@ classes:
       with only an assertion is malformed and the network will reject it. `id` is the
       nanopub's trusty URI once published (a draft may use a temporary URI).
     annotations:
-      nih:profile_level: "3.0"
       nih:np_graph: Head
       nih:source_standard: Nanopublication schema (http://www.nanopub.org/nschema)
     attributes:
@@ -2299,7 +2234,6 @@ classes:
           `dapper:Nanopublication.{digest}` content address. Two identifiers,
           two different guarantees: keep them separate and never conflate them.
         annotations:
-          nih:profile_level: "3.2"
           nih:np_graph: Head
 
   NanopubAssertion:
@@ -2310,7 +2244,6 @@ classes:
       asked to believe. In this profile the assertion is normally a
       `Hypothesis` (block C); `asserts` points at it.
     annotations:
-      nih:profile_level: "3.0"
       nih:np_graph: assertion
     attributes:
       asserts:
@@ -2339,7 +2272,6 @@ classes:
       nanopub came from; that is pubinfo). Its subject is the assertion graph.
       This is the natural home for a NIH-DAPP `Activity` / `LineageStep` chain.
     annotations:
-      nih:profile_level: "3.0"
       nih:np_graph: provenance
     attributes:
       provenance_of:
@@ -2381,7 +2313,6 @@ classes:
       published it, when, under what licence, with what signature. Overlaps
       almost exactly with the NIH-DAPP attribution core.
     annotations:
-      nih:profile_level: "3.0"
       nih:np_graph: pubinfo
     attributes:
       pubinfo_of:
@@ -2399,7 +2330,6 @@ classes:
       ORCID; verifying the signature plus recomputing the trusty-URI hash
       proves the content has not been altered since publication.
     annotations:
-      nih:profile_level: "3.0"
       nih:np_graph: pubinfo
       nih:mirror_mutable: false
     attributes:
@@ -2436,8 +2366,6 @@ classes:
   HasAssertion:
     is_a: Edge
     description: Nanopublication → NanopubAssertion.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(np:hasAssertion)
@@ -2445,8 +2373,6 @@ classes:
   HasProvenanceGraph:
     is_a: Edge
     description: Nanopublication → NanopubProvenance.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(np:hasProvenance)
@@ -2454,8 +2380,6 @@ classes:
   HasPublicationInfo:
     is_a: Edge
     description: Nanopublication → NanopubPublicationInfo.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(np:hasPublicationInfo)
@@ -2465,14 +2389,12 @@ classes:
     description: >-
       Nanopublication → Nanopublication. The update mechanism for immutable
       trusty-URI artifacts.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(npx:supersedes)
 
 # ===========================================================================
-# 3.0 BLOCK (C) — HYPOTHESIS (the REVEAL output)
+# BLOCK (C) — HYPOTHESIS (the REVEAL output)
 #
 # REVEAL emits a mechanistic hypothesis relating a GENE to a DISEASE through a
 # MECHANISM. The milestone is "define hypothesis schema", and the requirement
@@ -2487,7 +2409,7 @@ classes:
 #                            creators, funding, licence, access level, derived-
 #                            from, and a recommended citation exactly like a
 #                            Dataset. Findable/Accessible/Interoperable/
-#                            Reusable falls out of reusing the 1.0 core rather
+#                            Reusable falls out of reusing the core rather
 #                            than inventing a parallel metadata block.
 #   DISMECH compatibility -> The chain shape is DISMECH's. A Hypothesis maps to
 #                            dismech:MechanisticHypothesis (the grouping object:
@@ -2563,7 +2485,6 @@ classes:
     close_mappings:
       - hycl:Statement
     annotations:
-      nih:profile_level: "3.0"
       nih:source_standard: DISMECH MechanisticHypothesis
     attributes:
       hypothesis_label:
@@ -2705,7 +2626,6 @@ classes:
     exact_mappings:
       - dismech:CausalEdge
     annotations:
-      nih:profile_level: "3.0"
       nih:source_standard: DISMECH CausalEdge
     attributes:
       step_index:
@@ -2776,8 +2696,6 @@ classes:
       - dismech:Mechanism
     close_mappings:
       - dismech:Pathophysiology
-    annotations:
-      nih:profile_level: "3.0"
     attributes:
       description:
         is_a: literal
@@ -2799,7 +2717,6 @@ classes:
     exact_mappings:
       - dismech:EvidenceItem
     annotations:
-      nih:profile_level: "3.0"
       nih:source_standard: DISMECH EvidenceItem
     attributes:
       reference:
@@ -2850,16 +2767,11 @@ classes:
           itself a published, signed claim rather than a passage from a paper.
           Following it reaches that claim's own provenance graph, and from
           there the analysis and dataset it rests on.
-        annotations:
-          nih:profile_level: "3.0" 
-
   # ---- hypothesis edges ----------------------------------------------------
 
   HasCausalStep:
     is_a: Edge
     description: Hypothesis → CausalStep.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:hasCausalStep)
@@ -2867,8 +2779,6 @@ classes:
   HasEvidence:
     is_a: Edge
     description: Hypothesis/CausalStep → EvidenceItem.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:hasEvidence)
@@ -2879,8 +2789,6 @@ classes:
       Hypothesis → Nanopublication. The bridge between block (C) and block (B):
       it records that this hypothesis was published as the assertion of a
       signed, content-addressed nanopublication.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(hycl:claims)
@@ -2892,8 +2800,6 @@ classes:
       `Hypothesis.supported_by_nanopub`; traversing it and then that nanopub's
       `np:hasProvenance` is the path from a hypothesis to the datasets its
       support rests on.
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       predicate:
         ifabsent: string(nih:supportedByNanopub)
@@ -2904,8 +2810,6 @@ classes:
       Activity → AgenticWorkspace. Reified form of
       `Activity.has_agentic_workspace`: the workspace and prompt from which
       this analysis can be re-run by an agent.
-    annotations:
-      nih:profile_level: "3.1"
     slot_usage:
       subject:
         description: Activity id.
@@ -2919,8 +2823,6 @@ classes:
     description: >-
       Any NIH-DAPP node → the DISMECH entry it corresponds to. The instance-
       level counterpart of the class-level `exact_mappings` in block (A).
-    annotations:
-      nih:profile_level: "3.0"
     slot_usage:
       subject:
         description: NIH-DAPP node id.

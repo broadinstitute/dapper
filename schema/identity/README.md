@@ -97,7 +97,7 @@ content integrity for a *published nanopublication package*; a `dapper:` id name
 | **Profile name** | `DAPPER-ID-1` (recorded on `HashableNode` as `dapper:id_profile`) |
 | **Identifier form** | `dapper:{ClassName}.{digest}` — the full LinkML class name |
 | **Semantic scope** | one DAPPER Node instance — not a publication package, graph, or file's bytes |
-| **Input model** | `schema/dapper.yaml` ≥ 3.2.0 |
+| **Input model** | `schema/dapper.yaml` (pre-release, unversioned) |
 | **Included** | slots marked `mixins: [hashable]`, plus the class name |
 | **Excluded** | slots marked `mixins: [unhashable]`, `id`, and nulls |
 | **Canonicalization** | RDF → `rdflib.compare.to_canonical_graph` → N-Triples → **sorted lines** → `\n`-joined → UTF-8 |
