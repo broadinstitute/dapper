@@ -81,7 +81,7 @@ INLINE_LINKS = {
     "asserts": ("hycl:claims", "in"),
     "has_agentic_workspace": ("nih:hasAgenticWorkspace", "in"),
     "provenance_of": ("np:hasProvenance", "out"),
-    # CellState -> CellProgram: the program is upstream of the state it
+    # CellState -> GeneProgram: the program is upstream of the state it
     # constitutes, same "in" direction as generated_by_activity.
     "has_program": ("nih:hasProgram", "in"),
 }
@@ -90,7 +90,7 @@ INLINE_LINKS = {
 FAMILY = {
     "C2M2File": "data",
     "GeneSet": "data",
-    "CellProgram": "data",
+    "GeneProgram": "data",
     "Dataset": "data",
     "Activity": "process",
     "Hypothesis": "claim",
@@ -138,12 +138,13 @@ GRAPH_DOCS = [
         "key": "cellstate",
         "title": "Cell program to cell state",
         "blurb": (
-            "The 4.0 single-cell block's two new node types: a cNMF-style "
-            "T-cell-activation gene program (CellProgram) and the cellular "
-            "phenotype it constitutes (CellState) — illustrative, not "
-            "transcribed from a real pipeline run."
+            "The 4.0 single-cell block's two new node types: a curated "
+            "pancreatic ductal epithelial marker panel (GeneProgram) and the "
+            "identity state it constitutes (CellState), populated with the "
+            "internal cell-state marker-curation schema fields. Both nodes "
+            "are illustrative, not transcribed from a real pipeline run."
         ),
-        "start": "dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag",
+        "start": "dapper:CellState.q_1MTMlGQ-VXlTkoHmlUEDNSJS7wyid5",
     },
 ]
 

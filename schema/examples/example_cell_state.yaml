@@ -1,19 +1,59 @@
 # A single CellState instance — the cellular phenotype defined by the
-# combination of CellPrograms active in a cell (or cell population), as
+# combination of GenePrograms active in a cell (or cell population), as
 # distinct from a cell TYPE (a Cell Ontology class naming lineage rather than
-# functional state). Pairs with example_cell_program.yaml, whose `id` this
+# functional state). Populated from a real curated record (pancreatic ductal
+# epithelial identity) to show the internal cell-state marker-curation schema
+# fields in use. See example_cell_graph.yaml for the GeneProgram this
 # instance's `has_program` resolves to.
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C CellState example_cell_state.yaml
 
-id: dapper:CellState.o-xs8f2LsywNBe1vpTfa_izCo1oaK4Ag
-name: Activated T cell state
-description: >-
-  A T cell in which the T-cell-activation program is switched on, marking a
-  transition out of a quiescent/naive state rather than a change in cell
-  lineage.
-cell_type: obo:CL_0000084      # T cell
+id: dapper:CellState.q_1MTMlGQ-VXlTkoHmlUEDNSJS7wyid5
+name: Ductal epithelial identity
 organism: human
 has_program:
-  - dapper:CellProgram.WdbjOhDxQE20gZlXwV8Zr_vTa-TUHKVC
+  - dapper:GeneProgram.8n58-QNe-CAgQ9fTDyXUsMeKOU4dJGDd
+
+# --- internal cell-state marker-curation schema ---
+allow_hard_call: false
+biological_description: Ductal epithelial identity represents a curated identity or subtype marker program within Ductal cell.
+cell_type_id: ductal
+cell_type_label: Ductal cell
+curation_notes: Canonical pancreatic ductal epithelial marker panel.
+curation_version: "2026-06-04"
+display_name: Ductal epithelial identity
+gene_expression_caveat: Expression in an identity state usually indicates association with cells that strongly express identity markers; it does not prove the gene defines the identity state.
+gene_expression_followup: Compare expression across related cell types and check whether the gene is broadly expressed or specific to this identity program.
+gene_expression_interpretation: If your gene is enriched here, it may be associated with the core identity, subtype identity, or differentiated function of Ductal cell.
+gene_expression_overinterpretation_warning: Do not interpret enrichment alone as evidence that the gene is a master regulator of cell identity.
+gene_set_description: curated_pancreas_cell_state_marker_set
+hard_call_notes: Use continuous activity scores by default. Hard calls require separate score-distribution validation.
+interpretation_caveat: Use as an identity or subtype activity gradient within the selected parent cell type, not as a mutually exclusive cell-state probability.
+interpretation_status: continuous_gradient
+is_composite_required: false
+is_qc: false
+manual_review_status: Not yet reviewed
+n_markers: 10
+portal_display_establishment: Canonical identity marker panel
+portal_methods_details: "Score scope: within_tissue_cell_type; Hard-call policy: Use continuous activity scores by default. Hard calls require separate score-distribution validation.; QC sensitivity: none"
+portal_primary_badges: AI curated cell state
+portal_user_summary: Ductal epithelial identity is a curated identity marker program for Ductal cell.
+portal_visibility: show_default
+provenance_warning_count: 1
+qc_sensitivity: none
+quality: AI curated
+quality_badges: AI curated cell state
+recommended_portal_label: Ductal epithelial identity
+recommended_portal_summary: Ductal epithelial identity represents a curated identity or subtype marker program within Ductal cell.
+release_class: portal_default
+score_scope: within_tissue_cell_type
+source_gmt: dat/pancreas/pancreas_cell_state_markers.gmt
+source_workbook: dat/pancreas/pancreas_cell_state_markers.xlsx
+state_class: broad_identity_gradient
+state_establishment_level: canonical_identity
+state_id: pancreas_ductal_cell_ductal_epithelial_identity
+state_label: Ductal epithelial identity
+state_level_citation_ids: citation_17b45b25a630;citation_1b862671bd5c;citation_35dd28a9b3eb;citation_fa96481393b2
+tissue_id: pancreas
+tissue_label: Pancreas

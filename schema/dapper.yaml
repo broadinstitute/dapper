@@ -46,11 +46,11 @@ description: >-
 
   This "4.0" profile is a SUPERSET of 3.2 and adds one block:
 
-    (E) SINGLE-CELL. `CellProgram` — a coordinated pattern of gene activity
+    (E) SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
         representing a biological process, e.g. a factor from cNMF/NMF/
         Spectra/WGCNA or a curated gene module — extends `Set` the same way
         `GeneSet` does, with genes as members. `CellState` is the cellular
-        phenotype defined by the combination of `CellProgram`s active in a
+        phenotype defined by the combination of `GeneProgram`s active in a
         cell (or cell population) at once, as distinct from a cell TYPE (a
         Cell Ontology class), which is what lineage a cell belongs to rather
         than what functional state it is in.
@@ -973,18 +973,18 @@ classes:
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
 
   # ======================================================================
-  # CELL PROGRAM / CELL STATE (4.0) — single-cell functional units. A
-  # CellProgram is a coordinated pattern of gene activity — a factor/module
+  # GENE PROGRAM / CELL STATE (4.0) — single-cell functional units. A
+  # GeneProgram is a coordinated pattern of gene activity — a factor/module
   # inferred from expression covariance (e.g. cNMF, NMF, Spectra, WGCNA) or a
   # curated gene module — representing a biological process a cell can turn
   # on or off; it extends Set the same way GeneSet does, with genes as
   # members. A CellState is the cellular phenotype defined by which
-  # CellPrograms are active in a cell (or cell population) at once —
+  # GenePrograms are active in a cell (or cell population) at once —
   # distinct from a cell TYPE (a Cell Ontology class), which is what lineage
   # a cell belongs to rather than what state it is currently in.
   # ======================================================================
 
-  CellProgram:
+  GeneProgram:
     is_a: Set
     aliases:
       - gene program
@@ -997,9 +997,9 @@ classes:
       factorization (cNMF, NMF, Spectra, WGCNA) or a curated gene module. No
       ontology term is asserted as class_uri — none resolves to "gene
       program" / "gene expression program" (verified against EBI OLS4) — so
-      CellProgram grounds via `is_a: Set` (prov:Collection), the same way
+      GeneProgram grounds via `is_a: Set` (prov:Collection), the same way
       GeneSet does. Distinct from GeneSet: a GeneSet is typically a static
-      annotation (e.g. an MSigDB term); a CellProgram is inferred from
+      annotation (e.g. an MSigDB term); a GeneProgram is inferred from
       expression covariance and is usually a quantitative loading over genes,
       not just membership — a large program should reference its full
       loading matrix via the member-manifest escape hatch `Set` already
@@ -1049,7 +1049,7 @@ classes:
       - cellular phenotype
       - cell type state
     description: >-
-      A cellular phenotype defined by the combination of CellPrograms active
+      A cellular phenotype defined by the combination of GenePrograms active
       in a cell (or cell population) — e.g. "activated", "exhausted",
       "hypoxic". Distinct from a cell TYPE (a Cell Ontology class, e.g.
       `obo:CL_0000542`): a CellState is a functional/transcriptional state a
@@ -1059,7 +1059,7 @@ classes:
       state" as a generic, cross-cell-type phenotype was found (verified
       against EBI OLS4) — so CellState grounds via `is_a: HashableNode`
       directly. Mixes in `ProvenancedResource` so a CellState is citable and
-      attributable the same way a `CellProgram` (via `Set`) already is.
+      attributable the same way a `GeneProgram` (via `Set`) already is.
     annotations:
       nih:profile_level: "4.0"
     attributes:
@@ -1086,8 +1086,167 @@ classes:
         multivalued: true
         slot_uri: nih:hasProgram
         description: >-
-          CellProgram id(s) active in this state. The combination of these —
+          GeneProgram id(s) active in this state. The combination of these —
           not any single program — is what defines the state.
+      allow_hard_call:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      biological_category:
+        is_a: literal
+        mixins: [hashable]
+      biological_description:
+        is_a: literal
+        mixins: [hashable]
+      cell_type_id:
+        is_a: literal
+        mixins: [hashable]
+      cell_type_label:
+        is_a: literal
+        mixins: [hashable]
+      curation_notes:
+        is_a: literal
+        mixins: [hashable]
+      curation_version:
+        is_a: literal
+        mixins: [hashable]
+      disease_context:
+        is_a: literal
+        mixins: [hashable]
+      display_name:
+        is_a: literal
+        mixins: [hashable]
+      display_order:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+      do_not_overinterpret_as:
+        is_a: literal
+        mixins: [hashable]
+      gene_expression_caveat:
+        is_a: literal
+        mixins: [hashable]
+      gene_expression_followup:
+        is_a: literal
+        mixins: [hashable]
+      gene_expression_interpretation:
+        is_a: literal
+        mixins: [hashable]
+      gene_expression_overinterpretation_warning:
+        is_a: literal
+        mixins: [hashable]
+      gene_set_description:
+        is_a: literal
+        mixins: [hashable]
+      hard_call_notes:
+        is_a: literal
+        mixins: [hashable]
+      interpretation_caveat:
+        is_a: literal
+        mixins: [hashable]
+      interpretation_status:
+        is_a: literal
+        mixins: [hashable]
+      is_composite_required:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      is_qc:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      known_limitations:
+        is_a: literal
+        mixins: [hashable]
+      manual_review_status:
+        is_a: literal
+        mixins: [hashable]
+      marker_panel_context:
+        is_a: literal
+        mixins: [hashable]
+      marker_provenance_summary:
+        is_a: literal
+        mixins: [hashable]
+      n_markers:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+      negative_checks:
+        is_a: literal
+        mixins: [hashable]
+      portal_display_establishment:
+        is_a: literal
+        mixins: [hashable]
+      portal_methods_details:
+        is_a: literal
+        mixins: [hashable]
+      portal_primary_badges:
+        is_a: literal
+        mixins: [hashable]
+      portal_user_summary:
+        is_a: literal
+        mixins: [hashable]
+      portal_visibility:
+        is_a: literal
+        mixins: [hashable]
+      provenance_warning_count:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+      qc_sensitivity:
+        is_a: literal
+        mixins: [hashable]
+      quality:
+        is_a: literal
+        mixins: [hashable]
+      quality_badges:
+        is_a: literal
+        mixins: [hashable]
+      recommended_portal_label:
+        is_a: literal
+        mixins: [hashable]
+      recommended_portal_summary:
+        is_a: literal
+        mixins: [hashable]
+      release_class:
+        is_a: literal
+        mixins: [hashable]
+      required_supporting_evidence:
+        is_a: literal
+        mixins: [hashable]
+      score_scope:
+        is_a: literal
+        mixins: [hashable]
+      source_gmt:
+        is_a: literal
+        mixins: [hashable]
+      source_workbook:
+        is_a: literal
+        mixins: [hashable]
+      state_class:
+        is_a: literal
+        mixins: [hashable]
+      state_establishment_level:
+        is_a: literal
+        mixins: [hashable]
+      state_establishment_rationale:
+        is_a: literal
+        mixins: [hashable]
+      state_id:
+        is_a: literal
+        mixins: [hashable]
+      state_label:
+        is_a: literal
+        mixins: [hashable]
+      state_level_citation_ids:
+        is_a: literal
+        mixins: [hashable]
+      tissue_id:
+        is_a: literal
+        mixins: [hashable]
+      tissue_label:
+        is_a: literal
+        mixins: [hashable]
 
   Agent:
     mixin: true

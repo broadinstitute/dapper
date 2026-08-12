@@ -97,7 +97,7 @@ DOC_GROUPS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",
-    "cell_programs": "CellProgram",
+    "gene_programs": "GeneProgram",
     "cell_states": "CellState",
     "datasets": "Dataset",
     "sets": "Set",
