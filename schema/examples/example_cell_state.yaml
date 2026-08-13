@@ -3,18 +3,21 @@
 # distinct from a cell TYPE (a Cell Ontology class naming lineage rather than
 # functional state). Populated from a real curated record (pancreatic ductal
 # epithelial identity) to show the internal cell-state marker-curation schema
-# fields in use. `has_program` points at example_gene_program.yaml — an
-# illustrative pairing to exercise the reference, not a real biological claim
-# that this NMF factor constitutes ductal identity.
+# fields in use. `has_program` points at three GenePrograms (Factor_1/2/3 of
+# the same NMF loading matrix) defined in example_cell_graph.yaml — an
+# illustrative pairing to exercise multi-program `has_program`, not a real
+# biological claim that these factors constitute ductal identity.
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C CellState example_cell_state.yaml
 
-id: dapper:CellState.IrgqH1icla6iIPI_xTyJPODa4V-qmGvj
+id: dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY
 name: Ductal epithelial identity
 organism: human
 has_program:
   - dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
+  - dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+  - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
 
 # --- internal cell-state marker-curation schema ---
 allow_hard_call: false

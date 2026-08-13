@@ -138,14 +138,14 @@ GRAPH_DOCS = [
         "key": "cellstate",
         "title": "Gene program to cell state",
         "blurb": (
-            "The 4.0 single-cell block's two new node types: a real NMF "
-            "gene-loading factor (GeneProgram, with member_weights) and a "
-            "curated pancreatic ductal epithelial identity state (CellState) "
-            "with the internal marker-curation schema fields. The pairing "
-            "between them is illustrative, exercising has_program rather "
-            "than asserting a biological claim."
+            "The 4.0 single-cell block's two new node types: three real NMF "
+            "gene-loading factors (GeneProgram, with member_weights) all "
+            "feeding into one curated pancreatic ductal epithelial identity "
+            "state (CellState) with the internal marker-curation schema "
+            "fields. The pairing is illustrative, exercising multi-program "
+            "has_program rather than asserting a biological claim."
         ),
-        "start": "dapper:CellState.IrgqH1icla6iIPI_xTyJPODa4V-qmGvj",
+        "start": "dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY",
     },
 ]
 

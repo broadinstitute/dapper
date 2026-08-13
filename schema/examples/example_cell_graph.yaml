@@ -1,23 +1,25 @@
 # A minimal graph-shaped DAPPER document, preloaded by the portal alongside
-# the geneset and claim-provenance graphs. Same GeneProgram/CellState
-# instances as example_gene_program.yaml and example_cell_state.yaml —
-# EXTRACTED verbatim, same ids — but wrapped in the group-keyed shape the
-# portal (and mint.py) expect (`gene_programs:` / `cell_states:` lists),
+# the geneset and claim-provenance graphs. Wrapped in the group-keyed shape
+# the portal (and mint.py) expect (`gene_programs:` / `cell_states:` lists),
 # rather than bare single-instance documents. This is a reference document
 # (mixed classes), not a single-class instance; validate the individual
 # nodes with `linkml-validate -C <ClassName>` if desired.
 #
-# Both nodes are illustrative — neither is transcribed from a real pipeline
-# run, unlike the geneset graph — so both are listed below. The CellState
-# content is a real curated record (pancreatic ductal epithelial identity);
-# the GeneProgram is real NMF loading output (Factor_1 of a gene-by-program
-# matrix). The pairing between them is illustrative only, to exercise
-# `has_program` and `member_weights` together — not a biological claim that
-# this factor constitutes ductal identity.
+# All nodes are illustrative — none is transcribed from a real pipeline run,
+# unlike the geneset graph. The CellState content is a real curated record
+# (pancreatic ductal epithelial identity); the three GenePrograms are real
+# NMF loading output (Factor_1/2/3 of the same gene-by-program matrix), all
+# feeding into that one CellState via `has_program`. The pairing is
+# illustrative only, to exercise multi-program `has_program` and
+# `member_weights` together — not a biological claim that these factors
+# constitute ductal identity. example_gene_program.yaml is Factor_1 by
+# itself, extracted verbatim (same id) as one of the three shown here.
 
 _illustrative:
   - dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
-  - dapper:CellState.IrgqH1icla6iIPI_xTyJPODa4V-qmGvj
+  - dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+  - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
+  - dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY
 
 gene_programs:
   - id: dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
@@ -51,12 +53,76 @@ gene_programs:
       - 0
     n_genes: 9
 
+  - id: dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+    name: Factor 2 gene program
+    description: >-
+      Gene program corresponding to Factor_2 of the same gene-by-program NMF
+      loading matrix as Factor_1. `member_weights` are the raw factor
+      loadings for each gene in `members`.
+    member_type: gene
+    organism: human
+    inference_method: NMF
+    members:
+      - ACAP3
+      - KLHL21
+      - SPATA21
+      - ZNF593OS
+      - NUDC
+      - TSSK3
+      - HPCA
+      - SZT2
+      - P3R3URF-PIK3R3
+    member_weights:
+      - 1.92982868794581
+      - 0
+      - 1.41943169514934
+      - 0.364042241816937
+      - 0
+      - 0.265336958328049
+      - 0.560016539134934
+      - 5.14936863606219
+      - 1.22097121174475
+    n_genes: 9
+
+  - id: dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
+    name: Factor 3 gene program
+    description: >-
+      Gene program corresponding to Factor_3 of the same gene-by-program NMF
+      loading matrix as Factor_1. `member_weights` are the raw factor
+      loadings for each gene in `members`.
+    member_type: gene
+    organism: human
+    inference_method: NMF
+    members:
+      - ACAP3
+      - KLHL21
+      - SPATA21
+      - ZNF593OS
+      - NUDC
+      - TSSK3
+      - HPCA
+      - SZT2
+      - P3R3URF-PIK3R3
+    member_weights:
+      - 1.57369171610168
+      - 10.0679500333788
+      - 8.71834604951173
+      - 0
+      - 15.4034448644715
+      - 1.70612016663444
+      - 0
+      - 2.60258911357416
+      - 4.35024040428927
+    n_genes: 9
+
 cell_states:
-  - id: dapper:CellState.IrgqH1icla6iIPI_xTyJPODa4V-qmGvj
+  - id: dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY
     name: Ductal epithelial identity
     organism: human
     has_program:
       - dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
+      - dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+      - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
 
     # --- internal cell-state marker-curation schema ---
     allow_hard_call: false
