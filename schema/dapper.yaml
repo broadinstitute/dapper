@@ -178,10 +178,14 @@ enums:
     description: The role a creator (Person/Organization) played for the dataset.
     permissible_values:
       PrincipalInvestigator:
-      Consortium:
       Researcher:
       DataManager:
       ProjectLeader:
+      Curator:
+      Consortium:
+      Organization:
+      Division:
+      Group:
 
   ContributorRoleEnum:
     description: >-
