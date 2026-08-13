@@ -1,0 +1,62 @@
+# Illustrative NIH-DAPP graph for a GWAS "bottom line" result: one
+# BottomLineResult node grouping 3 VariantRecord nodes. This is a reference
+# document (a mixed set of node types), not a single-class instance; validate
+# individual nodes with `linkml-validate -C <ClassName>` if desired.
+#
+# All variant/statistic values below are illustrative, not transcribed from a
+# real study. `variant` on each VariantRecord holds a GA4GH VRS Allele object
+# (VRS is a JSON specification with no RDF vocabulary, so it is carried
+# verbatim as a literal rather than modeled as nested LinkML classes — see
+# VariantRecord's `nih:source_standard` annotation in schema/dapper.yaml).
+#
+# Regenerate after re-minting: see schema/examples/README.md
+#
+# Unlike example_geneset_graph.yaml, nothing here is transcribed from a real
+# analysis run — every node is illustrative, so all 4 are listed below.
+_illustrative:
+  - dapper:VariantRecord.xsPcK_8DCkyKuNClmM-WWrDpZe_E-90c
+  - dapper:VariantRecord.pSRp5LNcTwJxD_dSoAKnIEJizqbAZnTv
+  - dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
+  - dapper:BottomLineResult.O8t3RyWcOMCFVi7ijBl7xO6ASm8d9ehS
+
+variant_records:
+  - id: dapper:VariantRecord.xsPcK_8DCkyKuNClmM-WWrDpZe_E-90c
+    name: "rs11591147 (PCSK9 p.Arg46Leu) x LDL cholesterol"
+    variant: ga4gh:VA.MDUsFkiDVuaWUyTj3k-0-flnDLL1yW0q # Made-up, toy digest
+    phenotype: LDL cholesterol
+    beta: -0.35
+    n: 188577
+    p_value: 2.1e-95
+    std_error: 0.017
+
+  - id: dapper:VariantRecord.pSRp5LNcTwJxD_dSoAKnIEJizqbAZnTv
+    name: "rs7412 (APOE epsilon2) x LDL cholesterol"
+    variant: ga4gh:VA.HA7AKt0LWv6AOyz0BD0m3Rz2RkhU32Bq # Made-up, toy digest
+    phenotype: LDL cholesterol
+    beta: -0.29
+    n: 188577
+    p_value: 4.8e-210
+    std_error: 0.009
+
+  - id: dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
+    name: "rs429358 (APOE epsilon4) x Alzheimer's disease"
+    variant: ga4gh:VA._j-SmMHncOohuKLsiRFYfK4zEDxjOwKh # Made-up, toy digest
+    phenotype: Alzheimer's disease
+    beta: 1.18
+    n: 94437
+    p_value: 3.3e-301
+    std_error: 0.014
+
+bottom_line_results:
+  - id: dapper:BottomLineResult.O8t3RyWcOMCFVi7ijBl7xO6ASm8d9ehS
+    name: Example LDL Cholesterol / Alzheimer's Disease GWAS Bottom Line
+    description: >-
+      Illustrative variant-level bottom-line summary statistics from a
+      genetic association analysis of LDL cholesterol and Alzheimer's
+      disease.
+    access_level: public
+    has_variant_record:
+      - dapper:VariantRecord.xsPcK_8DCkyKuNClmM-WWrDpZe_E-90c
+      - dapper:VariantRecord.pSRp5LNcTwJxD_dSoAKnIEJizqbAZnTv
+      - dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
+    n_variants: 3

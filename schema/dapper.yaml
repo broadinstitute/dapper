@@ -44,11 +44,18 @@ description: >-
         `ProvenancedResource`, so a hypothesis is citable exactly like a
         dataset.
 
+    (E) BOTTOM LINE RESULTS (3.3). `BottomLineResult` — a citable collection
+        of `VariantRecord` entries, the variant-level output of a GWAS/genetic
+        association analysis (a "bottom line" summary-statistics file). Each
+        `VariantRecord` carries the variant itself as a GA4GH VRS
+        representation plus the association statistics (effect size, sample
+        size, significance, standard error) for one phenotype.
+
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, hypotheses, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://creativecommons.org/licenses/by/4.0/
-version: 3.2.0
+version: 3.3.0
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
@@ -964,6 +971,127 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
+
+  # ======================================================================
+  # 3.3 BLOCK (E) — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
+  # association output. BottomLineResult is a citable collection (like Set),
+  # but unlike Set — whose `members` are plain CURIEs — its members are
+  # VariantRecord nodes carrying per-variant association statistics, so the
+  # relationship is expressed as a `has_variant_record` edge rather than
+  # `prov:hadMember`.
+  # ======================================================================
+  BottomLineResult:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    aliases:
+      - bottom line
+      - bottom line file
+      - summary statistics
+    description: >-
+      A citable collection of VariantRecord entries — the variant-level
+      "bottom line" output of a GWAS/genetic association analysis. Carries
+      the same attribution/provenance/mirror slots (ProvenancedResource) as
+      Dataset and Set, so a returned result set is citable and its
+      authoritative provenance is mirror-protected identically.
+    annotations:
+      nih:profile_level: "3.3"
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+        slot_uri: dcterms:description
+        exact_mappings:
+          - schema:description
+      has_variant_record:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        description: VariantRecord ids that are members of this result set.
+      n_variants:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        aliases:
+          - n_members
+        description: Count of VariantRecord members in the result set.
+
+  VariantRecord:
+    is_a: HashableNode
+    aliases:
+      - variant association record
+      - variant-phenotype association
+    description: >-
+      A single variant's association statistics for one phenotype, as
+      reported by a GWAS/genetic association analysis. The variant itself is
+      carried as a GA4GH VRS representation rather than a positional
+      (chrom/pos/ref/alt) description, so it is comparable across genome
+      builds and normalizations without a coordinate translation step.
+    annotations:
+      nih:profile_level: "3.3"
+      nih:source_standard: GA4GH VRS 2.x Variation
+    attributes:
+      variant:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          The GA4GH VRS representation of the variant (e.g. a serialized VRS
+          Allele object, or its VRS computed identifier, `ga4gh:VA. ...`).
+          VRS is a JSON specification with no RDF vocabulary — like GA4GH DRS
+          elsewhere in this profile — so this carries no class_uri and is
+          grounded via `nih:source_standard` instead.
+        aliases:
+          - vrs
+          - vrs_variation
+      phenotype:
+        is_a: literal
+        mixins: [hashable]
+        description: The phenotype/trait this variant was tested against.
+        aliases:
+          - trait
+      beta:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        description: Effect size (regression coefficient) of the association.
+        aliases:
+          - BETA
+      n:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        description: Sample size the association was computed over.
+        aliases:
+          - N
+      p_value:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+        description: Significance of the association.
+        aliases:
+          - pValue
+          - P
+      std_error:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        description: Standard error of `beta`.
+        aliases:
+          - stdError
+          - SE
+
+  # ---- bottom line result edges -------------------------------------------
+  HasVariantRecord:
+    is_a: Edge
+    description: BottomLineResult → VariantRecord.
+    annotations:
+      nih:profile_level: "3.3"
+    slot_usage:
+      predicate:
+        ifabsent: string(nih:hasVariantRecord)
 
   Agent:
     mixin: true

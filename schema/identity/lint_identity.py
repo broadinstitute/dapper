@@ -51,7 +51,11 @@ from dapper_identity import (  # noqa: E402
 )
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
-GRAPH_DOCS = ["example_geneset_graph.yaml", "example_claim_provenance_trace.yaml"]
+GRAPH_DOCS = [
+    "example_geneset_graph.yaml",
+    "example_claim_provenance_trace.yaml",
+    "example_bottom_line_result.yaml",
+]
 
 
 def main() -> int:

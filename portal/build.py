@@ -81,6 +81,9 @@ INLINE_LINKS = {
     "asserts": ("hycl:claims", "in"),
     "has_agentic_workspace": ("nih:hasAgenticWorkspace", "in"),
     "provenance_of": ("np:hasProvenance", "out"),
+    # variant records flow into the result they're a member of, same
+    # data-before-aggregate direction as a gene set's members
+    "has_variant_record": ("nih:hasVariantRecord", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
@@ -88,6 +91,8 @@ FAMILY = {
     "C2M2File": "data",
     "GeneSet": "data",
     "Dataset": "data",
+    "BottomLineResult": "data",
+    "VariantRecord": "data",
     "Activity": "process",
     "Hypothesis": "claim",
     "CausalStep": "claim",
@@ -128,6 +133,17 @@ GRAPH_DOCS = [
             "node is an illustrative agentic workspace that could re-run both steps."
         ),
         "start": "geneset:402cf4a1f3682a2e5bf1b002",
+    },
+    {
+        "file": "example_bottom_line_result.yaml",
+        "key": "bottom_line",
+        "title": "GWAS bottom line",
+        "blurb": (
+            "An illustrative variant-level GWAS bottom line: one BottomLineResult grouping "
+            "3 VariantRecord nodes, each a GA4GH VRS variant (a made-up VA digest) plus its "
+            "effect size, sample size, p-value and standard error for one phenotype."
+        ),
+        "start": "dapper:BottomLineResult.O8t3RyWcOMCFVi7ijBl7xO6ASm8d9ehS",
     },
 ]
 
