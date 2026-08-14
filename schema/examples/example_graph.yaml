@@ -147,7 +147,7 @@ ro_crate_packages:
 bio_compute_objects:
   - id: dapper:BioComputeObject.2b2W38cLlswqso5rj54c9RMjzqVF55Z-
     name: Example multi-omics pipeline BCO
-    bco_id: nih:bco/example-pipeline-v2
+    bco_id: dapper:bco/example-pipeline-v2
     bco_spec_version: https://w3id.org/ieee/ieee-2791-schema/2791object.json
     etag: 11ee0f7b8c...
     usability_domain:
@@ -159,7 +159,7 @@ bio_compute_objects:
 # An OpenAI mirror caches this dataset. It is ALLOWED to append the
 # MirrorProvenance node below (and a `mirror_provenance` block on its cached
 # copy). It is FORBIDDEN from editing any node above annotated
-# `nih:mirror_mutable: false` (awards, publications, recommended_citations, and
+# `dapper:mirror_mutable: false` (awards, publications, recommended_citations, and
 # the has_creator / funded_by / is_described_by / has_recommended_citation
 # links on the Dataset). Compliant append only:
 # ===========================================================================

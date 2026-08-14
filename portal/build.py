@@ -79,7 +79,7 @@ EDGE_GROUPS = {
 INLINE_LINKS = {
     "generated_by_activity": ("prov:wasGeneratedBy", "in"),
     "asserts": ("hycl:claims", "in"),
-    "has_agentic_workspace": ("nih:hasAgenticWorkspace", "in"),
+    "has_agentic_workspace": ("dapper:hasAgenticWorkspace", "in"),
     "provenance_of": ("np:hasProvenance", "out"),
 }
 
@@ -116,7 +116,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "nih:hypothesis/clcn5-pt-dysfunction-dent",
+        "start": "dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x",
     },
     {
         "file": "example_geneset_graph.yaml",
@@ -127,7 +127,7 @@ GRAPH_DOCS = [
             "geneset.provenance.json. Every file, activity and edge is real; the one dashed "
             "node is an illustrative agentic workspace that could re-run both steps."
         ),
-        "start": "geneset:402cf4a1f3682a2e5bf1b002",
+        "start": "dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ",
     },
 ]
 
@@ -148,13 +148,13 @@ def load_schema() -> dict:
             attrs[slot_name] = {
                 "description": (slot.get("description") or "").strip(),
                 # George's rule: a mirror must never rewrite these.
-                "authoritative": ann.get("nih:mirror_mutable") is False,
+                "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
         ann = body.get("annotations") or {}
         classes[name] = {
             "description": (body.get("description") or "").strip(),
-            "level": str(ann.get("nih:profile_level") or ""),
-            "npGraph": ann.get("nih:np_graph") or "",
+            "level": str(ann.get("dapper:profile_level") or ""),
+            "npGraph": ann.get("dapper:np_graph") or "",
             "mappings": (body.get("exact_mappings") or []) + (body.get("close_mappings") or []),
             "attributes": attrs,
             "family": FAMILY.get(name, "part"),
@@ -686,7 +686,7 @@ function valueHtml(v, ids) {
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
   if (/^https?:\/\//.test(s))
     return `<a class="ref" href="${esc(s)}" target="_blank" rel="noopener noreferrer">${esc(s)}</a>`;
-  const looksId = /^(dapper:|nih:|MONDO:|HGNC:|CL:|GO:|PMID:|orcid:|s3:)/.test(s);
+  const looksId = /^(dapper:|MONDO:|HGNC:|CL:|GO:|PMID:|orcid:|s3:)/.test(s);
   return `<span class="${looksId ? "mono" : ""}">${esc(s)}</span>`;
 }
 

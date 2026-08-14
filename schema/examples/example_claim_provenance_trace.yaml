@@ -510,13 +510,13 @@ was_generated_by_edges:
 # activity -> the workspace that can re-run it
 has_agentic_workspace_edges:
   - subject: dapper:Activity.mtSuYybAWDkBNBheeH_vAwiwl3AEvbaV
-    predicate: nih:hasAgenticWorkspace
+    predicate: dapper:hasAgenticWorkspace
     object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
   - subject: dapper:Activity.fGorLVztQOsGuaZA8B3KVxMRj4GWcx1L
-    predicate: nih:hasAgenticWorkspace
+    predicate: dapper:hasAgenticWorkspace
     object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
   - subject: dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
-    predicate: nih:hasAgenticWorkspace
+    predicate: dapper:hasAgenticWorkspace
     object: dapper:AgenticWorkspace.437GE1YwXUCUgO1cM1DFBmf98uPnko0_
 
 # claim -> its nanopub, and nanopub -> its three graphs
@@ -544,5 +544,5 @@ has_provenance_edges:
 # the composite hypothesis <- the supporting nanopub
 supported_by_nanopub_edges:
   - subject: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
-    predicate: nih:supportedByNanopub
+    predicate: dapper:supportedByNanopub
     object: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
