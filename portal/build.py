@@ -84,6 +84,9 @@ INLINE_LINKS = {
     # CellState -> GeneProgram: the program is upstream of the state it
     # constitutes, same "in" direction as generated_by_activity.
     "has_program": ("dapper:hasProgram", "in"),
+    # variant records flow into the result they're a member of, same
+    # data-before-aggregate direction as a gene set's members
+    "has_variant_record": ("dapper:hasVariantRecord", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
@@ -92,6 +95,8 @@ FAMILY = {
     "GeneSet": "data",
     "GeneProgram": "data",
     "Dataset": "data",
+    "BottomLineResult": "data",
+    "VariantRecord": "data",
     "Activity": "process",
     "Hypothesis": "claim",
     "CausalStep": "claim",
@@ -146,6 +151,17 @@ GRAPH_DOCS = [
             "has_program rather than asserting a biological claim."
         ),
         "start": "dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY",
+    },
+    {
+        "file": "example_bottom_line_result.yaml",
+        "key": "bottom_line",
+        "title": "GWAS bottom line",
+        "blurb": (
+            "An illustrative variant-level GWAS bottom line: one BottomLineResult grouping "
+            "3 VariantRecord nodes, each a GA4GH VRS variant (a made-up VA digest) plus its "
+            "effect size, sample size, p-value and standard error for one phenotype."
+        ),
+        "start": "dapper:BottomLineResult.5EbOu3O0VESGRmoubJhFQ92kzI6vY3xd",
     },
 ]
 
