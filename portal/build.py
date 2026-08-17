@@ -143,7 +143,7 @@ GRAPH_DOCS = [
         "key": "cellstate",
         "title": "Gene program to cell state",
         "blurb": (
-            "The 4.0 single-cell block's two new node types: three real NMF "
+            "The single-cell block's two new node types: three real NMF "
             "gene-loading factors (GeneProgram, with member_weights) all "
             "feeding into one curated pancreatic ductal epithelial identity "
             "state (CellState) with the internal marker-curation schema "
@@ -187,7 +187,6 @@ def load_schema() -> dict:
         ann = body.get("annotations") or {}
         classes[name] = {
             "description": (body.get("description") or "").strip(),
-            "level": str(ann.get("dapper:profile_level") or ""),
             "npGraph": ann.get("dapper:np_graph") or "",
             "mappings": (body.get("exact_mappings") or []) + (body.get("close_mappings") or []),
             "attributes": attrs,
@@ -756,7 +755,6 @@ function renderInspector() {
   const badges = [node.illustrative
     ? `<span class="badge warn">Illustrative</span>`
     : `<span class="badge solid">Real run</span>`];
-  if (cls.level) badges.push(`<span class="badge">Profile ${cls.level}</span>`);
   if (cls.npGraph) badges.push(`<span class="badge">${cls.npGraph} graph</span>`);
 
   let html = `<span class="eyebrow">Inspector</span>
