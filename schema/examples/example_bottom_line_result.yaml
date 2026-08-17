@@ -21,18 +21,18 @@ _illustrative:
 
 variant_records:
   - id: dapper:VariantRecord.xsPcK_8DCkyKuNClmM-WWrDpZe_E-90c
-    name: "rs11591147 (PCSK9 p.Arg46Leu) x LDL cholesterol"
+    name: "rs11591147 (PCSK9 p.Arg46Leu)"
     variant: ga4gh:VA.MDUsFkiDVuaWUyTj3k-0-flnDLL1yW0q # Made-up, toy digest
-    phenotype: LDL cholesterol
+    phenotype: Alzheimer's disease
     beta: -0.35
     n: 188577
     p_value: 2.1e-95
     std_error: 0.017
 
   - id: dapper:VariantRecord.pSRp5LNcTwJxD_dSoAKnIEJizqbAZnTv
-    name: "rs7412 (APOE epsilon2) x LDL cholesterol"
+    name: "rs7412 (APOE epsilon2)"
     variant: ga4gh:VA.HA7AKt0LWv6AOyz0BD0m3Rz2RkhU32Bq # Made-up, toy digest
-    phenotype: LDL cholesterol
+    phenotype: Alzheimer's disease
     beta: -0.29
     n: 188577
     p_value: 4.8e-210
@@ -49,10 +49,10 @@ variant_records:
 
 bottom_line_results:
   - id: dapper:BottomLineResult.O8t3RyWcOMCFVi7ijBl7xO6ASm8d9ehS
-    name: Example LDL Cholesterol / Alzheimer's Disease GWAS Bottom Line
+    name: Example Alzheimer's Disease GWAS Bottom Line
     description: >-
       Illustrative variant-level bottom-line summary statistics from a
-      genetic association analysis of LDL cholesterol and Alzheimer's
+      genetic association analysis Alzheimer's
       disease.
     access_level: public
     has_variant_record:
