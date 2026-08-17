@@ -49,7 +49,7 @@ has_drs_object:
   - dapper:DrsObject.X8x2qXKC_q1guH6BnWOY8RNKXN4OY2rt
 packaged_as: dapper:RoCratePackage.9zxxksJUBcpd6A-_FVKVWBRs8B3Clu4U
 has_workflow_provenance:
-  - dapper:BioComputeObject.2b2W38cLlswqso5rj54c9RMjzqVF55Z-
+  - dapper:BioComputeObject.lbcUb1_AttPzD87LUusfXyXq3pB_bts0
 
 # --- mirror-appended (append-only; NOT authoritative) ---
 has_mirror_provenance:
