@@ -84,6 +84,45 @@
         ]
       },
       "expected_id": "dapper:Dataset.UIypYwZSXzkH0bQAutCVyev07HmQZZp8"
+    },
+    {
+      "name": "minimal-gene-program",
+      "class": "GeneProgram",
+      "note": "Baseline for the 4.0 single-cell block. GeneProgram extends Set the same way GeneSet does. Renamed from CellProgram; the class name is part of the digest, so the id changed even though the content did not.",
+      "instance": {
+        "name": "hypoxia response program",
+        "assay": "scRNA-seq",
+        "organism": "human",
+        "inference_method": "cNMF",
+        "biological_process": ["obo:GO_0001666"],
+        "n_genes": 42
+      },
+      "expected_id": "dapper:GeneProgram.TcCFYMbd8N6Usvp16eQAgQhWw0WPr4w0"
+    },
+    {
+      "name": "gene-program-gene-count-changed",
+      "class": "GeneProgram",
+      "note": "DIFFERENT id from minimal-gene-program. n_genes is hashable: a different loading is a different program.",
+      "instance": {
+        "name": "hypoxia response program",
+        "assay": "scRNA-seq",
+        "organism": "human",
+        "inference_method": "cNMF",
+        "biological_process": ["obo:GO_0001666"],
+        "n_genes": 43
+      },
+      "expected_id": "dapper:GeneProgram.RkjL2cpmspK5ZuK6_fzESv-Sts0gHGKc"
+    },
+    {
+      "name": "cell-state-references-program",
+      "class": "CellState",
+      "note": "A CellState digests the GeneProgram(s) active in it via their bare digest, same as nested-reference-substitution.",
+      "instance": {
+        "name": "hypoxic tumor cell state",
+        "cell_type": "obo:CL_0001063",
+        "has_program": ["dapper:GeneProgram.TcCFYMbd8N6Usvp16eQAgQhWw0WPr4w0"]
+      },
+      "expected_id": "dapper:CellState.Odfn6Ab5WmbeI0CFX5gMLAaW1GpQHfD8"
     }
   ]
 }

@@ -81,13 +81,22 @@ INLINE_LINKS = {
     "asserts": ("hycl:claims", "in"),
     "has_agentic_workspace": ("dapper:hasAgenticWorkspace", "in"),
     "provenance_of": ("np:hasProvenance", "out"),
+    # CellState -> GeneProgram: the program is upstream of the state it
+    # constitutes, same "in" direction as generated_by_activity.
+    "has_program": ("dapper:hasProgram", "in"),
+    # variant records flow into the result they're a member of, same
+    # data-before-aggregate direction as a gene set's members
+    "has_variant_record": ("dapper:hasVariantRecord", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
 FAMILY = {
     "C2M2File": "data",
     "GeneSet": "data",
+    "GeneProgram": "data",
     "Dataset": "data",
+    "BottomLineResult": "data",
+    "VariantRecord": "data",
     "Activity": "process",
     "Hypothesis": "claim",
     "CausalStep": "claim",
@@ -129,6 +138,31 @@ GRAPH_DOCS = [
         ),
         "start": "dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ",
     },
+    {
+        "file": "example_cell_graph.yaml",
+        "key": "cellstate",
+        "title": "Gene program to cell state",
+        "blurb": (
+            "The single-cell block's two new node types: three real NMF "
+            "gene-loading factors (GeneProgram, with member_weights) all "
+            "feeding into one curated pancreatic ductal epithelial identity "
+            "state (CellState) with the internal marker-curation schema "
+            "fields. The pairing is illustrative, exercising multi-program "
+            "has_program rather than asserting a biological claim."
+        ),
+        "start": "dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY",
+    },
+    {
+        "file": "example_bottom_line_result.yaml",
+        "key": "bottom_line",
+        "title": "GWAS bottom line",
+        "blurb": (
+            "An illustrative variant-level GWAS bottom line: one BottomLineResult grouping "
+            "3 VariantRecord nodes, each a GA4GH VRS variant (a made-up VA digest) plus its "
+            "effect size, sample size, p-value and standard error for one phenotype."
+        ),
+        "start": "dapper:BottomLineResult.5EbOu3O0VESGRmoubJhFQ92kzI6vY3xd",
+    },
 ]
 
 def is_illustrative(node_id: str, illustrative: set[str]) -> bool:
@@ -153,7 +187,6 @@ def load_schema() -> dict:
         ann = body.get("annotations") or {}
         classes[name] = {
             "description": (body.get("description") or "").strip(),
-            "level": str(ann.get("dapper:profile_level") or ""),
             "npGraph": ann.get("dapper:np_graph") or "",
             "mappings": (body.get("exact_mappings") or []) + (body.get("close_mappings") or []),
             "attributes": attrs,
@@ -417,6 +450,7 @@ button.action + button.action { margin-top: 6px; }
 .field dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
 .field dd { margin: 4px 0 0; font-size: 12.5px; word-break: break-word; }
 .field dd.mono { font-family: var(--mono); font-size: 11.5px; }
+.list-item:not(:last-child)::after { content: ", "; color: var(--ink-soft); }
 .field .why { font-size: 11.5px; color: var(--muted); margin-top: 3px; font-style: italic; }
 .lock { color: var(--trace); font-size: 10px; }
 .ref {
@@ -680,7 +714,8 @@ function splitId(id) {
 }
 
 function valueHtml(v, ids) {
-  if (Array.isArray(v)) return v.map(x => valueHtml(x, ids)).join("");
+  if (Array.isArray(v))
+    return `<span class="list-item">${v.map(x => valueHtml(x, ids)).join('</span><span class="list-item">')}</span>`;
   if (v && typeof v === "object") return `<span class="mono">${esc(JSON.stringify(v))}</span>`;
   const s = String(v);
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
@@ -720,7 +755,6 @@ function renderInspector() {
   const badges = [node.illustrative
     ? `<span class="badge warn">Illustrative</span>`
     : `<span class="badge solid">Real run</span>`];
-  if (cls.level) badges.push(`<span class="badge">Profile ${cls.level}</span>`);
   if (cls.npGraph) badges.push(`<span class="badge">${cls.npGraph} graph</span>`);
 
   let html = `<span class="eyebrow">Inspector</span>

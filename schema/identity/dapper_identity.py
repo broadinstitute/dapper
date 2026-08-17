@@ -97,6 +97,8 @@ DOC_GROUPS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",
+    "gene_programs": "GeneProgram",
+    "cell_states": "CellState",
     "datasets": "Dataset",
     "sets": "Set",
     "hypotheses": "Hypothesis",
@@ -121,6 +123,8 @@ DOC_GROUPS = {
     "ro_crate_packages": "RoCratePackage",
     "bio_compute_objects": "BioComputeObject",
     "mirror_provenances": "MirrorProvenance",
+    "bottom_line_results": "BottomLineResult",
+    "variant_records": "VariantRecord",
 }
 
 
