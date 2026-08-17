@@ -13,7 +13,7 @@ run. No changes to any project's dependencies.
 ```bash
 # a single gene set (sibling geneset.meta.json auto-discovered), validated
 uv run schema/converter/geneset_to_dapper.py \
-  schema/examples/geneset-hubmap-hz2/ -o out/ --validate
+  tests/fixtures/geneset-hubmap-hz2/ -o out/ --validate
 
 # a local tree — converts every geneset.provenance.json found
 uv run schema/converter/geneset_to_dapper.py /path/to/runs/ -o out/

@@ -1,7 +1,7 @@
 # Illustrative full NIH-DAPP graph for the HuBMAP HZ2 gene set — the nodes and
 # reified edges that example_geneset.yaml's CURIEs resolve to. Transcribed from
 # the REAL provenance graph at
-#   examples/geneset-hubmap-hz2/geneset.provenance.json
+#   tests/fixtures/geneset-hubmap-hz2/geneset.provenance.json
 # This is a reference document (a mixed set of node/edge types), not a
 # single-class instance; validate individual nodes with `linkml-validate -C
 # <ClassName>` if desired.
