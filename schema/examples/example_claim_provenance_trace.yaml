@@ -27,7 +27,7 @@
 #         -> Used edges (prov:used)  -> C2M2File
 #
 # WHAT IS REAL vs ILLUSTRATIVE
-#   REAL, transcribed from examples/geneset-hubmap-hz2/geneset.provenance.json:
+#   REAL, transcribed from tests/fixtures/geneset-hubmap-hz2/geneset.provenance.json:
 #     every c2m2_file, the two activities, the gene set node, and all the
 #     used/was_generated_by edges among them. Same values as
 #     example_geneset_graph.yaml.

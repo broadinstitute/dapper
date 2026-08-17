@@ -16,7 +16,7 @@ NIH-DAPP data model.
 Everything below is backed by files in this repo:
 `../dapper.yaml` (the extended model), `../examples/example_geneset.yaml`
 + `example_geneset_graph.yaml` (the HZ2 gene set as NIH-DAPP), and the source fixtures under
-`../examples/geneset-hubmap-hz2/`.
+`../../tests/fixtures/geneset-hubmap-hz2/`.
 
 ## The one modeling decision: `Set` vs `Dataset`
 
@@ -184,7 +184,7 @@ graph doc (`<id>.dapper.yaml`) plus the focus `GeneSet` node. It takes a local f
 ```bash
 # one gene set, validated
 uv run schema/converter/geneset_to_dapper.py \
-  schema/examples/geneset-hubmap-hz2/ -o out/ --validate
+  tests/fixtures/geneset-hubmap-hz2/ -o out/ --validate
 # batch straight from S3
 uv run schema/converter/geneset_to_dapper.py \
   s3://dig-gene-set-data/LINCS_L1000/ -o out/ --validate
