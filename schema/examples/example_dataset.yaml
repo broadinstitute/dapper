@@ -38,8 +38,8 @@ has_recommended_citation: dapper:RecommendedCitation.c1GMFzWcd887Rqwh55TLFETlo1i
 has_license: dapper:License.x3eovLQ0VYpz5G0K7AhgYdTjkdvCpMfv
 was_generated_by: dapper:Activity.I1ssZi1jZCZNj80yIalfRM5cf0D1x_aa
 was_derived_from:
-  - nih:source/raw-sequencing
-  - nih:source/release-manifest-v2.1
+  - dapper:source/raw-sequencing
+  - dapper:source/release-manifest-v2.1
 
 # --- 2.0 links ---
 has_data_use_term:

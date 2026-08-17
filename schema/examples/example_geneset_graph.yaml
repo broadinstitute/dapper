@@ -259,8 +259,8 @@ was_generated_by_edges:
 # activities -> the one workspace that can re-run them both
 has_agentic_workspace_edges:
   - subject: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
-    predicate: nih:hasAgenticWorkspace
+    predicate: dapper:hasAgenticWorkspace
     object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN
   - subject: dapper:Activity.CH9BwH64-PsjRM5UcETW5ooWQ1rZ1Fxa
-    predicate: nih:hasAgenticWorkspace
+    predicate: dapper:hasAgenticWorkspace
     object: dapper:AgenticWorkspace.UuODSZn36qaMLirzvexGGauD-PwSl_EN

@@ -25,6 +25,11 @@ because its absence produced a real bug during implementation:
   8. external ids kept  — minting never overwrites an ORCID, ROR or BCO id
                          (broadinstitute/dapper#1: nodes whose id WAS their
                           external identifier had both rewritten)
+  9. no dotted terms    — no self-defined `dapper:` predicate has a local
+                          name containing `.` (digest_of() partitions on the
+                          first `.` to pull a minted id apart from its class
+                          name; a term like `dapper:Foo.v2` would be
+                          misparsed as an id reference and truncated)
 
 Usage:
     uv run schema/identity/lint_identity.py
@@ -207,6 +212,22 @@ def main() -> int:
     else:
         kept.append("prose rewritten")
     print(f"8. external ids kept  : {', '.join(kept)}")
+
+    # --- 9. self-defined dapper: predicates must not contain a dot ---------
+    # digest_of() (dapper_identity.py) treats any `dapper:X.Y` string as a
+    # minted id and strips it to Y. A schema-defined predicate default that
+    # happens to contain a dot in its local name would be silently truncated
+    # when it flows through a hashable slot value.
+    dotted = []
+    for cn in concrete:
+        for slot in sv.class_induced_slots(cn):
+            default = str(slot.ifabsent or "")
+            m = re.match(r"string\(dapper:([^)]+)\)", default)
+            if m and "." in m.group(1):
+                dotted.append(f"{cn}.{slot.name} ifabsent default dapper:{m.group(1)}")
+    print(f"9. no dotted terms    : {len(dotted)} self-defined predicate(s) with a dot in the local name")
+    for d in dotted:
+        failures.append(f"{d} — will be misparsed as a minted id by digest_of()")
 
     print()
     if failures:
