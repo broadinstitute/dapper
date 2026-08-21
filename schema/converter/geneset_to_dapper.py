@@ -3,10 +3,10 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml", "rdflib", "linkml-runtime"]
 # ///
-"""Convert dig.geneset provenance into NIH-DAPP instances.
+"""Convert dig.geneset provenance into DAPPER instances.
 
 Reads the lab's `geneset.provenance.json` (+ sibling `geneset.meta.json`) emitted by
-`flannick/dig-gene-set-extractors` and writes validated NIH-DAPP nodes/edges:
+`flannick/dig-gene-set-extractors` and writes validated DAPPER nodes/edges:
 
   <geneset_id>.dapper.yaml   the full provenance graph (C2M2File / Activity / GeneSet
                              nodes + Used / WasGeneratedBy edges)
@@ -37,12 +37,12 @@ from typing import Any
 
 import yaml
 
-# dig.geneset edge label -> (NIH-DAPP edge bucket, PROV predicate)
+# dig.geneset edge label -> (DAPPER edge bucket, PROV predicate)
 _INPUT_LABELS = {"data input", "metadata input"}
 _OUTPUT_LABEL = "data output"
 _EDGE_ROLE = {"data input": "data_input", "metadata input": "metadata_input"}
 
-# NIH-DAPP classes emitted, keyed by the output-doc list name.
+# DAPPER classes emitted, keyed by the output-doc list name.
 _NODE_BUCKETS = ("c2m2_files", "activities", "gene_sets")
 _EDGE_BUCKETS = ("used_edges", "was_generated_by_edges")
 
@@ -122,7 +122,7 @@ def _gene_set(node: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
 
 
 def convert_graph(graph: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
-    """Map one dig.geneset ProvenanceGraph ({nodes, edges}) to a NIH-DAPP doc."""
+    """Map one dig.geneset ProvenanceGraph ({nodes, edges}) to a DAPPER doc."""
     # sha256 lookup: dig.geneset File nodes carry MD5; the metadata sidecar carries SHA-256.
     sha_by_localid: dict[str, str] = {}
     for f in (meta.get("input", {}) or {}).get("files", []) or []:
@@ -298,7 +298,7 @@ def validate_doc(doc_path: Path, schema: Path) -> bool:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Convert dig.geneset provenance to NIH-DAPP.")
+    ap = argparse.ArgumentParser(description="Convert dig.geneset provenance to DAPPER.")
     ap.add_argument("input", help="geneset.provenance.json, a directory, or an s3:// URI/prefix")
     ap.add_argument("-o", "--out-dir", default="dapper-out", type=Path)
     ap.add_argument("--overlay", type=Path, help="YAML of NIH attribution to inject on the focus GeneSet")

@@ -1,4 +1,4 @@
-# Illustrative full NIH-DAPP node graph — the nodes that the CURIEs in
+# Illustrative full DAPPER node graph — the nodes that the CURIEs in
 # example_dataset.yaml resolve to. This is a reference document (a mixed set of
 # node types), not a single-class instance; validate individual nodes with
 # `linkml-validate -C <ClassName>` if desired. It also demonstrates the
@@ -110,7 +110,7 @@ recommended_citations:
       - primary_publication
       - grant_number
 
-# ---- 2.0: DRS, DUO, RO-Crate, BioCompute ----
+# ---- DRS, DUO, RO-Crate, BioCompute ----
 drs_objects:
   - id: dapper:DrsObject.X8x2qXKC_q1guH6BnWOY8RNKXN4OY2rt
     name: raw sequencing bundle

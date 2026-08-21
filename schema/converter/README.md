@@ -1,7 +1,7 @@
 # `geneset_to_dapper.py` — dig.geneset → DAPPER converter
 
 Reads the lab's `dig.geneset` provenance (`geneset.provenance.json` + `geneset.meta.json`, from
-`flannick/dig-gene-set-extractors`) and emits **validated NIH-DAPP instances**. It's the
+`flannick/dig-gene-set-extractors`) and emits **validated DAPPER instances**. It's the
 executable form of the crosswalk in
 [`../docs/geneset-provenance-nih-dapp-adaptation.md`](../docs/geneset-provenance-nih-dapp-adaptation.md).
 
@@ -49,7 +49,7 @@ Per gene set, into `-o OUT_DIR`:
 
 ## Mapping (summary)
 
-| dig.geneset | NIH-DAPP |
+| dig.geneset | DAPPER |
 |---|---|
 | `File` node + `c2m2_properties` | `C2M2File` (+ `sha256` from the metadata sidecar) |
 | `AnalysisType` node + `analysis{}` | `Activity` (command / observed_command / script_url / code_version / entrypoint / container_image) |

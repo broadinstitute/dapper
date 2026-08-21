@@ -26,11 +26,11 @@ HZ2 = FIXTURES / "geneset-hubmap-hz2"
 sys.path.insert(0, str(REPO_ROOT / "schema" / "identity"))
 sys.path.insert(0, str(REPO_ROOT / "schema" / "converter"))
 
+from dapper_identity import load_schema
 
 @pytest.fixture(scope="session")
 def sv():
     """SchemaView over schema/dapper.yaml."""
-    from dapper_identity import load_schema
 
     return load_schema(SCHEMA)
 

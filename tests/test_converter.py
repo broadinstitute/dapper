@@ -2,7 +2,7 @@
 
 The converter implements the crosswalk in
 schema/docs/geneset-provenance-nih-dapp-adaptation.md. The parts worth pinning
-down are the ones where dig.geneset and NIH-DAPP disagree in shape:
+down are the ones where dig.geneset and DAPPER disagree in shape:
 
   * edge DIRECTION — dig.geneset draws file --(data input)--> analysis, PROV
     says activity prov:used entity. Getting this backwards produces a graph
@@ -82,7 +82,7 @@ def test_c2m2_file_without_a_sidecar_entry_simply_omits_sha256():
 def test_activity_lifts_environment_fields_and_synonyms_to_aliases():
     """Executable provenance is flattened out of two nested dig.geneset objects.
 
-    NIH-DAPP keeps replay fields flat on Activity, while dig.geneset nests them
+    DAPPER keeps replay fields flat on Activity, while dig.geneset nests them
     under analysis.environment and renames one (analysis.version ->
     code_version). This pins that flattening, including c2m2 synonyms becoming
     LinkML aliases.
@@ -138,7 +138,7 @@ def test_gene_set_prefers_the_nodes_own_description_over_the_sidecars():
 # convert_graph — the whole HZ2 graph
 # --------------------------------------------------------------------------
 def test_convert_graph_routes_every_node_type_to_its_bucket(hz2_graph, hz2_meta):
-    """Each dig.geneset node type lands in the right NIH-DAPP document list.
+    """Each dig.geneset node type lands in the right DAPPER document list.
 
     Counts are asserted against the real HZ2 run (9 File, 2 AnalysisType,
     1 GeneSet), so a routing change that silently drops or double-counts a type

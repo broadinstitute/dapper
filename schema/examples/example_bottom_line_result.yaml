@@ -1,4 +1,4 @@
-# Illustrative NIH-DAPP graph for a GWAS "bottom line" result: one
+# Illustrative DAPPER graph for a GWAS "bottom line" result: one
 # BottomLineResult node grouping 3 VariantRecord nodes. This is a reference
 # document (a mixed set of node types), not a single-class instance; validate
 # individual nodes with `linkml-validate -C <ClassName>` if desired.

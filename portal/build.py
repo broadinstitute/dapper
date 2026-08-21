@@ -3,7 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml"]
 # ///
-"""Build the NIH-DAPP provenance portal — a single self-contained index.html.
+"""Build the DAPPER provenance portal — a single self-contained index.html.
 
 Reads the schema and the example documents next door, and inlines them together
 with Cytoscape.js + ELK from `lib/`.
@@ -181,7 +181,7 @@ def load_schema() -> dict:
             ann = slot.get("annotations") or {}
             attrs[slot_name] = {
                 "description": (slot.get("description") or "").strip(),
-                # George's rule: a mirror must never rewrite these.
+                # A mirror must never rewrite these (see the mirroring invariant in schema/dapper.yaml).
                 "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
         ann = body.get("annotations") or {}
@@ -316,7 +316,7 @@ TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NIH-DAPP · provenance inspector</title>
+<title>DAPPER · provenance inspector</title>
 <style>
 :root {
   --paper: #F7F8F6;
@@ -464,7 +464,7 @@ button.action + button.action { margin-top: 6px; }
 <body>
 <div class="shell">
   <header>
-    <h1>NIH-DAPP <span>· provenance inspector</span></h1>
+    <h1>DAPPER <span>· provenance inspector</span></h1>
     <p class="tagline" id="blurb"></p>
   </header>
 

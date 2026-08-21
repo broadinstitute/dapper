@@ -171,7 +171,7 @@ it.
 |---|---|---|
 | Temporal | `Activity.generated_at_time`, `AgenticWorkspace.last_run`, `MirrorProvenance.sync_time`, `Nanopublication.created` | Re-running something does not make it a different thing |
 | Signature | `Nanopublication.has_signature_element` | A signature attests to content; it cannot be part of what it attests to |
-| Mirror-observed | `ProvenancedResource.has_mirror_provenance` | A mirror's observation must not change the artifact's identity (George's invariant) |
+| Mirror-observed | `ProvenancedResource.has_mirror_provenance` | A mirror's observation must not change the artifact's identity (the mirroring invariant) |
 | Location | `AgenticWorkspace.workspace_url`, `platform` | Where work can be re-run is not what the work is |
 | Back-reference | `Hypothesis.asserted_in`, `NanopubPublicationInfo.pubinfo_of`, `NanopubProvenance.provenance_of`, `NanopubSignature.has_signature_target` | Carries nothing the forward edge doesn't — **and breaks the reference cycles** |
 

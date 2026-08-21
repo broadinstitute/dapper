@@ -1,5 +1,5 @@
-# A single valid NIH-DAPP `Dataset` node instance, adapted from George
-# Papanicolaou's (NIH/OD) worked example. Validate with:
+# A single valid DAPPER `Dataset` node instance, adapted from an NIH/OD
+# worked example. Validate with:
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C Dataset example_dataset.yaml
@@ -41,7 +41,7 @@ was_derived_from:
   - dapper:source/raw-sequencing
   - dapper:source/release-manifest-v2.1
 
-# --- 2.0 links ---
+# --- DUO / DRS / RO-Crate / BioCompute links ---
 has_data_use_term:
   - dapper:DataUseTerm.aQITUepHCPDzhbarOQSlHFFYeiChOC5n        # permission: general research use
   - dapper:DataUseTerm.fl93QVlLuAx9D2f3Yv3KXJEEde5X1QoJ        # modifier: publication required

@@ -1,4 +1,4 @@
-# NIH-DAPP 3.0 — a claim traced ALL THE WAY BACK to the C2M2 files it rests on.
+# DAPPER — a claim traced ALL THE WAY BACK to the C2M2 files it rests on.
 #
 # This is example_geneset_graph.yaml extended past the gene set: it keeps going
 # through the analysis that consumed the gene set, to the claim that analysis

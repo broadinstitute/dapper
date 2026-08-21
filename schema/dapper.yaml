@@ -1,9 +1,9 @@
 id: https://cfdeknowledge.org/nih-mcp-gateway/dapper
 name: dapper
-title: DAPPER - NIH Dataset Attribution and Provenance Profile (working title)
+title: DAPPER - NIH Dataset Attribution and Provenance Profile
 description: >-
-  A LinkML data model for the NIH Dataset Attribution and Provenance Profile
-  (NIH-DAPP). Every dataset returned through an NIH MCP server should carry
+  A LinkML data model for DAPPER, the NIH Dataset Attribution and Provenance
+  Profile. Every dataset returned through an NIH MCP server should carry
   enough structured metadata for an AI system to cite the dataset, identify its
   creators, link to the primary publication, report the NIH grant/award that
   supported it, and describe the provenance of the returned result. The
@@ -13,50 +13,50 @@ description: >-
 
   On top of that core, the profile adds six further blocks:
 
-    (A) DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
-        DISMECH disease-pathophysiology schema
-        (https://w3id.org/monarch-initiative/dismech), so the two models stay
-        harmonized without either one forking the other. DISMECH is mirrored
-        verbatim from upstream and is NOT edited; all harmonization lives here
-        as `exact_mappings` / `close_mappings` plus a `DismechLinked` mixin
-        carrying pointers. Reuse, don't reinvent.
+    DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
+      DISMECH disease-pathophysiology schema
+      (https://w3id.org/monarch-initiative/dismech), so the two models stay
+      harmonized without either one forking the other. DISMECH is mirrored
+      verbatim from upstream and is NOT edited; all harmonization lives here
+      as `exact_mappings` / `close_mappings` plus a `DismechLinked` mixin
+      carrying pointers. Reuse, don't reinvent.
 
-    (B) NANOPUBLICATION. The nanopublication model as used by the Nanodash /
-        Knowledge Pixels stack: the Head/assertion/provenance/pubinfo quad and
-        the npx signature + lifecycle (supersedes / retracts / introduces)
-        terms. Lets a NIH-DAPP object be emitted as, or minted from, a signed
-        nanopublication.
+    NANOPUBLICATION. The nanopublication model as used by the Nanodash /
+      Knowledge Pixels stack: the Head/assertion/provenance/pubinfo quad and
+      the npx signature + lifecycle (supersedes / retracts / introduces)
+      terms. Lets a DAPPER object be emitted as, or minted from, a signed
+      nanopublication.
 
-    (D) AGENTIC REPLAY. `AgenticWorkspace` — the workspace and prompt an
-        AI agent can use to re-run an `Activity`. The executable provenance an
-        Activity carries (`command`, `container_image`, `code_version`) is
-        the machine replay path; this is the agentic one, alongside it rather
-        than instead of it. A prompt is NOT a deterministic replay mechanism,
-        so the two are deliberately not interchangeable.
+    AGENTIC REPLAY. `AgenticWorkspace` — the workspace and prompt an
+      AI agent can use to re-run an `Activity`. The executable provenance an
+      Activity carries (`command`, `container_image`, `code_version`) is
+      the machine replay path; this is the agentic one, alongside it rather
+      than instead of it. A prompt is NOT a deterministic replay mechanism,
+      so the two are deliberately not interchangeable.
 
-    (C) HYPOTHESIS. A FAIR-digital-object hypothesis — the REVEAL output — as
-        a gene -> mechanism -> disease causal chain. Structurally compatible
-        with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
-        grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
-        values verbatim) and carries full attribution/provenance by mixing in
-        `ProvenancedResource`, so a hypothesis is citable exactly like a
-        dataset.
+    HYPOTHESIS. A FAIR-digital-object hypothesis — the REVEAL output — as
+      a gene -> mechanism -> disease causal chain. Structurally compatible
+      with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
+      grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
+      values verbatim) and carries full attribution/provenance by mixing in
+      `ProvenancedResource`, so a hypothesis is citable exactly like a
+      dataset.
 
-    (E) SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
-        representing a biological process, e.g. a factor from cNMF/NMF/
-        Spectra/WGCNA or a curated gene module — extends `Set` the same way
-        `GeneSet` does, with genes as members. `CellState` is the cellular
-        phenotype defined by the combination of `GeneProgram`s active in a
-        cell (or cell population) at once, as distinct from a cell TYPE (a
-        Cell Ontology class), which is what lineage a cell belongs to rather
-        than what functional state it is in.
+    SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
+      representing a biological process, e.g. a factor from cNMF/NMF/
+      Spectra/WGCNA or a curated gene module — extends `Set` the same way
+      `GeneSet` does, with genes as members. `CellState` is the cellular
+      phenotype defined by the combination of `GeneProgram`s active in a
+      cell (or cell population) at once, as distinct from a cell TYPE (a
+      Cell Ontology class), which is what lineage a cell belongs to rather
+      than what functional state it is in.
 
-    (F) BOTTOM LINE RESULTS. `BottomLineResult` — a citable collection
-        of `VariantRecord` entries, the variant-level output of a GWAS/genetic
-        association analysis (a "bottom line" summary-statistics file). Each
-        `VariantRecord` carries the variant itself as a GA4GH VRS
-        representation plus the association statistics (effect size, sample
-        size, significance, standard error) for one phenotype.
+    BOTTOM LINE RESULTS. `BottomLineResult` — a citable collection
+      of `VariantRecord` entries, the variant-level output of a GWAS/genetic
+      association analysis (a "bottom line" summary-statistics file). Each
+      `VariantRecord` carries the variant itself as a GA4GH VRS
+      representation plus the association statistics (effect size, sample
+      size, significance, standard error) for one phenotype.
 
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, hypotheses, and nanopublications are Node entities;
@@ -65,7 +65,7 @@ license: https://creativecommons.org/licenses/by/4.0/
 version:
 
 # ---------------------------------------------------------------------------
-# MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
+# MIRRORING INVARIANT (NIH/OD — the profile's hard rule)
 #
 #   Mirrors (OpenAI, Anthropic, Google, Microsoft, AWS, ... regional caches)
 #   MAY cache NIH resources and MAY APPEND a `mirror_provenance` object, but
@@ -351,7 +351,7 @@ enums:
   CausalLinkTypeEnum:
     description: >-
       Directness of a causal step. Values are copied VERBATIM from DISMECH's
-      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a NIH-DAPP causal
+      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a DAPPER causal
       step round-trips into a DISMECH `CausalEdge.causal_link_type` with no
       value translation. Do not add or rename values here without changing
       them upstream first.
@@ -512,7 +512,7 @@ classes:
   Node:
     abstract: true
     description: >-
-      Abstract base for all NIH-DAPP entities (datasets, agents, awards,
+      Abstract base for all DAPPER entities (datasets, agents, awards,
       publications, licenses, activities, mirror records, ...). Not used
       directly.
     slots:
@@ -540,7 +540,7 @@ classes:
     abstract: true
     class_uri: rdf:Statement
     description: >-
-      Abstract base for all NIH-DAPP attribution/provenance relationships,
+      Abstract base for all DAPPER attribution/provenance relationships,
       fixed to rdf:Statement. Not used directly.
     slots:
       - subject
@@ -593,7 +593,7 @@ classes:
       The shared attribution + funding + publication + provenance + license +
       access + mirror slots carried by any citable resource. Applied as a mixin
       to both `Dataset` (a set of data) and `Set` (a collection of members, e.g.
-      a gene set), so George's mirroring invariant and the DataCite/PROV
+      a gene set), so the mirroring invariant and the DataCite/PROV
       attribution model bind identically to datasets and gene sets. Every
       `dapper:mirror_mutable: false` slot here is authoritative NIH provenance a
       mirror MUST NOT rewrite.
@@ -973,7 +973,7 @@ classes:
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
 
   # ======================================================================
-  # GENE PROGRAM / CELL STATE — single-cell functional units. A
+  # BLOCK — SINGLE-CELL: GENE PROGRAM / CELL STATE. A
   # GeneProgram is a coordinated pattern of gene activity — a factor/module
   # inferred from expression covariance (e.g. cNMF, NMF, Spectra, WGCNA) or a
   # curated gene module — representing a biological process a cell can turn
@@ -1263,7 +1263,7 @@ classes:
         mixins: [hashable]
 
   # ======================================================================
-  # BLOCK (F) — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
+  # BLOCK — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
   # association output. BottomLineResult is a citable collection (like Set),
   # but unlike Set — whose `members` are plain CURIEs — its members are
   # VariantRecord nodes carrying per-variant association statistics, so the
@@ -1793,6 +1793,13 @@ classes:
           machine replay path, this is the agentic one. Multivalued because the
           same analysis may be reproducible in more than one workspace.
 
+  # ======================================================================
+  # BLOCK — AGENTIC REPLAY. `AgenticWorkspace` is the workspace and prompt
+  # an AI agent can use to re-run an Activity, alongside the machine replay
+  # path (`command` / `container_image` / `code_version`) rather than
+  # instead of it — a prompt is not a deterministic replay mechanism.
+  # ======================================================================
+
   AgenticWorkspace:
     is_a: HashableNode
     class_uri: prov:Plan
@@ -1977,7 +1984,7 @@ classes:
 
   # ======================================================================
   # NODE classes — ADDITIONS
-  # (best-effort interpretation ahead of George's final schema)
+  # (best-effort interpretation ahead of the final upstream schema)
   # ======================================================================
 
   DrsObject:
@@ -2141,7 +2148,7 @@ classes:
       A Data Use Ontology (DUO) term constraining permitted use of the dataset.
       A term is either a data use permission (child of DUO:0000001) or a data
       use modifier (child of DUO:0000017); use `permission` / `modifier`
-      accordingly. Models George's `access.data_use_limitations`.
+      accordingly. Models the `access.data_use_limitations` slot.
     attributes:
       duo_id:
         is_a: literal
@@ -2422,7 +2429,7 @@ classes:
         ifabsent: string(dapper:hasWorkflowProvenance)
 
 # ===========================================================================
-# BLOCK (A) — DISMECH HARMONIZATION
+# BLOCK — DISMECH HARMONIZATION
 #
 # DISMECH (https://w3id.org/monarch-initiative/dismech) is mirrored into this
 # repo VERBATIM from monarch-initiative/dismech and is refreshed by
@@ -2431,20 +2438,20 @@ classes:
 # expressed on THIS side, as mappings and pointers, so both models can evolve
 # independently and still line up.
 #
-# Cross-walk summary (NIH-DAPP <-> DISMECH):
+# Cross-walk summary (DAPPER <-> DISMECH):
 #   dapper:Dataset             <-> dismech:Dataset            (complementary halves:
 #                                DISMECH describes the science of a dataset,
-#                                NIH-DAPP describes its attribution)
+#                                DAPPER describes its attribution)
 #   dapper:Publication         <-> dismech:PublicationReference
 #   dapper:Activity            <-> dismech:CurationEvent      (DISMECH's homegrown
-#                                mini-PROV; NIH-DAPP's PROV-O subsumes it)
+#                                mini-PROV; DAPPER's PROV-O subsumes it)
 #   dapper:Hypothesis          <-> dismech:MechanisticHypothesis
 #   dapper:CausalStep          <-> dismech:CausalEdge
 #   dapper:Mechanism           <-> dismech:Mechanism
 #   dapper:EvidenceItem        <-> dismech:EvidenceItem
 #
 # NOTE ON IDENTITY. DISMECH keys a disease by `Disease.name` (a plain string)
-# and a dataset by `accession` (a CURIE). NIH-DAPP keys every Node by a
+# and a dataset by `accession` (a CURIE). DAPPER keys every Node by a
 # CURIE/URI `id`. When pointing at a DISMECH entry, prefer the ontology term
 # (MONDO CURIE) it carries in `disease_term`, and record the upstream string
 # key separately in `dismech_entry_key` so the join is lossless in both
@@ -2454,7 +2461,7 @@ classes:
   DismechLinked:
     mixin: true
     description: >-
-      Mixin adding pointers from a NIH-DAPP node to the DISMECH entry it
+      Mixin adding pointers from a DAPPER node to the DISMECH entry it
       corresponds to. Applied to any class that has a DISMECH counterpart.
       These are POINTERS, not copies — the curated content stays upstream in
       DISMECH and is fetched by following them. This keeps the two models
@@ -2494,7 +2501,7 @@ classes:
           human review.
 
 # ===========================================================================
-# BLOCK (B) — NANOPUBLICATION (Nanodash / Knowledge Pixels)
+# BLOCK — NANOPUBLICATION (Nanodash / Knowledge Pixels)
 #
 # A nanopublication is FOUR NAMED GRAPHS, not one document:
 #
@@ -2510,7 +2517,7 @@ classes:
 # loader reverses it. Class/slot URIs below are quoted from the live ontology
 # documents at http://www.nanopub.org/nschema and http://purl.org/nanopub/x/.
 #
-# WHY THIS FITS NIH-DAPP. The nanopub split is almost exactly the NIH-DAPP
+# WHY THIS FITS DAPPER. The nanopub split is almost exactly the DAPPER
 # split, which is why the two compose instead of competing:
 #   assertion   <- the scientific claim        (Hypothesis, block C)
 #   provenance  <- prov:wasAttributedTo, Activity, LineageStep
@@ -2524,7 +2531,7 @@ classes:
 # https://w3id.org/np/RAwUp0SmZZwQNOY1zbSPhR21aQoImiUyQrDlyXj5QYXmQ). It is
 # therefore CONTENT-ADDRESSED AND IMMUTABLE: you never edit a nanopub, you
 # publish a new one that npx:supersedes it. This is a strictly stronger form
-# of George's mirroring invariant, and worth saying out loud to him — a signed
+# of the mirroring invariant above, and worth calling out explicitly — a signed
 # trusty URI makes "a mirror MUST NOT rewrite authoritative provenance"
 # cryptographically checkable rather than merely stated.
 # ===========================================================================
@@ -2710,7 +2717,7 @@ classes:
     description: >-
       The provenance graph — where the ASSERTION came from (not where the
       nanopub came from; that is pubinfo). Its subject is the assertion graph.
-      This is the natural home for a NIH-DAPP `Activity` / `LineageStep` chain.
+      This is the natural home for a DAPPER `Activity` / `LineageStep` chain.
     annotations:
       dapper:np_graph: provenance
     attributes:
@@ -2734,7 +2741,7 @@ classes:
         mixins: [hashable]
         range: uriorcurie
         slot_uri: prov:wasGeneratedBy
-        description: NIH-DAPP Activity id that produced the assertion.
+        description: DAPPER Activity id that produced the assertion.
       derived_from:
         is_a: relationship
         mixins: [hashable]
@@ -2751,7 +2758,7 @@ classes:
     description: >-
       The publication-info graph — metadata about the NANOPUB itself: who
       published it, when, under what licence, with what signature. Overlaps
-      almost exactly with the NIH-DAPP attribution core.
+      almost exactly with the DAPPER attribution core.
     annotations:
       dapper:np_graph: pubinfo
     attributes:
@@ -2834,14 +2841,14 @@ classes:
         ifabsent: string(npx:supersedes)
 
 # ===========================================================================
-# BLOCK (C) — HYPOTHESIS (the REVEAL output)
+# BLOCK — HYPOTHESIS (the REVEAL output)
 #
 # REVEAL emits a mechanistic hypothesis relating a GENE to a DISEASE through a
 # MECHANISM. The milestone is "define hypothesis schema", and the requirement
 # is that it be (i) a FAIR digital object with full metadata and provenance,
 # (ii) in a format compatible with dismech.monarchinitiative.org, and
 # (iii) recognizably compatible with the portal-wide provenance/FAIRness work
-# (Jeremy's KPN, Vlado's gene sets).
+# (the KPN and gene-set work elsewhere in this schema).
 #
 # HOW EACH REQUIREMENT IS MET
 #   FAIR digital object   -> Hypothesis is_a Node (globally unique resolvable
@@ -3262,11 +3269,11 @@ classes:
   CorrespondsToDismech:
     is_a: Edge
     description: >-
-      Any NIH-DAPP node → the DISMECH entry it corresponds to. The instance-
+      Any DAPPER node → the DISMECH entry it corresponds to. The instance-
       level counterpart of the class-level `exact_mappings` in block (A).
     slot_usage:
       subject:
-        description: NIH-DAPP node id.
+        description: DAPPER node id.
       predicate:
         ifabsent: string(skos:closeMatch)
       object:
