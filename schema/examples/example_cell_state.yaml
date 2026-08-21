@@ -6,17 +6,19 @@
 # fields in use. `has_program` points at three GenePrograms (Factor_1/2/3 of
 # the same NMF loading matrix) defined in example_cell_graph.yaml — an
 # illustrative pairing to exercise multi-program `has_program`, not a real
-# biological claim that these factors constitute ductal identity.
+# biological claim that these factors constitute ductal identity. Factor_1
+# and Factor_2 carry a `quality` (GeneProgramQualityScore) assessment;
+# Factor_3 omits it to show the field is optional.
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C CellState example_cell_state.yaml
 
-id: dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY
+id: dapper:CellState.Psy3r7P4c_VYtyMu5kSA7rFlFa7SSNhH
 name: Ductal epithelial identity
 organism: human
 has_program:
-  - dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
-  - dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+  - dapper:GeneProgram.3FU49NbLB82AOa8sxDo6pq5YEHILRfCl
+  - dapper:GeneProgram._kIIOyV__21jzCKCW9i4A83sHknYHLPT
   - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
 
 # --- internal cell-state marker-curation schema ---

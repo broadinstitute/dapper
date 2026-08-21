@@ -147,10 +147,12 @@ GRAPH_DOCS = [
             "gene-loading factors (GeneProgram, with member_weights) all "
             "feeding into one curated pancreatic ductal epithelial identity "
             "state (CellState) with the internal marker-curation schema "
-            "fields. The pairing is illustrative, exercising multi-program "
+            "fields. Two of the three programs also carry an optional "
+            "`quality` assessment (GeneProgramQualityScore); the third omits "
+            "it. The pairing is illustrative, exercising multi-program "
             "has_program rather than asserting a biological claim."
         ),
-        "start": "dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY",
+        "start": "dapper:CellState.Psy3r7P4c_VYtyMu5kSA7rFlFa7SSNhH",
     },
     {
         "file": "example_bottom_line_result.yaml",
