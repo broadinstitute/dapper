@@ -434,7 +434,6 @@ enums:
 
 # ===========================================================================
 # SLOTS — the required Dock Knowledge Graph skeleton (do not remove).
-# Shapes match the canonical scaffold in the akleao CLI (models.py).
 # ===========================================================================
 slots:
   id:
@@ -1832,7 +1831,7 @@ classes:
         slot_uri: schema:url
         description: >-
           Resolvable URL for the workspace — where a person or agent goes to
-          open it. For akleao this is a fork URL,
+          open it. In the example of akleao this is a fork URL,
           `https://www.akleao.com/fork/<slug-id>`: one shareable link that
           opens the workspace, rather than a path through project and branch
           ids. Required in spirit: a workspace nobody can reach is not

@@ -36,7 +36,7 @@ REPO_ROOT = HERE.parent
 SCHEMA_DIR = REPO_ROOT / "schema"
 EXAMPLES = SCHEMA_DIR / "examples"
 SCHEMA = SCHEMA_DIR / "dapper.yaml"
-LIB = HERE / "lib"   # NB: not "vendor/" — akleao sync silently ignores that name
+LIB = HERE / "lib"
 OUT = HERE / "index.html"
 
 # Load order matters: elkjs defines the global cytoscape-elk binds to.
