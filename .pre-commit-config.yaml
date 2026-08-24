@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: linkml-lint
+        name: linkml-lint (no warnings)
+        entry: uv run --with linkml linkml-lint -c schema/.linkml-lint.yaml schema/dapper.yaml
+        language: system
+        files: ^schema/dapper\.yaml$
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: uv run --with-requirements tests/requirements.txt pytest tests/ -q
+        language: system
+        pass_filenames: false
+        always_run: true

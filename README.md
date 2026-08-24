@@ -60,3 +60,10 @@ uv run --with linkml linkml-validate \
 
 Validate schema changes, examples, and converters locally; push to
 `broadinstitute/dapper` only once the migration shape is agreed.
+
+We use prek to validate and check files before committing. Before your
+commit, please run
+
+```bash
+prek install
+```
