@@ -7,37 +7,37 @@
 
 # ---- Agents (creators / contributors) ----
 persons:
-  - id: dapper:Person.cEyDrWdOBBmkLZox6LBUnu15fQgVHhVy
+  - id: dapper:Person.igPWGT9jf1iax5DaJiTyA_jswWOMwlt0
     name: Jane A. Smith
     given_name: Jane
     family_name: Smith
     orcid: orcid:0000-0002-1825-0097
     affiliation:
       - ror:012345678
-    creator_role: PrincipalInvestigator
-  - id: dapper:Person.HUlrtGMGpwbY9k3QyHrZhHBolyjdYsI6
+    creator_role: principal_investigator
+  - id: dapper:Person.L8FjAsnWeuHMfkbZKsO4aOgfXXUE0Y7r
     name: Alex R. Lee
     given_name: Alex
     family_name: Lee
     orcid: orcid:0000-0003-1234-5678
-    contributor_role: DataCurator
+    contributor_role: data_curator
 
 organizations:
   - id: dapper:Organization.v0EMoT5DDWpNBPvsCkpGIr3hd4rhQPty
     name: National Institutes of Health
     ror: ror:0155zta11
-  - id: dapper:Organization.9m4Jx-OUIW81M97iE23jRNfyL151wHeW
+  - id: dapper:Organization.eY3e16e60hWr6Qstcm1Oq-SOZIoIdTpx
     name: Example NIH Consortium
     ror: ror:04abcde12
-    creator_role: Consortium
+    creator_role: consortium
 
 # ---- Award (authoritative — mirror_mutable: false) ----
 awards:
-  - id: dapper:Award.-96r_yUY9nGhZqtqPCp3UDtaas-wkicZ
+  - id: dapper:Award.6CEJwkm7mP_DLGswK-LdSlBZVA30HjNT
     name: Example NIH Consortium Data Coordination Center
     funder_name: National Institutes of Health
     funder_identifier: doi:10.13039/100000002
-    funder_identifier_type: Crossref_Funder_ID
+    funder_identifier_type: crossref_funder_id
     award_number: U54-EXAMPLE-123456
     award_uri: https://reporter.nih.gov/project-details/123456
     award_title: Example NIH Consortium Data Coordination Center
@@ -45,7 +45,7 @@ awards:
 
 # ---- Publication (authoritative) ----
 publications:
-  - id: dapper:Publication.gvvxTwVj50tFcRS4R7HsCCu3eSQHptzK
+  - id: dapper:Publication.STjruSl-ZWVs9DPBEEnF5Xb6LfhOekwd
     name: A multi-omics atlas from the Example NIH Consortium
     title: A multi-omics atlas from the Example NIH Consortium
     doi: doi:10.1000/example.publication
@@ -53,7 +53,7 @@ publications:
     citation: >-
       Smith JA, Lee AR, et al. A multi-omics atlas from the Example NIH
       Consortium. CFDE RAG Journal 2026.
-    relationship_type: IsDescribedBy
+    relationship_type: is_described_by
 
 # ---- License ----
 licenses:

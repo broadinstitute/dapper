@@ -52,13 +52,13 @@
 _illustrative:
   - dapper:Activity.csp048YWkBPkx31lMT1pR85uFX4JLJ4d
   - dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
-  - dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
-  - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
-  - dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+  - dapper:Hypothesis.8KNU2QptU6Q-T0EGG1fMIQ9-xWYvftsc
+  - dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
+  - dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
   - dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
-  - dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+  - dapper:NanopubAssertion.tANifeAOyWRt6fA0U2x0y-fyB7dPRSo_
   - dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
-  - dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+  - dapper:NanopubProvenance.C_ShmZzLtbWUTs7OdNdVzHI_dPcTWkMM
   - dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
   - dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
   - dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
@@ -303,12 +303,12 @@ hypotheses:
     access_level: public
     has_license: https://creativecommons.org/licenses/by/4.0/
     asserted_in:
-      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+      - dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
 
   # ILLUSTRATIVE — the composite hypothesis the atomic claim supports.
   # This is the REVEAL-shaped gene -> mechanism -> disease object; the
   # enrichment claim above is one leg of its support.
-  - id: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+  - id: dapper:Hypothesis.8KNU2QptU6Q-T0EGG1fMIQ9-xWYvftsc
     name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
     hypothesis_label: CLCN5 LOF -> PT dysfunction -> Dent disease
     statement: >-
@@ -325,9 +325,9 @@ hypotheses:
     access_level: public
     # the two directions, kept distinct
     supported_by_nanopub:
-      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+      - dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
     asserted_in:
-      - dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+      - dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
 
 # ===========================================================================
 # ILLUSTRATIVE — the nanopublication publishing the atomic claim.
@@ -337,14 +337,14 @@ hypotheses:
 # gene set and the C2M2 file. Both are already nodes in the DAG above.
 # ===========================================================================
 nanopublications:
-  - id: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+  - id: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
     name: "Claim: HuBMAP proximal tubule markers are enriched among Dent disease genes"
     label: PT marker enrichment in Dent disease
     has_assertion: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
     has_provenance: dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
     has_publication_info: dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
     nanopub_type:
-      - DraftNanopub
+      - draft_nanopub
     created: "2026-08-04T20:05:00Z"
     creator:
       - orcid:0000-0002-1825-0097
@@ -356,19 +356,19 @@ nanopublications:
   # `asserted_in` direction. Note it is a SEPARATE nanopub from the supporting
   # one: publishing a hypothesis and supporting a hypothesis are different
   # acts, by potentially different people, at different times.
-  - id: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+  - id: dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
     name: "Hypothesis: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction"
     label: CLCN5 LOF -> PT dysfunction -> Dent disease
     # All THREE links are mandatory, not just the assertion: the nanopublication
     # well-formedness rules require exactly one quad for each of hasAssertion,
     # hasProvenance and hasPublicationInfo. A nanopub carrying only an assertion
     # is malformed and will be rejected by the network.
-    has_assertion: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
-    has_provenance: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+    has_assertion: dapper:NanopubAssertion.tANifeAOyWRt6fA0U2x0y-fyB7dPRSo_
+    has_provenance: dapper:NanopubProvenance.C_ShmZzLtbWUTs7OdNdVzHI_dPcTWkMM
     has_publication_info: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
     has_signature_element: dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
     nanopub_type:
-      - DraftNanopub
+      - draft_nanopub
     created: "2026-08-04T20:10:00Z"
     creator:
       - orcid:0000-0002-1825-0097
@@ -383,9 +383,9 @@ nanopub_assertions:
       The HuBMAP ASCT+B marker gene set for epithelial cells of the proximal
       tubule is enriched among genes implicated in Dent disease.
 
-  - id: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+  - id: dapper:NanopubAssertion.tANifeAOyWRt6fA0U2x0y-fyB7dPRSo_
     name: Assertion — the claim being made
-    asserts: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+    asserts: dapper:Hypothesis.8KNU2QptU6Q-T0EGG1fMIQ9-xWYvftsc
     as_sentence: >-
       Loss-of-function variants in CLCN5 impair endosomal acidification in
       proximal tubule epithelial cells, causing the proximal tubule dysfunction
@@ -412,14 +412,14 @@ nanopub_provenances:
       - dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ
       - dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
 
-  - id: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+  - id: dapper:NanopubProvenance.C_ShmZzLtbWUTs7OdNdVzHI_dPcTWkMM
     name: Provenance — where the claim came from
-    provenance_of: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+    provenance_of: dapper:NanopubAssertion.tANifeAOyWRt6fA0U2x0y-fyB7dPRSo_
     # a curated claim: attributed to a person, with no generating activity
     was_attributed_to:
       - orcid:0000-0002-1825-0097
     derived_from:
-      - dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+      - dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
       - PMID:25773607
 
 # The fourth graph. Thin here, but it is where the signature lives, and the
@@ -428,11 +428,11 @@ nanopub_provenances:
 nanopub_publication_infos:
   - id: dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
     name: Publication info — the PT marker enrichment claim
-    pubinfo_of: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+    pubinfo_of: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
 
   - id: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
     name: Publication info — the CLCN5 mechanism hypothesis
-    pubinfo_of: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+    pubinfo_of: dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
 
 nanopub_signatures:
   - id: dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
@@ -443,14 +443,14 @@ nanopub_signatures:
     # different bytes, which is why they get different content addresses.
     has_signature: <rsa-signature-over-reveal-hubmap-pt-dent-enrichment>
     signed_by: orcid:0000-0002-1825-0097
-    has_signature_target: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+    has_signature_target: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
 
   - id: dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
     name: Signature — seals the CLCN5 mechanism hypothesis
     has_algorithm: RSA
     has_signature: <rsa-signature-over-clcn5-pt-dysfunction-dent>
     signed_by: orcid:0000-0002-1825-0097
-    has_signature_target: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+    has_signature_target: dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
 
 # ===========================================================================
 # Reified edges. The first three groups are REAL (identical to
@@ -523,26 +523,26 @@ has_agentic_workspace_edges:
 asserted_in_edges:
   - subject: dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x
     predicate: hycl:claims
-    object: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+    object: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
 
 has_assertion_edges:
-  - subject: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+  - subject: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
     predicate: np:hasAssertion
     object: dapper:NanopubAssertion.x6P_QpSIKWWO23d7BoBP7HOlL0yGIERi
-  - subject: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+  - subject: dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
     predicate: np:hasAssertion
-    object: dapper:NanopubAssertion.EPdqQ2NXk75MnJq4D9u2YPW_alTP657u
+    object: dapper:NanopubAssertion.tANifeAOyWRt6fA0U2x0y-fyB7dPRSo_
 
 has_provenance_edges:
-  - subject: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+  - subject: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
     predicate: np:hasProvenance
     object: dapper:NanopubProvenance.YFQrbw8L3AWEQd_riveyKvlOhALve1uD
-  - subject: dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+  - subject: dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3
     predicate: np:hasProvenance
-    object: dapper:NanopubProvenance.-xpKAWPK7lI3pTIl0rgjCVvW09bsvI5P
+    object: dapper:NanopubProvenance.C_ShmZzLtbWUTs7OdNdVzHI_dPcTWkMM
 
 # the composite hypothesis <- the supporting nanopub
 supported_by_nanopub_edges:
-  - subject: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+  - subject: dapper:Hypothesis.8KNU2QptU6Q-T0EGG1fMIQ9-xWYvftsc
     predicate: dapper:supportedByNanopub
-    object: dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+    object: dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q

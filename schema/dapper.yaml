@@ -168,36 +168,36 @@ enums:
   ResourceTypeEnum:
     description: DataCite-style resource type (resourceTypeGeneral) for the returned entity.
     permissible_values:
-      Dataset:
+      dataset:
         meaning: schema:Dataset
-      Collection:
+      collection:
         meaning: dctypes:Collection
-      Set:
+      set:
         meaning: prov:Collection
         description: A collection of members (e.g. a gene set); see the Set class.
-      GeneSet:
+      gene_set:
         description: >-
           A set whose members are genes (dig.geneset). No ontology term is
           asserted (none resolves); grounded via the Set class (prov:Collection).
-      Software:
+      software:
         meaning: schema:SoftwareApplication
-      Workflow:
-      Model:
-      Service:
+      workflow:
+      model:
+      service:
         meaning: schema:Service
 
   CreatorRoleEnum:
     description: The role a creator (Person/Organization) played for the dataset.
     permissible_values:
-      PrincipalInvestigator:
-      Researcher:
-      DataManager:
-      ProjectLeader:
-      Curator:
-      Consortium:
-      Organization:
-      Division:
-      Group:
+      principal_investigator:
+      researcher:
+      data_manager:
+      project_leader:
+      curator:
+      consortium:
+      organization:
+      division:
+      group:
 
   ContributorRoleEnum:
     description: >-
@@ -208,19 +208,19 @@ enums:
     annotations:
       dapper:source_standard: DataCite kernel-4 contributorType
     permissible_values:
-      DataCurator:
+      data_curator:
         description: DataCite contributorType "DataCurator".
-      HostingInstitution:
+      hosting_institution:
         description: DataCite contributorType "HostingInstitution".
-      DataManager:
+      data_manager:
         description: DataCite contributorType "DataManager".
-      Producer:
+      producer:
         description: DataCite contributorType "Producer".
-      RightsHolder:
+      rights_holder:
         description: DataCite contributorType "RightsHolder".
-      Sponsor:
+      sponsor:
         description: DataCite contributorType "Sponsor".
-      Other:
+      other:
         description: DataCite contributorType "Other".
 
   PublicationRelationshipEnum:
@@ -231,15 +231,15 @@ enums:
     annotations:
       dapper:source_standard: DataCite kernel-4 relationType
     permissible_values:
-      IsDescribedBy:
+      is_described_by:
         description: DataCite relationType "IsDescribedBy".
-      IsSupplementTo:
+      is_supplement_to:
         description: DataCite relationType "IsSupplementTo".
-      IsCitedBy:
+      is_cited_by:
         description: DataCite relationType "IsCitedBy".
-      Cites:
+      cites:
         description: DataCite relationType "Cites".
-      IsReferencedBy:
+      is_referenced_by:
         description: DataCite relationType "IsReferencedBy".
 
   AccessLevelEnum:
@@ -252,22 +252,22 @@ enums:
   FunderIdentifierTypeEnum:
     description: Type of the funder identifier.
     permissible_values:
-      Crossref_Funder_ID:
+      crossref_funder_id:
         description: Crossref Funder Registry ID.
-      ROR:
+      ror:
         description: Research Organization Registry ID.
-      GRID:
-      ISNI:
-      Other:
+      grid:
+      isni:
+      other:
 
   IdentifierTypeEnum:
     description: Type of a dataset persistent identifier.
     permissible_values:
-      DOI:
-      Handle:
-      ARK:
-      Accession:
-      URL:
+      doi:
+      handle:
+      ark:
+      accession:
+      url:
 
   DataUsePermissionEnum:
     description: >-
@@ -413,22 +413,22 @@ enums:
     annotations:
       dapper:source_standard: Nanopub-X (http://purl.org/nanopub/x/)
     permissible_values:
-      ExampleNanopub:
+      example_nanopub:
         meaning: npx:ExampleNanopub
         description: Published for testing; content should not be taken seriously.
-      DraftNanopub:
+      draft_nanopub:
         meaning: npx:DraftNanopub
         description: Marked as work-in-progress.
-      MetaNanopub:
+      meta_nanopub:
         meaning: npx:MetaNanopub
         description: A nanopublication about other nanopublications.
-      ProtectedNanopub:
+      protected_nanopub:
         meaning: npx:ProtectedNanopub
         description: Not intended to be shared publicly.
-      RetractionNanopub:
+      retraction_nanopub:
         meaning: npx:RetractionNanopub
         description: Retracts a previously published nanopublication.
-      IntroNanopub:
+      intro_nanopub:
         meaning: npx:IntroNanopub
         description: Introduces an agent and its public key.
 
@@ -779,7 +779,7 @@ classes:
           - identifierType
         annotations:
           dapper:source_standard: DataCite kernel-4 identifierType
-        description: Type of the dataset's persistent identifier (e.g. DOI).
+        description: Type of the dataset's persistent identifier (e.g. doi).
       version:
         is_a: literal
         mixins: [hashable]
@@ -1713,7 +1713,7 @@ classes:
           - relationType
         annotations:
           dapper:source_standard: DataCite kernel-4 relationType
-        description: How this publication relates to the dataset (e.g. IsDescribedBy).
+        description: How this publication relates to the dataset (e.g. is_described_by).
 
   License:
     is_a: HashableNode
@@ -2695,7 +2695,7 @@ classes:
         slot_uri: npx:hasNanopubType
         annotations:
           dapper:np_graph: pubinfo
-        description: Type(s) classifying this nanopublication (e.g. DraftNanopub).
+        description: Type(s) classifying this nanopublication (e.g. draft_nanopub).
       has_signature_element:
         is_a: relationship
         mixins: [unhashable]  # signature
