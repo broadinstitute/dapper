@@ -43,8 +43,8 @@ was_derived_from:
 
 # --- DUO / DRS / RO-Crate / BioCompute links ---
 has_data_use_term:
-  - dapper:DataUseTerm.aQITUepHCPDzhbarOQSlHFFYeiChOC5n        # permission: general research use
-  - dapper:DataUseTerm.fl93QVlLuAx9D2f3Yv3KXJEEde5X1QoJ        # modifier: publication required
+  - dapper:DataUseTerm.nNYfQNjuwA8boZ-dTYEmL6SkQ31ifBtx        # permission: general research use
+  - dapper:DataUseTerm.ao3Tkvv89JgF7wlJqQDE3RK-J_ZDATqy        # modifier: publication required
 has_drs_object:
   - dapper:DrsObject.X8x2qXKC_q1guH6BnWOY8RNKXN4OY2rt
 packaged_as: dapper:RoCratePackage.9zxxksJUBcpd6A-_FVKVWBRs8B3Clu4U

@@ -125,15 +125,15 @@ drs_objects:
 
 data_use_terms:
   # A permission (child of DUO:0000001)
-  - id: dapper:DataUseTerm.aQITUepHCPDzhbarOQSlHFFYeiChOC5n
+  - id: dapper:DataUseTerm.nNYfQNjuwA8boZ-dTYEmL6SkQ31ifBtx
     name: general research use
-    duo_id: duo:0000042
+    duo_id: DUO:0000042
     duo_label: general research use
     permission: general_research_use
   # A modifier (child of DUO:0000017)
-  - id: dapper:DataUseTerm.fl93QVlLuAx9D2f3Yv3KXJEEde5X1QoJ
+  - id: dapper:DataUseTerm.ao3Tkvv89JgF7wlJqQDE3RK-J_ZDATqy
     name: publication required
-    duo_id: duo:0000019
+    duo_id: DUO:0000019
     duo_label: publication required
     modifier: publication_required
 

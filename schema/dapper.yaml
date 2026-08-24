@@ -136,20 +136,20 @@ prefixes:
   # DISMECH's own declared prefix for the same namespace.
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
-  HGNC: https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/
-  PMID: http://www.ncbi.nlm.nih.gov/pubmed/
+  HGNC: http://identifiers.org/hgnc/
+  PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —
   # kernel-4 defines XML elements, not RDF properties.
-  datacite: http://purl.org/spar/datacite/
+  DataCite: http://purl.org/spar/datacite/
   # FRAPO — Funding, Research Administration and Projects Ontology.
-  frapo: http://purl.org/cerif/frapo/
+  FRAPO: http://purl.org/cerif/frapo/
   dcterms: http://purl.org/dc/terms/
-  dctype: http://purl.org/dc/dcmitype/
+  dctypes: http://purl.org/dc/dcmitype/
   dcat: http://www.w3.org/ns/dcat#
   foaf: http://xmlns.com/foaf/0.1/
   fabio: http://purl.org/spar/fabio/
   spdx: http://spdx.org/rdf/terms#
-  duo: http://purl.obolibrary.org/obo/DUO_
+  DUO: http://purl.obolibrary.org/obo/DUO_
   obo: http://purl.obolibrary.org/obo/
   orcid: https://orcid.org/
   ror: https://ror.org/
@@ -171,7 +171,7 @@ enums:
       Dataset:
         meaning: schema:Dataset
       Collection:
-        meaning: dctype:Collection
+        meaning: dctypes:Collection
       Set:
         meaning: prov:Collection
         description: A collection of members (e.g. a gene set); see the Set class.
@@ -276,15 +276,15 @@ enums:
       `meaning` CURIEs were verified against EBI OLS4.
     permissible_values:
       no_restriction:
-        meaning: duo:0000004
+        meaning: DUO:0000004
         description: DUO:0000004 — no restriction (NRES).
       general_research_use:
-        meaning: duo:0000042
+        meaning: DUO:0000042
         description: >-
           DUO:0000042 — general research use (GRU); includes health/biomedical,
           fundamental biology, ancestry, methods, and social-sciences research.
       population_origins_ancestry_research_only:
-        meaning: duo:0000011
+        meaning: DUO:0000011
         description: DUO:0000011 — population origins or ancestry research only (POA).
 
   DataUseModifierEnum:
@@ -294,37 +294,37 @@ enums:
       verified against EBI OLS4.
     permissible_values:
       research_specific_restrictions:
-        meaning: duo:0000012
+        meaning: DUO:0000012
       no_general_methods_research:
-        meaning: duo:0000015
+        meaning: DUO:0000015
       genetic_studies_only:
-        meaning: duo:0000016
+        meaning: DUO:0000016
       not_for_profit_non_commercial_use_only:
-        meaning: duo:0000018
+        meaning: DUO:0000018
       publication_required:
-        meaning: duo:0000019
+        meaning: DUO:0000019
       collaboration_required:
-        meaning: duo:0000020
+        meaning: DUO:0000020
       ethics_approval_required:
-        meaning: duo:0000021
+        meaning: DUO:0000021
       geographical_restriction:
-        meaning: duo:0000022
+        meaning: DUO:0000022
       publication_moratorium:
-        meaning: duo:0000024
+        meaning: DUO:0000024
       time_limit_on_use:
-        meaning: duo:0000025
+        meaning: DUO:0000025
       user_specific_restriction:
-        meaning: duo:0000026
+        meaning: DUO:0000026
       project_specific_restriction:
-        meaning: duo:0000027
+        meaning: DUO:0000027
       institution_specific_restriction:
-        meaning: duo:0000028
+        meaning: DUO:0000028
       return_to_database_or_resource:
-        meaning: duo:0000029
+        meaning: DUO:0000029
       clinical_care_use:
-        meaning: duo:0000043
+        meaning: DUO:0000043
       population_origins_ancestry_research_prohibited:
-        meaning: duo:0000044
+        meaning: DUO:0000044
 
   ProvEdgeRoleEnum:
     description: >-
@@ -443,7 +443,7 @@ slots:
     exact_mappings:
       - dcterms:identifier
     close_mappings:
-      - datacite:hasIdentifier
+      - DataCite:hasIdentifier
     aliases:
       - identifier
       - PID
@@ -612,7 +612,7 @@ classes:
         multivalued: true
         slot_uri: dcterms:identifier
         exact_mappings:
-          - datacite:hasIdentifier
+          - DataCite:hasIdentifier
         description: >-
           Externally-assigned persistent identifiers for this resource — a DOI,
           an accession, a Handle, an ARK. `id` is DAPPER's own computed content
@@ -657,7 +657,7 @@ classes:
         multivalued: true
         slot_uri: schema:funding
         exact_mappings:
-          - frapo:isSupportedBy
+          - FRAPO:isSupportedBy
         close_mappings:
           - schema:funder
         aliases:
@@ -746,7 +746,7 @@ classes:
       - resource
     exact_mappings:
       - dcat:Dataset
-      - dctype:Dataset
+      - dctypes:Dataset
     close_mappings:
       - prov:Entity
       # Cross-walk. Complementary halves of one idea: DISMECH's Dataset
@@ -769,7 +769,7 @@ classes:
         mixins: [hashable]
         range: IdentifierTypeEnum
         close_mappings:
-          - datacite:usesIdentifierScheme
+          - DataCite:usesIdentifierScheme
         aliases:
           - identifierType
         annotations:
@@ -827,8 +827,8 @@ classes:
         range: uriorcurie
         multivalued: true
         broad_mappings:
-          - duo:0000001
-          - duo:0000017
+          - DUO:0000001
+          - DUO:0000017
         close_mappings:
           - dcterms:accessRights
         aliases:
@@ -1428,8 +1428,8 @@ classes:
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:hasIdentifier
-          - datacite:PersonalIdentifier
+          - DataCite:hasIdentifier
+          - DataCite:PersonalIdentifier
         aliases:
           - ORCID iD
           - nameIdentifier
@@ -1476,8 +1476,8 @@ classes:
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:hasIdentifier
-          - datacite:OrganizationIdentifier
+          - DataCite:hasIdentifier
+          - DataCite:OrganizationIdentifier
         aliases:
           - ROR ID
         description: ROR identifier (https://ror.org/...).
@@ -1500,7 +1500,7 @@ classes:
     is_a: HashableNode
     class_uri: schema:MonetaryGrant
     exact_mappings:
-      - frapo:Grant
+      - FRAPO:Grant
     close_mappings:
       - schema:Grant
     aliases:
@@ -1520,10 +1520,10 @@ classes:
       funder_name:
         is_a: literal
         mixins: [hashable]
-        slot_uri: frapo:hasFundingAgency
+        slot_uri: FRAPO:hasFundingAgency
         close_mappings:
           - schema:funder
-          - frapo:FundingAgency
+          - FRAPO:FundingAgency
         aliases:
           - funderName
       funder_identifier:
@@ -1532,7 +1532,7 @@ classes:
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:FunderIdentifier
+          - DataCite:FunderIdentifier
         aliases:
           - funderIdentifier
       funder_identifier_type:
@@ -1540,13 +1540,13 @@ classes:
         mixins: [hashable]
         range: FunderIdentifierTypeEnum
         close_mappings:
-          - datacite:usesIdentifierScheme
+          - DataCite:usesIdentifierScheme
         aliases:
           - funderIdentifierType
       award_number:
         is_a: literal
         mixins: [hashable]
-        slot_uri: frapo:hasGrantNumber
+        slot_uri: FRAPO:hasGrantNumber
         close_mappings:
           - schema:identifier
         aliases:
@@ -1584,7 +1584,7 @@ classes:
       # showed) and thinner on IDENTITY (a bare PMID). This class is the
       # identity side; the use side belongs on the edge to the publication.
       - dismech:PublicationReference
-      - dctype:Text
+      - dctypes:Text
     aliases:
       - paper
       - article
@@ -1606,7 +1606,7 @@ classes:
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:ResourceIdentifier
+          - DataCite:ResourceIdentifier
         aliases:
           - DOI
       pmid:
@@ -2087,7 +2087,7 @@ classes:
         is_a: literal
         mixins: [hashable]
         close_mappings:
-          - datacite:hasIdentifier
+          - DataCite:hasIdentifier
         annotations:
           dapper:source_standard: C2M2 persistent_id
         description: C2M2 persistent identifier (UUID).
@@ -2137,8 +2137,8 @@ classes:
   DataUseTerm:
     is_a: HashableNode
     broad_mappings:
-      - duo:0000001      # data use permission
-      - duo:0000017      # data use modifier
+      - DUO:0000001      # data use permission
+      - DUO:0000017      # data use modifier
     aliases:
       - data use limitation
       - consent code
@@ -2168,14 +2168,14 @@ classes:
         mixins: [hashable]
         range: DataUsePermissionEnum
         broad_mappings:
-          - duo:0000001
+          - DUO:0000001
         description: The primary data use permission, if this term is a permission.
       modifier:
         is_a: literal
         mixins: [hashable]
         range: DataUseModifierEnum
         broad_mappings:
-          - duo:0000017
+          - DUO:0000017
         description: The data use modifier, if this term is a modifier.
 
   RoCratePackage:
