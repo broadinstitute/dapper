@@ -5,8 +5,8 @@ repos:
         name: linkml-lint (no warnings)
         entry: uv run --with linkml linkml-lint -c schema/.linkml-lint.yaml schema/dapper.yaml
         language: system
-        files: ^schema/dapper\.yaml$
         pass_filenames: false
+        always_run: true
 
       - id: pytest
         name: pytest
