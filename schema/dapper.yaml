@@ -606,6 +606,7 @@ classes:
           - schema:conditionsOfAccess
         aliases:
           - accessRights
+        description: Access tier for the resource (e.g. public, controlled).
       alternate_identifier:
         is_a: literal
         mixins: [hashable]
@@ -628,6 +629,7 @@ classes:
         range: boolean
         close_mappings:
           - dcterms:accessRights
+        description: Whether obtaining this resource requires a controlled-access request/review.
       # --- inline attribution/provenance links (each is a graph edge) ---
       has_creator:
         is_a: relationship
@@ -650,6 +652,7 @@ classes:
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:contributor
+        description: Contributing agents (Person/Organization CURIEs), distinct from the authoritative creators.
       funded_by:
         is_a: relationship
         mixins: [hashable]
@@ -705,12 +708,14 @@ classes:
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasDerivedFrom
+        description: Upstream resource(s) (CURIEs) this one was derived from.
       was_attributed_to:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasAttributedTo
+        description: Agent(s) (CURIEs) this resource is attributed to.
       has_recommended_citation:
         is_a: relationship
         mixins: [hashable]
@@ -791,6 +796,7 @@ classes:
           - resourceTypeGeneral
         annotations:
           dapper:source_standard: DataCite kernel-4 resourceTypeGeneral
+        description: DataCite-style resource type (resourceTypeGeneral) for this dataset.
       publication_year:
         is_a: literal
         mixins: [hashable]
@@ -802,6 +808,7 @@ classes:
           - publicationYear
         annotations:
           dapper:source_standard: DataCite kernel-4 publicationYear
+        description: Year the dataset was published.
       description:
         is_a: literal
         mixins: [hashable]
@@ -810,6 +817,7 @@ classes:
           - schema:description
         aliases:
           - abstract
+        description: Free-text description or abstract of the dataset.
       publisher:
         is_a: relationship
         mixins: [hashable]
@@ -842,17 +850,20 @@ classes:
         slot_uri: dcat:distribution
         close_mappings:
           - schema:distribution
+        description: GA4GH DrsObject CURIEs (file-level identity) making up this dataset.
       packaged_as:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcterms:isPartOf
+        description: CURIE of the RoCratePackage this dataset is packaged as.
       has_workflow_provenance:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         multivalued: true
+        description: BioComputeObject CURIEs describing the workflow(s) that produced this dataset.
 
   # ======================================================================
   # SET — a collection of members (prov:Collection). Distinct from Dataset
@@ -1079,6 +1090,7 @@ classes:
       description:
         is_a: literal
         mixins: [hashable]
+        description: Free-text description of the cell state.
       cell_type:
         is_a: relationship
         mixins: [hashable]
@@ -1105,161 +1117,212 @@ classes:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether this state may be manually called with high confidence despite mixed evidence.
       biological_category:
         is_a: literal
         mixins: [hashable]
+        description: High-level biological category this state belongs to.
       biological_description:
         is_a: literal
         mixins: [hashable]
+        description: Longer prose description of the state's biology.
       cell_type_id:
         is_a: literal
         mixins: [hashable]
+        description: Ontology identifier for the cell type this state applies to.
       cell_type_label:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable label for the cell type.
       curation_notes:
         is_a: literal
         mixins: [hashable]
+        description: Free-text curator notes on this state.
       curation_version:
         is_a: literal
         mixins: [hashable]
+        description: Version of the curation applied to this state.
       disease_context:
         is_a: literal
         mixins: [hashable]
+        description: Disease context this state was curated in, if any.
       display_name:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable name for portal display.
       display_order:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Sort order for portal display.
       do_not_overinterpret_as:
         is_a: literal
         mixins: [hashable]
+        description: Caveat naming a stronger claim this state should not be read as.
       gene_expression_caveat:
         is_a: literal
         mixins: [hashable]
+        description: Caveat about interpreting the underlying gene expression evidence.
       gene_expression_followup:
         is_a: literal
         mixins: [hashable]
+        description: Suggested follow-up analysis for the gene expression evidence.
       gene_expression_interpretation:
         is_a: literal
         mixins: [hashable]
+        description: Curator's interpretation of the gene expression evidence.
       gene_expression_overinterpretation_warning:
         is_a: literal
         mixins: [hashable]
+        description: Warning against overinterpreting the gene expression evidence.
       gene_set_description:
         is_a: literal
         mixins: [hashable]
+        description: Description of the gene set(s) underlying this state.
       hard_call_notes:
         is_a: literal
         mixins: [hashable]
+        description: Notes justifying a hard (high-confidence) call for this state.
       interpretation_caveat:
         is_a: literal
         mixins: [hashable]
+        description: Caveat qualifying the state's interpretation.
       interpretation_status:
         is_a: literal
         mixins: [hashable]
+        description: Status of the curator's interpretation (e.g. provisional, confirmed).
       is_composite_required:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether more than one GeneProgram must be active for this state to hold.
       is_qc:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether this state represents a quality-control artifact rather than biology.
       known_limitations:
         is_a: literal
         mixins: [hashable]
+        description: Known limitations of the evidence supporting this state.
       manual_review_status:
         is_a: literal
         mixins: [hashable]
+        description: Status of manual curator review.
       marker_panel_context:
         is_a: literal
         mixins: [hashable]
+        description: Marker panel this state was curated against.
       marker_provenance_summary:
         is_a: literal
         mixins: [hashable]
+        description: Summary of where the defining markers came from.
       n_markers:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Count of markers used to define this state.
       negative_checks:
         is_a: literal
         mixins: [hashable]
+        description: Checks performed to rule out alternative explanations.
       portal_display_establishment:
         is_a: literal
         mixins: [hashable]
+        description: How firmly established this state is, as shown in the portal.
       portal_methods_details:
         is_a: literal
         mixins: [hashable]
+        description: Methods details shown for this state in the portal.
       portal_primary_badges:
         is_a: literal
         mixins: [hashable]
+        description: Primary badges shown for this state in the portal.
       portal_user_summary:
         is_a: literal
         mixins: [hashable]
+        description: User-facing summary of this state shown in the portal.
       portal_visibility:
         is_a: literal
         mixins: [hashable]
+        description: Visibility tier controlling whether this state is shown in the portal.
       provenance_warning_count:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Count of provenance warnings flagged for this state.
       qc_sensitivity:
         is_a: literal
         mixins: [hashable]
+        description: Sensitivity of the QC check that flagged this state.
       quality:
         is_a: literal
         mixins: [hashable]
+        description: Overall quality tier assigned to this state.
       quality_badges:
         is_a: literal
         mixins: [hashable]
+        description: Quality badges shown for this state.
       recommended_portal_label:
         is_a: literal
         mixins: [hashable]
+        description: Recommended short label for portal display.
       recommended_portal_summary:
         is_a: literal
         mixins: [hashable]
+        description: Recommended summary text for portal display.
       release_class:
         is_a: literal
         mixins: [hashable]
+        description: Release classification controlling readiness for publication.
       required_supporting_evidence:
         is_a: literal
         mixins: [hashable]
+        description: Evidence required to support this state's call.
       score_scope:
         is_a: literal
         mixins: [hashable]
+        description: Scope over which the state's score was computed.
       source_gmt:
         is_a: literal
         mixins: [hashable]
+        description: Source .gmt file the underlying gene set was drawn from.
       source_workbook:
         is_a: literal
         mixins: [hashable]
+        description: Source spreadsheet/workbook the curation was recorded in.
       state_class:
         is_a: literal
         mixins: [hashable]
+        description: Classification of the state (e.g. functional, quality-control).
       state_establishment_level:
         is_a: literal
         mixins: [hashable]
+        description: Confidence level at which this state is considered established.
       state_establishment_rationale:
         is_a: literal
         mixins: [hashable]
+        description: Rationale for the state's establishment level.
       state_id:
         is_a: literal
         mixins: [hashable]
+        description: Identifier for this state in the source curation workbook.
       state_label:
         is_a: literal
         mixins: [hashable]
+        description: Short label for this state.
       state_level_citation_ids:
         is_a: literal
         mixins: [hashable]
+        description: Citation identifiers supporting this state.
       tissue_id:
         is_a: literal
         mixins: [hashable]
+        description: Ontology identifier for the tissue this state was observed in.
       tissue_label:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable label for the tissue.
 
   # ======================================================================
   # BLOCK — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
@@ -1402,6 +1465,7 @@ classes:
     aliases:
       - individual
       - investigator
+    description: An individual person acting as a creator, contributor, or other responsible party.
     attributes:
       given_name:
         is_a: literal
@@ -1412,6 +1476,7 @@ classes:
         aliases:
           - givenName
           - first name
+        description: Given (first) name.
       family_name:
         is_a: literal
         mixins: [hashable]
@@ -1422,6 +1487,7 @@ classes:
           - familyName
           - surname
           - last name
+        description: Family (last) name.
       orcid:
         is_a: literal
         mixins: [hashable]
@@ -1449,6 +1515,7 @@ classes:
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
+        description: The role this agent played as a creator of the resource.
       contributor_role:
         is_a: literal
         mixins: [hashable]
@@ -1457,6 +1524,7 @@ classes:
           - dcterms:contributor
         aliases:
           - contributorType
+        description: The role this agent played as a contributor to the resource.
 
   Organization:
     is_a: HashableNode
@@ -1469,6 +1537,7 @@ classes:
     aliases:
       - institution
       - consortium
+    description: An institution, consortium, or other organizational agent acting as a creator, contributor, or other responsible party.
     attributes:
       ror:
         is_a: literal
@@ -1487,6 +1556,7 @@ classes:
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
+        description: The role this agent played as a creator of the resource.
       contributor_role:
         is_a: literal
         mixins: [hashable]
@@ -1495,6 +1565,7 @@ classes:
           - dcterms:contributor
         aliases:
           - contributorType
+        description: The role this agent played as a contributor to the resource.
 
   Award:
     is_a: HashableNode
@@ -1526,6 +1597,7 @@ classes:
           - FRAPO:FundingAgency
         aliases:
           - funderName
+        description: Name of the funding agency (e.g. National Institutes of Health).
       funder_identifier:
         is_a: literal
         mixins: [hashable]
@@ -1535,6 +1607,7 @@ classes:
           - DataCite:FunderIdentifier
         aliases:
           - funderIdentifier
+        description: Identifier for the funding agency (e.g. a Crossref Funder ID or ROR).
       funder_identifier_type:
         is_a: literal
         mixins: [hashable]
@@ -1543,6 +1616,7 @@ classes:
           - DataCite:usesIdentifierScheme
         aliases:
           - funderIdentifierType
+        description: Scheme used by `funder_identifier`.
       award_number:
         is_a: literal
         mixins: [hashable]
@@ -1552,6 +1626,7 @@ classes:
         aliases:
           - awardNumber
           - grant number
+        description: The grant/award number.
       award_uri:
         is_a: literal
         mixins: [hashable]
@@ -1559,12 +1634,14 @@ classes:
         slot_uri: schema:url
         aliases:
           - awardURI
+        description: URL to the award's record (e.g. an NIH RePORTER project page).
       award_title:
         is_a: literal
         mixins: [hashable]
         slot_uri: dcterms:title
         aliases:
           - awardTitle
+        description: Title of the funded award/project.
       grant_administering_institute:
         is_a: literal
         mixins: [hashable]
@@ -1600,6 +1677,7 @@ classes:
         slot_uri: dcterms:title
         exact_mappings:
           - schema:name
+        description: Title of the publication.
       doi:
         is_a: literal
         mixins: [hashable]
@@ -1609,6 +1687,7 @@ classes:
           - DataCite:ResourceIdentifier
         aliases:
           - DOI
+        description: Digital Object Identifier for the publication.
       pmid:
         is_a: literal
         mixins: [hashable]
@@ -1623,6 +1702,7 @@ classes:
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
+        description: Formatted bibliographic citation for the publication.
       relationship_type:
         is_a: literal
         mixins: [hashable]
@@ -1633,6 +1713,7 @@ classes:
           - relationType
         annotations:
           dapper:source_standard: DataCite kernel-4 relationType
+        description: How this publication relates to the dataset (e.g. IsDescribedBy).
 
   License:
     is_a: HashableNode
@@ -1653,6 +1734,7 @@ classes:
         slot_uri: schema:url
         close_mappings:
           - dcterms:license
+        description: URL to the license text.
       usage_terms:
         is_a: literal
         mixins: [hashable]
@@ -1759,11 +1841,13 @@ classes:
           - prov:SoftwareAgent
         aliases:
           - software
+        description: Name of the software that performed the activity.
       software_version:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - schema:softwareVersion
+        description: Version of the software that performed the activity.
       generated_at_time:
         is_a: literal
         mixins: [unhashable]  # temporal
@@ -1773,6 +1857,7 @@ classes:
           - schema:dateCreated
         aliases:
           - generatedAtTime
+        description: When the activity ran.
       has_lineage_step:
         is_a: relationship
         mixins: [hashable]
@@ -1781,6 +1866,7 @@ classes:
         slot_uri: dcterms:hasPart
         close_mappings:
           - prov:hadMember
+        description: LineageStep CURIEs making up this activity's ordered provenance lineage.
       has_agentic_workspace:
         is_a: relationship
         mixins: [hashable]
@@ -1894,6 +1980,7 @@ classes:
           - schema:position
         aliases:
           - order
+        description: Ordinal position of this step within the lineage.
       activity:
         is_a: literal
         mixins: [hashable]
@@ -1925,6 +2012,7 @@ classes:
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
+        description: The recommended human-readable citation text.
       required_elements:
         is_a: literal
         mixins: [hashable]
@@ -1956,6 +2044,7 @@ classes:
       mirror_region:
         is_a: literal
         mixins: [hashable]
+        description: Geographic/hosting region of the mirror (e.g. us-west-1).
       synced_from:
         is_a: literal
         mixins: [hashable]
@@ -1968,6 +2057,7 @@ classes:
         range: datetime
         close_mappings:
           - prov:generatedAtTime
+        description: When the mirror last synced this object.
       source_manifest_hash:
         is_a: literal
         mixins: [hashable]
@@ -2009,6 +2099,7 @@ classes:
         mixins: [hashable]
         close_mappings:
           - schema:identifier
+        description: GA4GH DRS object identifier.
       self_uri:
         is_a: literal
         mixins: [hashable]
@@ -2025,6 +2116,7 @@ classes:
         slot_uri: dcat:byteSize
         close_mappings:
           - schema:contentSize
+        description: Size of the object in bytes.
       checksum_sha256:
         is_a: literal
         mixins: [hashable]
@@ -2032,6 +2124,7 @@ classes:
           - spdx:checksum
         aliases:
           - sha256
+        description: Hex SHA-256 checksum of the object.
       mime_type:
         is_a: literal
         mixins: [hashable]
@@ -2040,6 +2133,7 @@ classes:
           - schema:encodingFormat
         aliases:
           - mediaType
+        description: MIME type of the object.
       access_methods:
         is_a: literal
         mixins: [hashable]
@@ -2076,6 +2170,7 @@ classes:
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
+        description: Free-text description of the file.
       filename:
         is_a: literal
         mixins: [hashable]
@@ -2083,6 +2178,7 @@ classes:
           - schema:name
         annotations:
           dapper:source_standard: C2M2 filename
+        description: The file's name.
       persistent_id:
         is_a: literal
         mixins: [hashable]
@@ -2133,6 +2229,7 @@ classes:
           - schema:contentSize
         annotations:
           dapper:source_standard: C2M2 size_in_bytes
+        description: Size of the file in bytes.
 
   DataUseTerm:
     is_a: HashableNode
@@ -2240,44 +2337,54 @@ classes:
         range: uriorcurie
         close_mappings:
           - schema:identifier
+        description: Persistent identifier for the BioCompute Object.
       bco_spec_version:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - dcterms:conformsTo
+        description: IEEE 2791 spec version this object conforms to.
       etag:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - spdx:checksum
+        description: Checksum/etag over the BCO content.
       provenance_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's provenance domain (contributors, review, dates).
       usability_domain:
         is_a: literal
         mixins: [hashable]
         multivalued: true
+        description: Free-text usability notes describing the workflow's purpose.
       description_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's description domain (pipeline steps, keywords, platform).
       execution_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's execution domain (script, software prerequisites, environment).
       io_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's I/O domain (input and output files).
       parametric_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's parametric domain (runtime parameters).
       error_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's error domain (empirical/algorithmic error rates).
 
   # ======================================================================
   # EDGE (relationship) classes — reified attribution/provenance statements.
@@ -2588,6 +2695,7 @@ classes:
         slot_uri: npx:hasNanopubType
         annotations:
           dapper:np_graph: pubinfo
+        description: Type(s) classifying this nanopublication (e.g. DraftNanopub).
       has_signature_element:
         is_a: relationship
         mixins: [unhashable]  # signature
@@ -2614,6 +2722,7 @@ classes:
         slot_uri: npx:invalidates
         annotations:
           dapper:np_graph: pubinfo
+        description: Nanopublication(s) this one invalidates without formally superseding them.
       was_created_at:
         is_a: relationship
         mixins: [hashable]
@@ -2644,6 +2753,7 @@ classes:
         slot_uri: dcterms:created
         annotations:
           dapper:np_graph: pubinfo
+        description: When the nanopublication was created.
       creator:
         is_a: relationship
         mixins: [hashable]
@@ -2660,12 +2770,14 @@ classes:
         slot_uri: dcterms:license
         annotations:
           dapper:np_graph: pubinfo
+        description: License CURIE/URI the nanopublication is released under.
       label:
         is_a: literal
         mixins: [hashable]
         slot_uri: rdfs:label
         annotations:
           dapper:np_graph: pubinfo
+        description: Human-readable label for the nanopublication.
       trusty_uri:
         is_a: literal
         mixins: [unhashable]   # assigned after the content exists
@@ -2956,6 +3068,7 @@ classes:
         range: HypothesisStatusEnum
         close_mappings:
           - dismech:status
+        description: Review status of the hypothesis (e.g. canonical, candidate).
       description:
         is_a: literal
         mixins: [hashable]
@@ -3179,6 +3292,7 @@ classes:
         mixins: [hashable]
         exact_mappings:
           - dismech:reference_title
+        description: Title of the referenced publication.
       direction:
         is_a: literal
         mixins: [hashable]
