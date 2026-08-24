@@ -1406,13 +1406,14 @@ classes:
         description: Effect size (regression coefficient) of the association.
         aliases:
           - BETA
-      n:
+      sample_size:
         is_a: literal
         mixins: [hashable]
         range: integer
         description: Sample size the association was computed over.
         aliases:
           - N
+          - n
       p_value:
         is_a: literal
         mixins: [hashable]

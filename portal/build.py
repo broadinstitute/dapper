@@ -161,7 +161,7 @@ GRAPH_DOCS = [
             "3 VariantRecord nodes, each a GA4GH VRS variant (a made-up VA digest) plus its "
             "effect size, sample size, p-value and standard error for one phenotype."
         ),
-        "start": "dapper:BottomLineResult.5EbOu3O0VESGRmoubJhFQ92kzI6vY3xd",
+        "start": "dapper:BottomLineResult.DhZxjYy6J_zCZASde-0NtrpmwSN0jXJd",
     },
 ]
 

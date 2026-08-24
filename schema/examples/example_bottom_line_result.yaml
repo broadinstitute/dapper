@@ -14,41 +14,41 @@
 # Unlike example_geneset_graph.yaml, nothing here is transcribed from a real
 # analysis run — every node is illustrative, so all 4 are listed below.
 _illustrative:
-  - dapper:VariantRecord.NCBNi7Dx3Q1eN8N6y3ymeoVCCjmr8-IN
-  - dapper:VariantRecord.dr1e7yDvb2dmIyvZlXUy0oaLdZ2RJzs5
-  - dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
-  - dapper:BottomLineResult.5EbOu3O0VESGRmoubJhFQ92kzI6vY3xd
+  - dapper:VariantRecord.zMYcP7UC-QlGclw5hheVjsgD-I_jsAiz
+  - dapper:VariantRecord.NiiW4eHrwjXzx9-aKg9dH40Saju_D1th
+  - dapper:VariantRecord.s3S-nVTHzJU1nicaiL8qhg48xfIZhhu6
+  - dapper:BottomLineResult.DhZxjYy6J_zCZASde-0NtrpmwSN0jXJd
 
 variant_records:
-  - id: dapper:VariantRecord.NCBNi7Dx3Q1eN8N6y3ymeoVCCjmr8-IN
+  - id: dapper:VariantRecord.zMYcP7UC-QlGclw5hheVjsgD-I_jsAiz
     name: "rs11591147 (PCSK9 p.Arg46Leu)"
     variant: ga4gh:VA.MDUsFkiDVuaWUyTj3k-0-flnDLL1yW0q # Made-up, toy digest
     phenotype: Alzheimer's disease
     beta: -0.35
-    n: 188577
+    sample_size: 188577
     p_value: 2.1e-95
     std_error: 0.017
 
-  - id: dapper:VariantRecord.dr1e7yDvb2dmIyvZlXUy0oaLdZ2RJzs5
+  - id: dapper:VariantRecord.NiiW4eHrwjXzx9-aKg9dH40Saju_D1th
     name: "rs7412 (APOE epsilon2)"
     variant: ga4gh:VA.HA7AKt0LWv6AOyz0BD0m3Rz2RkhU32Bq # Made-up, toy digest
     phenotype: Alzheimer's disease
     beta: -0.29
-    n: 188577
+    sample_size: 188577
     p_value: 4.8e-210
     std_error: 0.009
 
-  - id: dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
+  - id: dapper:VariantRecord.s3S-nVTHzJU1nicaiL8qhg48xfIZhhu6
     name: "rs429358 (APOE epsilon4) x Alzheimer's disease"
     variant: ga4gh:VA._j-SmMHncOohuKLsiRFYfK4zEDxjOwKh # Made-up, toy digest
     phenotype: Alzheimer's disease
     beta: 1.18
-    n: 94437
+    sample_size: 94437
     p_value: 3.3e-301
     std_error: 0.014
 
 bottom_line_results:
-  - id: dapper:BottomLineResult.5EbOu3O0VESGRmoubJhFQ92kzI6vY3xd
+  - id: dapper:BottomLineResult.DhZxjYy6J_zCZASde-0NtrpmwSN0jXJd
     name: Example Alzheimer's Disease GWAS Bottom Line
     description: >-
       Illustrative variant-level bottom-line summary statistics from a
@@ -56,7 +56,7 @@ bottom_line_results:
       disease.
     access_level: public
     has_variant_record:
-      - dapper:VariantRecord.NCBNi7Dx3Q1eN8N6y3ymeoVCCjmr8-IN
-      - dapper:VariantRecord.dr1e7yDvb2dmIyvZlXUy0oaLdZ2RJzs5
-      - dapper:VariantRecord.WHSpKRUD84h-9nGmJqND6eFZ9qchxXV1
+      - dapper:VariantRecord.zMYcP7UC-QlGclw5hheVjsgD-I_jsAiz
+      - dapper:VariantRecord.NiiW4eHrwjXzx9-aKg9dH40Saju_D1th
+      - dapper:VariantRecord.s3S-nVTHzJU1nicaiL8qhg48xfIZhhu6
     n_variants: 3
