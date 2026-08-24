@@ -15,17 +15,18 @@
 # constitute ductal identity. example_gene_program.yaml is Factor_1 by
 # itself, extracted verbatim (same id) as one of the three shown here.
 #
-# Factor_1 and Factor_2 also carry a `quality` (GeneProgramQualityScore)
-# assessment; Factor_3 deliberately omits it to show the field is optional.
+# Factor_1 and Factor_2 also carry a `quality_score` (GeneProgramQualityScore)
+# assessment — a composite value plus `components` (stability, confounders,
+# validity); Factor_3 deliberately omits it to show the field is optional.
 
 _illustrative:
-  - dapper:GeneProgram.3FU49NbLB82AOa8sxDo6pq5YEHILRfCl
-  - dapper:GeneProgram._kIIOyV__21jzCKCW9i4A83sHknYHLPT
+  - dapper:GeneProgram.c3BuK-YYanBJtDBVs3iPkQCWKVcX33Sv
+  - dapper:GeneProgram.VzJ5ojYPNG2Sl8TW8tOLVK5St7z-zR5e
   - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
-  - dapper:CellState.Psy3r7P4c_VYtyMu5kSA7rFlFa7SSNhH
+  - dapper:CellState.z0lhrN_M7pbbbat62SMvEWEE8c8uvSaU
 
 gene_programs:
-  - id: dapper:GeneProgram.3FU49NbLB82AOa8sxDo6pq5YEHILRfCl
+  - id: dapper:GeneProgram.c3BuK-YYanBJtDBVs3iPkQCWKVcX33Sv
     name: Factor 1 gene program
     description: >-
       Gene program corresponding to Factor_1 of a gene-by-program NMF loading
@@ -55,13 +56,14 @@ gene_programs:
       - 0
       - 0
     n_genes: 9
-    quality:
+    quality_score:
       quality_score: 86.8
-      stability_score: 88
-      integration_score: 79
-      biology_score: 91
+      components:
+        stability_score: 88
+        confounder_score: 79
+        validity_score: 91
 
-  - id: dapper:GeneProgram._kIIOyV__21jzCKCW9i4A83sHknYHLPT
+  - id: dapper:GeneProgram.VzJ5ojYPNG2Sl8TW8tOLVK5St7z-zR5e
     name: Factor 2 gene program
     description: >-
       Gene program corresponding to Factor_2 of the same gene-by-program NMF
@@ -91,11 +93,12 @@ gene_programs:
       - 5.14936863606219
       - 1.22097121174475
     n_genes: 9
-    quality:
+    quality_score:
       quality_score: 59.2
-      stability_score: 61
-      integration_score: 70
-      biology_score: 52
+      components:
+        stability_score: 61
+        confounder_score: 70
+        validity_score: 52
 
   - id: dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
     name: Factor 3 gene program
@@ -129,12 +132,12 @@ gene_programs:
     n_genes: 9
 
 cell_states:
-  - id: dapper:CellState.Psy3r7P4c_VYtyMu5kSA7rFlFa7SSNhH
+  - id: dapper:CellState.z0lhrN_M7pbbbat62SMvEWEE8c8uvSaU
     name: Ductal epithelial identity
     organism: human
     has_program:
-      - dapper:GeneProgram.3FU49NbLB82AOa8sxDo6pq5YEHILRfCl
-      - dapper:GeneProgram._kIIOyV__21jzCKCW9i4A83sHknYHLPT
+      - dapper:GeneProgram.c3BuK-YYanBJtDBVs3iPkQCWKVcX33Sv
+      - dapper:GeneProgram.VzJ5ojYPNG2Sl8TW8tOLVK5St7z-zR5e
       - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
 
     # --- internal cell-state marker-curation schema ---

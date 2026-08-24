@@ -148,11 +148,11 @@ GRAPH_DOCS = [
             "feeding into one curated pancreatic ductal epithelial identity "
             "state (CellState) with the internal marker-curation schema "
             "fields. Two of the three programs also carry an optional "
-            "`quality` assessment (GeneProgramQualityScore); the third omits "
+            "`quality_score` assessment (GeneProgramQualityScore); the third omits "
             "it. The pairing is illustrative, exercising multi-program "
             "has_program rather than asserting a biological claim."
         ),
-        "start": "dapper:CellState.Psy3r7P4c_VYtyMu5kSA7rFlFa7SSNhH",
+        "start": "dapper:CellState.z0lhrN_M7pbbbat62SMvEWEE8c8uvSaU",
     },
     {
         "file": "example_bottom_line_result.yaml",

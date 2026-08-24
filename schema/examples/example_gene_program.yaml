@@ -3,8 +3,9 @@
 # matrix to demonstrate `member_weights`: `members[i]` and
 # `member_weights[i]` describe the same gene, positionally paired. Contrast
 # with example_geneset.yaml, a static curated annotation with no weights.
-# Also carries a `quality` (GeneProgramQualityScore) assessment, an optional
-# field on GeneProgram.
+# Also carries a `quality_score` (GeneProgramQualityScore) assessment, an
+# optional field on GeneProgram — a composite value plus `components`
+# (stability, confounders, validity).
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C GeneProgram example_gene_program.yaml
@@ -12,7 +13,7 @@
 # Referenced by example_cell_state.yaml and example_cell_graph.yaml via
 # `has_program`.
 
-id: dapper:GeneProgram.3FU49NbLB82AOa8sxDo6pq5YEHILRfCl
+id: dapper:GeneProgram.c3BuK-YYanBJtDBVs3iPkQCWKVcX33Sv
 name: Factor 1 gene program
 description: >-
   Gene program corresponding to Factor_1 of a gene-by-program NMF loading
@@ -42,8 +43,9 @@ member_weights:
   - 0
   - 0
 n_genes: 9
-quality:
+quality_score:
   quality_score: 86.8
-  stability_score: 88
-  integration_score: 79
-  biology_score: 91
+  components:
+    stability_score: 88
+    confounder_score: 79
+    validity_score: 91
