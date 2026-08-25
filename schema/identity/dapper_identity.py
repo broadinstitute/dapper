@@ -120,8 +120,6 @@ DOC_GROUPS = {
     "ro_crate_packages": "RoCratePackage",
     "bio_compute_objects": "BioComputeObject",
     "mirror_provenances": "MirrorProvenance",
-    "bottom_line_results": "BottomLineResult",
-    "variant_records": "VariantRecord",
 }
 
 
