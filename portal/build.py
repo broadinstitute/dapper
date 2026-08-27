@@ -94,6 +94,7 @@ FAMILY = {
     "C2M2File": "data",
     "GeneSet": "data",
     "GeneProgram": "data",
+    "CellState": "data",
     "Dataset": "data",
     "BottomLineResult": "data",
     "VariantRecord": "data",
