@@ -150,9 +150,13 @@ GRAPH_DOCS = [
             "fields. Two of the three programs also carry an optional "
             "`quality_score` assessment (GeneProgramQualityScore); the third omits "
             "it. The pairing is illustrative, exercising multi-program "
-            "has_program rather than asserting a biological claim."
+            "has_program rather than asserting a biological claim. Also shows "
+            "the two provenance branches: an illustrative NMF Activity wired "
+            "to the GenePrograms via Used/WasGeneratedBy edges (the same shape "
+            "as the gene-set DAG), and the curated CellState attributed "
+            "directly to a curator with no generating Activity at all."
         ),
-        "start": "dapper:CellState.z0lhrN_M7pbbbat62SMvEWEE8c8uvSaU",
+        "start": "dapper:CellState.IHQJzYsI_9y0ko81oIgyNSgdi15cOn85",
     },
     {
         "file": "example_bottom_line_result.yaml",
