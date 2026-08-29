@@ -1,0 +1,197 @@
+# Illustrative end-to-end Claim Miner trace using a real PubMed identifier from
+# the regression anchors. The passage and all derived scientific content are
+# illustrative, not transcribed from the publication.
+_illustrative:
+  - dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+  - dapper:PublicationPassage.cGDtnbUolF-R4FZois5K9-E9cTvKufOc
+  - dapper:MiningActivity.GpyZdjwHjBpumkqczq6DZ74IAz4_4Yzl
+  - dapper:MiningActivity.eYdaHSvU5ilqEtHIpuiCFeQ0If_JXwVw
+  - dapper:MiningActivity.YD6olyN_qe-fk_4BeEgxk2Yt_-fOwvGq
+  - dapper:MiningActivity.r-A3sOdorZMpDQXkKKwHNtbgfI2L1ZuF
+  - dapper:TextEvidenceItem.yuI_ima-OTK_vvSZhaYX-W7gFvN_PsuS
+  - dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+  - dapper:MechanismAssessment.KN6Z4EclFTCWpiCjfiYevE3go7MQJpXL
+  - dapper:ResearchGap.L351odS_ZIISyoWCvXwEInmAhUsqEqko
+  - dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+  - dapper:CausalStep.f9kNut-4TseKx79RVY0uEQkQ89LARcNt
+  - dapper:CausalStep.SoFzdWckRjyw7xNuRgZExXV6ti9uDxpf
+  - dapper:MechanisticHypothesis.-oI6R6E87sHyHPaq_QSLpOReH-QHztfl
+
+publications:
+  - id: dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+    name: PubMed article 28846757
+    pmid: "28846757"
+
+publication_passages:
+  - id: dapper:PublicationPassage.cGDtnbUolF-R4FZois5K9-E9cTvKufOc
+    name: Illustrative abstract passage for PMID 28846757
+    part_of_publication: dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+    section: abstract
+    text_hash: sha256:40981a8ae6f5d04f373b5b4af9cc9a08dbfccfc7a2268727ac1c95c8fe90e4ee
+    text: The APOE epsilon4 effect on Alzheimer disease risk was stronger in women.
+
+mining_activities:
+  - id: dapper:MiningActivity.GpyZdjwHjBpumkqczq6DZ74IAz4_4Yzl
+    name: Extract effect-modification hypotheses
+    activity_type: llm_extraction
+    software_name: gapminer
+    software_version: claim-miner-integration
+    task_type: effect_modification_extraction
+    model_name: claude-sonnet-4-6
+    provider: anthropic
+    prompt_version: extract-v1
+    tool_schema_version: effect-modification-v1
+    temperature: 0.0
+  - id: dapper:MiningActivity.eYdaHSvU5ilqEtHIpuiCFeQ0If_JXwVw
+    name: Assess published mechanism coverage
+    activity_type: llm_assessment
+    software_name: gapminer
+    software_version: claim-miner-integration
+    task_type: mechanism_assessment
+    model_name: claude-sonnet-4-6
+    provider: anthropic
+    prompt_version: gap-v1
+    tool_schema_version: mechanism-assessment-v1
+    temperature: 0.0
+  - id: dapper:MiningActivity.YD6olyN_qe-fk_4BeEgxk2Yt_-fOwvGq
+    name: Aggregate explanatory gaps
+    activity_type: aggregation
+    software_name: gapminer
+    software_version: claim-miner-integration
+    task_type: mechanistic_gap_aggregation
+  - id: dapper:MiningActivity.r-A3sOdorZMpDQXkKKwHNtbgfI2L1ZuF
+    name: Generate candidate mechanistic hypothesis
+    activity_type: llm_hypothesis_generation
+    software_name: gapminer
+    software_version: claim-miner-integration
+    task_type: mechanism_alignment
+    model_name: claude-opus-4-8
+    provider: anthropic
+    prompt_version: align-v1
+    tool_schema_version: mechanism-alignment-v1
+    temperature: 0.0
+
+text_evidence_items:
+  - id: dapper:TextEvidenceItem.yuI_ima-OTK_vvSZhaYX-W7gFvN_PsuS
+    name: Illustrative APOE by sex evidence anchor
+    reference: dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+    direction: supports
+    passage: dapper:PublicationPassage.cGDtnbUolF-R4FZois5K9-E9cTvKufOc
+    evidence_span_start: 0
+    evidence_span_end: 73
+    source_text_hash: sha256:40981a8ae6f5d04f373b5b4af9cc9a08dbfccfc7a2268727ac1c95c8fe90e4ee
+    has_subgroup_statistics: true
+    replicated_in_publication: false
+    extraction_confidence: 0.92
+
+effect_modification_hypotheses:
+  - id: dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+    name: APOE epsilon4 has a stronger Alzheimer disease risk effect in women
+    hypothesis_label: APOE epsilon4 x sex -> Alzheimer disease susceptibility
+    statement: APOE epsilon4 has a stronger effect on Alzheimer disease susceptibility in women.
+    hypothesis_type: effect_modification
+    polarity: asserted
+    status: proposed
+    subject_entity: HGNC:613
+    object_entity: MONDO:0004975
+    exposure_entity: HGNC:613
+    exposure_label: APOE epsilon4
+    exposure_type: variant
+    outcome_entity: MONDO:0004975
+    outcome_label: Alzheimer disease
+    modifier_type: sex
+    modifier_value: women
+    direction_pattern: stronger_in_subgroup
+    stronger_in: women
+    outcome_axis: susceptibility
+    confidence: 0.92
+    has_evidence:
+      - dapper:TextEvidenceItem.yuI_ima-OTK_vvSZhaYX-W7gFvN_PsuS
+    was_generated_by: dapper:MiningActivity.GpyZdjwHjBpumkqczq6DZ74IAz4_4Yzl
+    was_derived_from:
+      - dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+      - dapper:PublicationPassage.cGDtnbUolF-R4FZois5K9-E9cTvKufOc
+    access_level: public
+
+mechanism_assessments:
+  - id: dapper:MechanismAssessment.KN6Z4EclFTCWpiCjfiYevE3go7MQJpXL
+    name: Mechanism assessment for APOE epsilon4 by sex
+    about_hypothesis: dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+    about_publication: dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+    proposes_mechanism: false
+    mechanism_scope: none
+    confidence: 0.86
+    has_evidence:
+      - dapper:TextEvidenceItem.yuI_ima-OTK_vvSZhaYX-W7gFvN_PsuS
+    was_generated_by: dapper:MiningActivity.eYdaHSvU5ilqEtHIpuiCFeQ0If_JXwVw
+    was_derived_from:
+      - dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+      - dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+
+research_gaps:
+  - id: dapper:ResearchGap.L351odS_ZIISyoWCvXwEInmAhUsqEqko
+    name: Missing mechanism for APOE epsilon4 by sex in Alzheimer disease
+    gap_type: missing_mechanistic_explanation
+    about_hypothesis:
+      - dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+    based_on_assessment:
+      - dapper:MechanismAssessment.KN6Z4EclFTCWpiCjfiYevE3go7MQJpXL
+    supporting_publications:
+      - dapper:Publication.jQgwvkOZZbeEhKjTwT0IrEK6uoA1Ts3O
+    n_reports: 1
+    n_with_mechanism: 0
+    mechanism_density: 0.0
+    directional_consistency: 1.0
+    has_interaction_statistic: true
+    status: candidate
+    rationale: The interaction is reported, but the assessed paper does not propose a concrete mechanism.
+    was_generated_by: dapper:MiningActivity.YD6olyN_qe-fk_4BeEgxk2Yt_-fOwvGq
+    was_derived_from:
+      - dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+      - dapper:MechanismAssessment.KN6Z4EclFTCWpiCjfiYevE3go7MQJpXL
+
+mechanisms:
+  - id: dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+    name: Sex-dependent hormonal modulation of APOE biology
+    description: Hormonal context may alter APOE expression or downstream lipid handling.
+
+causal_steps:
+  - id: dapper:CausalStep.f9kNut-4TseKx79RVY0uEQkQ89LARcNt
+    name: APOE epsilon4 to hormonal modulation
+    step_index: 0
+    step_subject: HGNC:613
+    step_object: dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+    causal_link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+    via_mechanism:
+      - dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+  - id: dapper:CausalStep.SoFzdWckRjyw7xNuRgZExXV6ti9uDxpf
+    name: Hormonal modulation to Alzheimer disease susceptibility
+    step_index: 1
+    step_subject: dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+    step_object: MONDO:0004975
+    causal_link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+    via_mechanism:
+      - dapper:Mechanism.wPjFnw82hKHlfbO2KfqwaX1tMdsmO5O-
+
+mechanistic_hypotheses:
+  - id: dapper:MechanisticHypothesis.-oI6R6E87sHyHPaq_QSLpOReH-QHztfl
+    name: Sex-dependent hormonal modulation explains the APOE epsilon4 risk difference
+    hypothesis_label: Hormonal context mediates APOE epsilon4 by sex
+    statement: Sex-dependent hormonal modulation of APOE biology contributes to the stronger Alzheimer disease risk effect observed in women.
+    hypothesis_type: mechanistic
+    polarity: asserted
+    status: proposed
+    subject_entity: HGNC:613
+    subject_gene: HGNC:613
+    object_entity: MONDO:0004975
+    object_disease: MONDO:0004975
+    has_causal_step:
+      - dapper:CausalStep.f9kNut-4TseKx79RVY0uEQkQ89LARcNt
+      - dapper:CausalStep.SoFzdWckRjyw7xNuRgZExXV6ti9uDxpf
+    confidence: 0.61
+    description: A candidate explanation generated for review; it is not established by the source publication.
+    was_generated_by: dapper:MiningActivity.r-A3sOdorZMpDQXkKKwHNtbgfI2L1ZuF
+    was_derived_from:
+      - dapper:ResearchGap.L351odS_ZIISyoWCvXwEInmAhUsqEqko
+      - dapper:EffectModificationHypothesis.Q8mKuNsyMgYsLGzAegRHGOFPAg025uZo
+    access_level: public

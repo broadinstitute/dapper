@@ -405,6 +405,87 @@ enums:
       mixed:
       unknown:
 
+  HypothesisTypeEnum:
+    description: The scientific proposition represented by a Hypothesis.
+    permissible_values:
+      association:
+        description: Two or more entities or variables are statistically associated.
+      causal:
+        description: A change in one entity or variable causes a change in another.
+      mechanistic:
+        description: A proposition explaining how or why an observed effect occurs.
+      effect_modification:
+        description: A modifier changes the magnitude or direction of an exposure-outcome effect.
+
+  HypothesisPolarityEnum:
+    description: What a hypothesis asserts, independent of its review lifecycle status.
+    permissible_values:
+      asserted:
+        description: The proposition is asserted to hold.
+      negated:
+        description: The proposition explicitly asserts that a relationship does not hold.
+      null_result:
+        description: A tested relationship or interaction was reported as null.
+      uncertain:
+        description: The source does not resolve whether the proposition holds.
+
+  ExposureTypeEnum:
+    permissible_values:
+      gene:
+      variant:
+      locus:
+      exposure:
+      other:
+
+  ModifierTypeEnum:
+    permissible_values:
+      sex:
+      age:
+      ancestry:
+      other:
+
+  EffectDirectionPatternEnum:
+    permissible_values:
+      stronger_in_subgroup:
+      present_in_one_absent_in_other:
+      opposite_direction:
+      unclear:
+
+  OutcomeAxisEnum:
+    permissible_values:
+      susceptibility:
+      severity_progression:
+      biomarker_level:
+      treatment_response:
+      other:
+
+  ExtractionDecisionEnum:
+    description: A mining decision explaining why a passage did not yield a hypothesis.
+    permissible_values:
+      covariate_adjustment_only:
+      single_subgroup_cohort:
+      main_effect_only:
+      no_relevant_hypothesis:
+
+  MechanismScopeEnum:
+    permissible_values:
+      proximal_disease_specific:
+      cross_domain:
+      none:
+
+  ResearchGapTypeEnum:
+    permissible_values:
+      missing_mechanistic_explanation:
+        description: A reported relationship lacks a concrete published explanation of why it occurs.
+
+  AssessmentStatusEnum:
+    permissible_values:
+      candidate:
+      reviewed:
+      accepted:
+      rejected:
+      resolved:
+
   NanopubTypeEnum:
     description: >-
       Nanopublication subtypes from Nanopub-X (npx), used as the object of
@@ -2916,17 +2997,25 @@ classes:
       - DismechLinked
     class_uri: hycl:Statement
     description: >-
-      A mechanistic hypothesis: a claim that a subject entity (initially a
-      gene) contributes to an object entity (initially a disease) through an
-      ordered chain of mechanisms. A FAIR digital object — citable, attributed,
-      funded, licensed — and publishable as a nanopublication.
-    exact_mappings:
-      - dismech:MechanisticHypothesis
+      A scientific proposition represented as a FAIR digital object: citable,
+      attributed, funded, licensed, evidence-linked, and publishable as a
+      nanopublication. A hypothesis may be an atomic literature assertion or a
+      composite causal or mechanistic model. Mechanistic hypotheses can carry
+      an ordered chain of CausalSteps.
     close_mappings:
       - hycl:Statement
+      - dismech:MechanisticHypothesis
     annotations:
       dapper:source_standard: DISMECH MechanisticHypothesis
     attributes:
+      hypothesis_type:
+        is_a: literal
+        mixins: [hashable]
+        range: HypothesisTypeEnum
+      polarity:
+        is_a: literal
+        mixins: [hashable]
+        range: HypothesisPolarityEnum
       hypothesis_label:
         is_a: literal
         mixins: [hashable]
@@ -3053,6 +3142,113 @@ classes:
           Nanopublication id(s) whose assertions ARGUE AGAINST this hypothesis.
           Same rationale as `supported_by_nanopub`; kept separate so a
           hypothesis can carry both and be judged on the balance.
+
+  MechanisticHypothesis:
+    is_a: Hypothesis
+    description: >-
+      A disease- or biology-level explanatory model organized as causal steps
+      and mechanisms. This specialization preserves the exact DISMECH mapping
+      while the Hypothesis parent also supports non-mechanistic propositions.
+    exact_mappings:
+      - dismech:MechanisticHypothesis
+    annotations:
+      dapper:source_standard: DISMECH MechanisticHypothesis
+
+  EffectModificationHypothesis:
+    is_a: Hypothesis
+    description: >-
+      A hypothesis that a modifier changes the magnitude or direction of an
+      exposure-outcome relationship. This is the native DAPPER representation
+      of a positive or null effect-modification result mined from literature.
+    attributes:
+      exposure_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      exposure_label:
+        is_a: literal
+        mixins: [hashable]
+      exposure_type:
+        is_a: literal
+        mixins: [hashable]
+        range: ExposureTypeEnum
+      outcome_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      outcome_label:
+        is_a: literal
+        mixins: [hashable]
+      modifier_type:
+        is_a: literal
+        mixins: [hashable]
+        range: ModifierTypeEnum
+      modifier_value:
+        is_a: literal
+        mixins: [hashable]
+      direction_pattern:
+        is_a: literal
+        mixins: [hashable]
+        range: EffectDirectionPatternEnum
+      stronger_in:
+        is_a: literal
+        mixins: [hashable]
+      outcome_axis:
+        is_a: literal
+        mixins: [hashable]
+        range: OutcomeAxisEnum
+
+  PublicationPassage:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    description: >-
+      A section-level fragment of a publication used as input to a mining
+      activity. The text may be omitted while retaining its hash and section
+      anchor for copyright-conscious provenance.
+    attributes:
+      part_of_publication:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      section:
+        is_a: literal
+        mixins: [hashable]
+      text_hash:
+        is_a: literal
+        mixins: [hashable]
+      text:
+        is_a: literal
+        mixins: [hashable]
+
+  MiningActivity:
+    is_a: Activity
+    description: A model-assisted extraction, assessment, aggregation, or hypothesis-generation run.
+    close_mappings:
+      - dismech:CurationEvent
+    attributes:
+      task_type:
+        is_a: literal
+        mixins: [hashable]
+      model_name:
+        is_a: literal
+        mixins: [hashable]
+      provider:
+        is_a: literal
+        mixins: [hashable]
+      prompt_version:
+        is_a: literal
+        mixins: [hashable]
+      prompt_hash:
+        is_a: literal
+        mixins: [hashable]
+      tool_schema_version:
+        is_a: literal
+        mixins: [hashable]
+      temperature:
+        is_a: literal
+        mixins: [hashable]
+        range: float
 
   CausalStep:
     is_a: HashableNode
@@ -3207,6 +3403,189 @@ classes:
           itself a published, signed claim rather than a passage from a paper.
           Following it reaches that claim's own provenance graph, and from
           there the analysis and dataset it rests on.
+
+  TextEvidenceItem:
+    is_a: EvidenceItem
+    description: Evidence anchored to a character span in a publication passage.
+    close_mappings:
+      - dismech:EvidenceItem
+    attributes:
+      passage:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      evidence_span_start:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+      evidence_span_end:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+      source_text_hash:
+        is_a: literal
+        mixins: [hashable]
+      sample_size:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+      has_subgroup_statistics:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      p_interaction:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+      replicated_in_publication:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      extraction_confidence:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+
+  ExtractionAssessment:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    description: >-
+      A mining decision explaining why a publication passage did not yield a
+      scientific hypothesis. These records preserve useful negative examples
+      without representing them as claims about the world.
+    attributes:
+      about_publication:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      about_passage:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      decision:
+        is_a: literal
+        mixins: [hashable]
+        range: ExtractionDecisionEnum
+      reason:
+        is_a: literal
+        mixins: [hashable]
+      confidence:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+
+  MechanismAssessment:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    description: A model-assisted judgment of whether a publication proposes a mechanism for a hypothesis.
+    attributes:
+      about_hypothesis:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      about_publication:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+      proposes_mechanism:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      has_mechanism:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+      mechanism_scope:
+        is_a: literal
+        mixins: [hashable]
+        range: MechanismScopeEnum
+      confidence:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+      has_evidence:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+
+  ResearchGap:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    description: >-
+      A computationally identified missing assertion or explanation, with the
+      evidence base, scoring outputs, and generating activity required for
+      review. Maps to a DISMECH Discussion whose kind is KNOWLEDGE_GAP.
+    close_mappings:
+      - dismech:Discussion
+    attributes:
+      gap_type:
+        is_a: literal
+        mixins: [hashable]
+        range: ResearchGapTypeEnum
+      about_hypothesis:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+      based_on_assessment:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+      supporting_publications:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+      n_reports:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+      n_with_mechanism:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+      mechanism_density:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+      directional_consistency:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        minimum_value: 0.0
+        maximum_value: 1.0
+      has_interaction_statistic:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+      status:
+        is_a: literal
+        mixins: [hashable]
+        range: AssessmentStatusEnum
+      rationale:
+        is_a: literal
+        mixins: [hashable]
 
   # ---- hypothesis edges ----------------------------------------------------
 

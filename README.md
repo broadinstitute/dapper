@@ -38,6 +38,19 @@ uv run schema/identity/dapper_identity.py verify collection.yaml
 `schema/identity/README.md` has the walkthrough, the full `DAPPER-ID-1` profile, and why this is
 deliberately *not* a Trusty URI.
 
+## Scientific claim mining
+
+DAPPER is the native data model for Claim Miner outputs. `Hypothesis` represents a general
+scientific proposition; `EffectModificationHypothesis` and `MechanisticHypothesis` provide typed
+specializations. Publication passages and text evidence preserve source anchors, model-assisted
+assessments preserve extraction provenance, and `ResearchGap` records a reviewable missing
+mechanistic explanation. `schema/examples/example_claim_miner_trace.yaml` shows the complete path
+from a publication passage through an extracted hypothesis and mechanism assessment to a research
+gap and generated mechanistic hypothesis.
+
+Raw model output is not automatically a nanopublication. A reviewed hypothesis can be published
+later using the existing assertion/provenance/publication-info structure.
+
 Additional model types should be added as separate YAML modules under
 `schema/`, with imports expressed relative to `schema/`. Shared vocabulary,
 base classes, and reusable enums should be factored into their own modules
