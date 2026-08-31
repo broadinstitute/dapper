@@ -85,14 +85,11 @@ CLASS_PRED = URIRef("urn:dapper:class")
 MAX_TRIPLES = 10_000
 
 # Node-list key -> class, matching how the graph examples group their nodes.
-# Node-list key -> class. Covers EVERY concrete HashableNode class, so any
-# DAPPER document mints completely. An incomplete map silently skips nodes:
-# example_graph.yaml carried 12 unminted groups until this was filled in.
-# Node-list key -> class. Covers EVERY concrete HashableNode class, so any
-# DAPPER document mints completely. An incomplete map silently skips nodes:
-# example_graph.yaml carried 12 unminted groups until this was filled in.
-# Written out rather than derived — naive pluralisation produced `activitys`
-# and would have renamed a key the examples already use.
+# Covers EVERY concrete HashableNode class, so any DAPPER document mints
+# completely — an incomplete map silently skips nodes (example_graph.yaml
+# carried 12 unminted groups until this was filled in). Written out rather
+# than derived: naive pluralisation produced `activitys` and would have
+# renamed a key the examples already use.
 DOC_GROUPS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
@@ -371,7 +368,6 @@ def _rewrite_node(node: dict, class_name: str, sv, mapping: dict[str, str]) -> d
     A blanket substring rewrite replaced both, silently turning a real ORCID into
     a DAPPER digest. An ORCID, ROR, BCO id, checksum or file path is not a DAPPER
     reference and must never be rewritten, however much it looks like one.
-    Reported by Jeremy Arbesfeld (broadinstitute/dapper#1).
     """
     out = {}
     for key, value in node.items():

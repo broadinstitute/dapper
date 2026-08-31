@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: linkml-lint
+        name: linkml-lint (no warnings)
+        entry: linkml-lint -c schema/.linkml-lint.yaml schema/dapper.yaml
+        language: python
+        additional_dependencies: [linkml]
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: pytest
+        entry: pytest tests/ -q
+        language: python
+        additional_dependencies: [pytest>=8, pyyaml, rdflib, linkml-runtime]
+        pass_filenames: false
+        always_run: true

@@ -1,4 +1,4 @@
-# A single GeneProgram instance — the 4.0 single-cell counterpart of
+# A single GeneProgram instance — the single-cell counterpart of
 # example_geneset.yaml. Populated from a real gene-by-program NMF loading
 # matrix to demonstrate `member_weights`: `members[i]` and
 # `member_weights[i]` describe the same gene, positionally paired. Contrast

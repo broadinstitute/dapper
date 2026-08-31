@@ -11,7 +11,7 @@
 #
 # Regenerate after re-minting: see schema/examples/README.md
 
-id: dapper:Hypothesis.2gJtc58y4jV1ZcZexmAca2YFAyCsR2MJ
+id: dapper:Hypothesis.8KNU2QptU6Q-T0EGG1fMIQ9-xWYvftsc
 name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
 hypothesis_label: CLCN5 LOF -> PT dysfunction -> Dent disease
 statement: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial
@@ -25,6 +25,6 @@ dismech_class: dismech:MechanisticHypothesis
 dismech_disease_term: MONDO:0015612
 access_level: public
 supported_by_nanopub:
-- dapper:Nanopublication.VLib_zcd4SSTr8Y1ivf_iVZj7VgHIkpX
+- dapper:Nanopublication.DgWZJuP2B5fR112cJx88fnPuS7PTpd5q
 asserted_in:
-- dapper:Nanopublication.7hjuQGdQssbfOTGnBs-5UMm0zfcfk-Lt
+- dapper:Nanopublication.cnTf91FmbvHmbbWKz_n5Dpvdk18v3OY3

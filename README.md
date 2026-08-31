@@ -1,8 +1,7 @@
 # DAPPER
 
 LinkML models for dataset attribution, provenance, evidence retrieval, and
-related biomedical knowledge products. **DAPPER** is the working repository
-name; the acronym and public model branding are still being finalized.
+related biomedical knowledge products.
 
 ## Repository layout
 
@@ -45,11 +44,10 @@ once there is a concrete second consumer.
 
 ## Current migration
 
-`schema/dapper.yaml` is the DAPPER model, migrated from the NIH Dataset
-Attribution and Provenance Profile. Its NIH-DAPP vocabulary is intentionally
-retained where it names the underlying standard. The schema already
-covers citation, funding, PROV lineage, file identity, controlled-access terms,
-workflow provenance, nanopublications, hypotheses, and agentic replay.
+`schema/dapper.yaml` is DAPPER, migrated from the NIH Dataset Attribution and
+Provenance Profile it's named after. It covers citation, funding, PROV
+lineage, file identity, controlled-access terms, workflow provenance,
+nanopublications, hypotheses, and agentic replay.
 
 Validate from the repository root with:
 
@@ -60,6 +58,12 @@ uv run --with linkml linkml-validate \
 
 ## Contribution workflow
 
-Make initial schema changes in this checkout, validate examples and converters,
-then commit and push to `broadinstitute/dapper` only after the migration shape
-and acronym are agreed.
+Validate schema changes, examples, and converters locally; push to
+`broadinstitute/dapper` only once the migration shape is agreed.
+
+We use prek to validate and check files before committing. Before your
+commit, please run
+
+```bash
+prek install
+```

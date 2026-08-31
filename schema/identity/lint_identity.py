@@ -19,9 +19,9 @@ because its absence produced a real bug during implementation:
   5. ids match content — every example id equals its recomputed digest
   6. unique ids        — no two nodes in a document share an id
                          (two under-specified stubs earned the same address)
-  7. no stale refs     — no example still uses a pre-3.2 identifier scheme
-                         (Jeremy caught example_nanopub pointing at nih:np/...
-                          ids that name nothing; 26 such refs existed)
+  7. no stale refs     — no example still uses a legacy, non-content-addressed
+                         identifier scheme (caught example_nanopub pointing at
+                          nih:np/... ids that name nothing; 26 such refs existed)
   8. external ids kept  — minting never overwrites an ORCID, ROR or BCO id
                          (broadinstitute/dapper#1: nodes whose id WAS their
                           external identifier had both rewritten)
@@ -160,7 +160,7 @@ def main() -> int:
             f"{len(mismatches)} id mismatch(es), {len(dupes)} duplicate(s) [{status}]"
         )
 
-    # --- 7. no pre-3.2 identifier schemes anywhere in the examples ----------
+    # --- 7. no legacy (non-content-addressed) identifier schemes in examples ---
     stale_pat = re.compile(
         r"^(nih:(np|hypothesis|causalstep|mechanism|evidence|activity|geneset|"
         r"citation|workspace|award)/|file:|analysis:|geneset:)"
@@ -183,8 +183,8 @@ def main() -> int:
         scan(doc, "")
         stale_total += len(hits)
         for h in hits:
-            failures.append(f"{path.name}: stale pre-3.2 identifier at {h}")
-    print(f"7. no stale refs      : {stale_total} pre-3.2 identifier(s) remaining")
+            failures.append(f"{path.name}: stale legacy identifier at {h}")
+    print(f"7. no stale refs      : {stale_total} legacy identifier(s) remaining")
 
     # --- 8. minting must not clobber external identifiers -------------------
     # Reconstructs the exact shape from broadinstitute/dapper#1: a node whose id

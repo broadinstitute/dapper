@@ -1,27 +1,27 @@
-# Adapting `dig.geneset` gene-set provenance to NIH-DAPP
+# Adapting `dig.geneset` gene-set provenance to DAPPER
 
-**Status:** proposal / discussion draft · **Audience:** Ryan, Vlado, Jeremy, George · **Date:** 2026-07-24
+**Status:** proposal / discussion draft · **Date:** 2026-07-24
 
 ## TL;DR
 
 The lab's gene-set extractor (`flannick/dig-gene-set-extractors`) already emits structured
 provenance for every gene set — a **CFDE provenance graph** (`geneset.provenance.json`) plus a
-metadata sidecar (`geneset.meta.json`). Almost all of it maps cleanly onto **NIH-DAPP**, the
-NIH Dataset Attribution & Provenance Profile we're building with George. The one structural
-addition NIH-DAPP needed was a **`Set`** node — *a collection of members* — separate from
+metadata sidecar (`geneset.meta.json`). Almost all of it maps cleanly onto **DAPPER**, the
+NIH Dataset Attribution & Provenance Profile we're building. The one structural
+addition DAPPER needed was a **`Set`** node — *a collection of members* — separate from
 `Dataset`. This report is the field-by-field crosswalk, worked against a **real extraction**
 (HuBMAP model HZ2), so we can decide whether to rebuild our gene-set provenance directly on the
-NIH-DAPP data model.
+DAPPER data model.
 
 Everything below is backed by files in this repo:
 `../dapper.yaml` (the extended model), `../examples/example_geneset.yaml`
-+ `example_geneset_graph.yaml` (the HZ2 gene set as NIH-DAPP), and the source fixtures under
++ `example_geneset_graph.yaml` (the HZ2 gene set as DAPPER), and the source fixtures under
 `../../tests/fixtures/geneset-hubmap-hz2/`.
 
 ## The one modeling decision: `Set` vs `Dataset`
 
-`Dataset` in NIH-DAPP already means `schema:Dataset` — *a set of data*. A gene set is a
-different thing: *a set of genes*. Rather than overload `Dataset`, NIH-DAPP now has a parent
+`Dataset` in DAPPER already means `schema:Dataset` — *a set of data*. A gene set is a
+different thing: *a set of genes*. Rather than overload `Dataset`, DAPPER now has a parent
 **`Set`** node — grounded in **`prov:Collection`** ("an entity that provides a structure to some
 constituents, which are themselves entities"), with members via **`prov:hadMember`** — and
 **`GeneSet is_a Set`** as the first concrete subtype. Protein sets, variant sets, etc. extend
@@ -29,7 +29,7 @@ constituents, which are themselves entities"), with members via **`prov:hadMembe
 
 Crucially, `Set` and `Dataset` **share the same attribution/provenance/mirror slots** (a new
 `ProvenancedResource` mixin), so a returned gene set is citable, fundable, publication-linked,
-and **mirror-protected under George's invariant** exactly like a dataset — no separate rules.
+and **mirror-protected under the mirroring invariant** exactly like a dataset — no separate rules.
 
 `GeneSet` asserts **no** ontology `class_uri`: no term for "gene set" resolves in OLS4 (the hits
 are all SET-domain genes), so it grounds via `is_a: Set` (→ `prov:Collection`) plus a
@@ -38,16 +38,16 @@ CURIE only if it dereferences.
 
 > **Nuance surfaced by the real data:** a dig.geneset "gene set" is usually a **library** of many
 > named term→genes sets (HZ2 = **487** sets over **1747** unique genes, materialized as a `.gmt`).
-> NIH-DAPP models this with `n_genes` (unique members) and `n_sets` (named subsets). See the open
+> DAPPER models this with `n_genes` (unique members) and `n_sets` (named subsets). See the open
 > question on inline members vs. `.gmt` reference below.
 
 ## Crosswalk 1 — `geneset.provenance.json` (CFDE Provenance Graph)
 
-| dig.geneset element | NIH-DAPP target | Notes |
+| dig.geneset element | DAPPER target | Notes |
 |---|---|---|
-| `ProvenanceGraph.nodes[]` / `edges[]` | graph of `Node` + `Edge` instances | NIH-DAPP is a KG (Node/Edge skeleton) already |
+| `ProvenanceGraph.nodes[]` / `edges[]` | graph of `Node` + `Edge` instances | DAPPER is a KG (Node/Edge skeleton) already |
 | **BaseNode** `id` | `Node.id` | |
-| BaseNode `type` (File/GeneSet/AnalysisType) | the NIH-DAPP class itself | discriminator → `C2M2File` / `GeneSet` / `Activity` |
+| BaseNode `type` (File/GeneSet/AnalysisType) | the DAPPER class itself | discriminator → `C2M2File` / `GeneSet` / `Activity` |
 | BaseNode `name` | `Node.name` | |
 | BaseNode `description` | `.description` | on `Set`/`Dataset`; added to `Set` |
 | BaseNode `dcc_url`, `drc_url` | `PortalLinked.dcc_url` / `drc_url` | `schema:url` + `dcat:landingPage`; shared mixin |
@@ -67,7 +67,7 @@ CURIE only if it dereferences.
 | `analysis.environment.entrypoint` | `Activity.entrypoint` | |
 | `analysis.environment.container_image` | `Activity.container_image` | |
 | `analysis.environment.repo_url` | `Activity.repo_url` | |
-| `analysis.parameters`, `analysis.environment.*` (structured) | `BioComputeObject` (`parametric_domain` / `execution_domain`) | reuse the existing 2.0 class for full structured detail |
+| `analysis.parameters`, `analysis.environment.*` (structured) | `BioComputeObject` (`parametric_domain` / `execution_domain`) | reuse the existing class for full structured detail |
 | `AnalysisTypeC2M2Properties.synonyms` | `Activity` `aliases` | |
 | **Edge** `label` = `data input` | **`Used`** edge, `edge_role: data_input` (`prov:used`) | |
 | **Edge** `label` = `metadata input` | **`Used`** edge, `edge_role: metadata_input` (`prov:used`) | role distinguishes it |
@@ -78,7 +78,7 @@ CURIE only if it dereferences.
 
 ## Crosswalk 2 — `geneset.meta.json` (metadata sidecar)
 
-| dig.geneset field | NIH-DAPP target | Notes |
+| dig.geneset field | DAPPER target | Notes |
 |---|---|---|
 | `standard_name` = `dig.geneset` | `GeneSet` `nih:source_standard` annotation | |
 | `standard_version`, `schema_version` | provenance annotations | |
@@ -121,14 +121,14 @@ CURIE only if it dereferences.
 addition to* the standalone `geneset.provenance.json`. In HZ2 the `meta.json.lineage` is
 **flatter** — it collapses to a single `process:converter_invocation` and omits the upstream
 `hubmap_asctb_augmented` workflow step, which only the standalone `geneset.provenance.json`
-captures. NIH-DAPP represents the **richer** graph (both Activities) once; the `lineage` block
+captures. DAPPER represents the **richer** graph (both Activities) once; the `lineage` block
 would be a lossy duplicate. **Recommendation:** treat `geneset.provenance.json` as the source of
 truth and drop the sidecar `lineage` on migration.
 
 ## "Mirror" is overloaded — the lab's is **rebasing**, not mirroring
 
 Both codebases say "mirror," but they mean **unrelated** things. To keep the vocabulary clear we
-reserve **"mirror" for George's governance rule** and rename the lab's mechanism to **rebasing**:
+reserve **"mirror" for DAPPER's governance rule** and rename the lab's mechanism to **rebasing**:
 
 - **Rebasing** (the lab's current "mirror"): `--provenance_mirror_local_prefix` /
   `--provenance_mirror_remote_prefix` (`mirror_graph_payload`, `mirror_provenance_path`) rewrite a
@@ -136,30 +136,30 @@ reserve **"mirror" for George's governance rule** and rename the lab's mechanism
   (`/humgen/diabetes2/.../HZ2/...`) onto a **public/remote prefix**
   (`s3://dig-gene-set-data/.../HZ2/...`) and recompute content-addressed IDs. That is
   **rebasing local references onto public URIs** — a publish-time transform. (Null in HZ2.)
-- **Mirror** (NIH-DAPP / George): `MirrorProvenance` + the `nih:mirror_mutable: false` invariant
+- **Mirror** (DAPPER): `MirrorProvenance` + the `nih:mirror_mutable: false` invariant
   is a **governance rule** — a downstream cache MAY append its own provenance but MUST NOT rewrite
   authoritative NIH attribution.
 
 They're complementary, not competing: rebasing is what produces the public URIs a mirror would
-then cache. **Rebasing needs no new NIH-DAPP structure** — the model already separates the two
+then cache. **Rebasing needs no new DAPPER structure** — the model already separates the two
 identities a rebase moves between: `C2M2File.local_id` (local) vs. the public URI
 (`DrsObject.self_uri` / `dcc_url`). Rebasing just chooses which populates which.
 
 ### Suggested rename for the lab (compatibility, not required)
 
-To end the collision at the source, we'd suggest Ryan eventually rename the lab's flags/functions
+To end the collision at the source, we'd suggest eventually renaming the lab's flags/functions
 — `--provenance_mirror_local_prefix` → `--provenance_rebase_local_prefix`,
 `mirror_graph_payload` → `rebase_graph_payload`, `mirror_provenance_path` → `rebase_path` — so
-"mirror" is free to mean only George's rule across both projects. This is a suggestion; NIH-DAPP
+"mirror" is free to mean only DAPPER's rule across both projects. This is a suggestion; DAPPER
 does not depend on it.
 
 ## What maps cleanly / what's new / open questions
 
-**Clean (no new NIH-DAPP structure):** the whole provenance DAG, C2M2 file identity, the analysis
+**Clean (no new DAPPER structure):** the whole provenance DAG, C2M2 file identity, the analysis
 commands/versions/env, gene-set descriptive fields, funding/citation/license/access, and the
 edge semantics.
 
-**New in NIH-DAPP (this change):** `Set` (+ `GeneSet`, `C2M2File`), `PortalLinked` (`dcc_url`/
+**New in DAPPER (this change):** `Set` (+ `GeneSet`, `C2M2File`), `PortalLinked` (`dcc_url`/
 `drc_url`), the `Used` edge + `ProvEdgeRoleEnum`, extended `Activity` execution fields (+
 `C2M2File.sha256`, `description`), and the `ProvenancedResource` mixin refactor (non-breaking —
 `Dataset` still validates).
@@ -169,7 +169,7 @@ edge semantics.
    `Set.members` (`prov:hadMember`) enumerated in the graph, or keep referencing the `.gmt`
    `C2M2File` and expand on demand? (Current example references the `.gmt`.)
 2. **One `GeneSet` node per library, or per named set?** HZ2 is one library node today; the KG
-   work (Vlado/Ryan) may want per-term set nodes for enrichment queries.
+   work may want per-term set nodes for enrichment queries.
 3. **Drop the sidecar `lineage`** in favor of the standalone provenance graph (recommended above)?
 
 *(Resolved: `input.files[].sha256` now maps to a real `C2M2File.sha256` slot.)*
@@ -177,7 +177,7 @@ edge semantics.
 ## Converter — turn this crosswalk into instances
 
 The crosswalk is now executable: **`../converter/geneset_to_dapper.py`** reads
-`geneset.provenance.json` (+ `geneset.meta.json`) and emits validated NIH-DAPP instances — a full
+`geneset.provenance.json` (+ `geneset.meta.json`) and emits validated DAPPER instances — a full
 graph doc (`<id>.dapper.yaml`) plus the focus `GeneSet` node. It takes a local file/dir **or an
 `s3://` prefix** (batch), and `--overlay` injects the NIH attribution `dig.geneset` doesn't carry.
 
@@ -192,5 +192,5 @@ uv run schema/converter/geneset_to_dapper.py \
 
 Verified: the HZ2 fixture round-trips to the full DAG (9 `C2M2File`, 2 `Activity`, `Used` +
 `WasGeneratedBy` edges), and two LINCS_L1000 gene sets convert + validate straight from S3 — so
-Vlado/Ryan can point the gene-set/KG work at NIH-DAPP directly. See
+the gene-set/KG work can point at DAPPER directly. See
 [`../converter/README.md`](../converter/README.md).
