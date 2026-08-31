@@ -6,18 +6,29 @@
 # fields in use. `has_program` points at three GenePrograms (Factor_1/2/3 of
 # the same NMF loading matrix) defined in example_cell_graph.yaml — an
 # illustrative pairing to exercise multi-program `has_program`, not a real
-# biological claim that these factors constitute ductal identity.
+# biological claim that these factors constitute ductal identity. Factor_1
+# and Factor_2 carry a `quality_score` (GeneProgramQualityScore) assessment;
+# Factor_3 omits it to show the field is optional.
+#
+# `was_attributed_to` (ProvenancedResource mixin) names the curator directly —
+# this record has no generating Activity, unlike the GenePrograms it points
+# at, which are wired to an illustrative NMF Activity in example_cell_graph.yaml.
 #
 #   uv run --with linkml linkml-validate \
 #     -s ../dapper.yaml -C CellState example_cell_state.yaml
 
-id: dapper:CellState.ekZJBnmB6N1ebJvz9PFYk5yMP026SSCY
+id: dapper:CellState.IHQJzYsI_9y0ko81oIgyNSgdi15cOn85
 name: Ductal epithelial identity
 organism: human
 has_program:
-  - dapper:GeneProgram.o0deHnx9sf6jKFsLq24y1ZpP2cmCqxI4
-  - dapper:GeneProgram.PPHCrpXx_StdnttS7tJ6PIuL1QgoyKOf
+  - dapper:GeneProgram.c3BuK-YYanBJtDBVs3iPkQCWKVcX33Sv
+  - dapper:GeneProgram.VzJ5ojYPNG2Sl8TW8tOLVK5St7z-zR5e
   - dapper:GeneProgram.lpj2F2zzvRDPRdtuOKl3_Z8t1tNkYVKN
+
+# human-curated, not machine-generated — no Activity, just the curator this
+# record is attributed to (ProvenancedResource.was_attributed_to).
+was_attributed_to:
+  - orcid:0000-0002-1825-0097
 
 # --- internal cell-state marker-curation schema ---
 allow_hard_call: false
