@@ -1,8 +1,8 @@
 # Nanopublication stable identifiers: what to reuse
 
-**Status:** NIH-DAPP research recommendation  
+**Status:** DAPPER research recommendation  
 **Date:** 2026-08-05  
-**Scope:** Trusty URIs, nanopublication identity, and application to NIH-DAPP
+**Scope:** Trusty URIs, nanopublication identity, and application to DAPPER
 
 ## Executive recommendation
 
@@ -17,17 +17,17 @@ https://w3id.org/np/RAwUp0SmZZwQNOY1zbSPhR21aQoImiUyQrDlyXj5QYXmQ
                         RA       43-character SHA-256 value
 ```
 
-For NIH-DAPP, use one of two deliberately separate paths:
+For DAPPER, use one of two deliberately separate paths:
 
 1. **Nanopublication interoperability:** generate the four named RDF graphs and
    use `nanopub-java` to sign, mint, and verify a real `RA` Trusty URI. Do not
    reimplement or approximate `RA`.
-2. **General NIH-DAPP artifact identity:** define a new, versioned content-ID
+2. **General DAPPER artifact identity:** define a new, versioned content-ID
    profile over canonical JSON or canonical RDF. Reuse the Trusty URI design
    principles, but do not call the result `RA` unless it implements the Trusty
    URI RA specification byte for byte.
 
-The first path is the recommendation for the existing NIH-DAPP
+The first path is the recommendation for the existing DAPPER
 `Nanopublication` class. The second is appropriate if datasets, hypotheses,
 provenance bundles, or MCP responses need content addresses without becoming
 nanopublications.
@@ -112,12 +112,12 @@ The hash is only one layer of stability:
 | Authorship | Digital signature in publication info | A key holder can be verified separately from content integrity |
 | Evolution | New nanopub plus supersession/retraction links | History remains addressable; old content is not overwritten |
 
-This distinction is important for NIH-DAPP's mirror invariant. A mirror cannot
+This distinction is important for DAPPER's mirror invariant. A mirror cannot
 substitute modified authoritative provenance under the same verified Trusty
 URI. It may append information only by publishing a separate object with a new
 identifier and an explicit relationship to the original.
 
-## Applying this to NIH-DAPP
+## Applying this to DAPPER
 
 The current model already has the right conceptual boundary:
 
@@ -132,7 +132,7 @@ schema-validation side effect.
 
 ### Recommended nanopublication pipeline
 
-1. Validate the NIH-DAPP source instance.
+1. Validate the DAPPER source instance.
 2. Serialize it to the required four named RDF graphs.
 3. Start with temporary/local nanopublication IRIs, including local graph and
    signature-element IRIs.
@@ -151,7 +151,7 @@ published nanopublications and official implementation outputs.
 
 ### Recommended general content-ID profile
 
-For non-nanopublication NIH-DAPP objects, define a small profile before writing
+For non-nanopublication DAPPER objects, define a small profile before writing
 code. It should state:
 
 - the exact semantic scope of the ID and excluded transport fields;
@@ -186,7 +186,7 @@ and never rely on a language runtime's default object serialization.
 3. **Canonical source:** Decide whether RDF is authoritative or generated from
    LinkML/JSON. Round-trip stability must be tested if identifiers cross these
    representations.
-4. **Blank nodes:** Continue NIH-DAPP's use of explicit node IDs where possible.
+4. **Blank nodes:** Continue DAPPER's use of explicit node IDs where possible.
    If blank nodes are permitted, use RDFC-1.0 for a new profile or deterministic
    skolemization for strict `RA` compatibility.
 5. **Algorithm agility:** Put the canonicalization/hash profile in the ID. A

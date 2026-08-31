@@ -13,7 +13,7 @@ script directories on `sys.path`.
 
 | File | Covers |
 |---|---|
-| `test_converter.py` | the dig.geneset → NIH-DAPP crosswalk: node mapping, the sha256 join across the metadata sidecar, edge direction, overlay precedence, and an end-to-end `convert_one` |
+| `test_converter.py` | the dig.geneset → DAPPER crosswalk: node mapping, the sha256 join across the metadata sidecar, edge direction, overlay precedence, and an end-to-end `convert_one` |
 | `test_identity.py` | the minting algorithm: the GA4GH digest primitive, `digest_of` parsing, what constitutes identity, `assign_ids`/`verify`, the frozen vectors, and `DOC_GROUPS` coverage |
 | `test_examples.py` | every `schema/examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
 

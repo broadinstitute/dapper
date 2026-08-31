@@ -1,4 +1,4 @@
-# Illustrative full NIH-DAPP graph for the HuBMAP HZ2 gene set — the nodes and
+# Illustrative full DAPPER graph for the HuBMAP HZ2 gene set — the nodes and
 # reified edges that example_geneset.yaml's CURIEs resolve to. Transcribed from
 # the REAL provenance graph at
 #   tests/fixtures/geneset-hubmap-hz2/geneset.provenance.json
@@ -117,7 +117,7 @@ c2m2_files:
     md5: s5a0fBfnlNslvsPtWCNr0A==
     size_in_bytes: 10332
 
-# ---- Analysis steps (dig.geneset AnalysisType -> NIH-DAPP Activity) ----
+# ---- Analysis steps (dig.geneset AnalysisType -> DAPPER Activity) ----
 activities:
   # upstream workflow step
   - id: dapper:Activity.T77nYKquPuP7FtVv24Ta6G6XxkKo6a8D
@@ -212,7 +212,7 @@ gene_sets:
     organism: human
     genome_build: hg38
 
-# ---- Reified provenance edges (dig.geneset edges -> NIH-DAPP Edge classes) ----
+# ---- Reified provenance edges (dig.geneset edges -> DAPPER Edge classes) ----
 # "data input" edges -> Used (prov:used). Edge instances carry
 # subject/predicate/object (+ edge_role) — the Dock Edge base defines no `id`.
 used_edges:

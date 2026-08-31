@@ -1,9 +1,9 @@
 id: https://cfdeknowledge.org/nih-mcp-gateway/dapper
 name: dapper
-title: DAPPER - NIH Dataset Attribution and Provenance Profile (working title)
+title: DAPPER - NIH Dataset Attribution and Provenance Profile
 description: >-
-  A LinkML data model for the NIH Dataset Attribution and Provenance Profile
-  (NIH-DAPP). Every dataset returned through an NIH MCP server should carry
+  A LinkML data model for DAPPER, the NIH Dataset Attribution and Provenance
+  Profile. Every dataset returned through an NIH MCP server should carry
   enough structured metadata for an AI system to cite the dataset, identify its
   creators, link to the primary publication, report the NIH grant/award that
   supported it, and describe the provenance of the returned result. The
@@ -13,50 +13,50 @@ description: >-
 
   On top of that core, the profile adds six further blocks:
 
-    (A) DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
-        DISMECH disease-pathophysiology schema
-        (https://w3id.org/monarch-initiative/dismech), so the two models stay
-        harmonized without either one forking the other. DISMECH is mirrored
-        verbatim from upstream and is NOT edited; all harmonization lives here
-        as `exact_mappings` / `close_mappings` plus a `DismechLinked` mixin
-        carrying pointers. Reuse, don't reinvent.
+    DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
+      DISMECH disease-pathophysiology schema
+      (https://w3id.org/monarch-initiative/dismech), so the two models stay
+      harmonized without either one forking the other. DISMECH is mirrored
+      verbatim from upstream and is NOT edited; all harmonization lives here
+      as `exact_mappings` / `close_mappings` plus a `DismechLinked` mixin
+      carrying pointers. Reuse, don't reinvent.
 
-    (B) NANOPUBLICATION. The nanopublication model as used by the Nanodash /
-        Knowledge Pixels stack: the Head/assertion/provenance/pubinfo quad and
-        the npx signature + lifecycle (supersedes / retracts / introduces)
-        terms. Lets a NIH-DAPP object be emitted as, or minted from, a signed
-        nanopublication.
+    NANOPUBLICATION. The nanopublication model as used by the Nanodash /
+      Knowledge Pixels stack: the Head/assertion/provenance/pubinfo quad and
+      the npx signature + lifecycle (supersedes / retracts / introduces)
+      terms. Lets a DAPPER object be emitted as, or minted from, a signed
+      nanopublication.
 
-    (D) AGENTIC REPLAY. `AgenticWorkspace` — the workspace and prompt an
-        AI agent can use to re-run an `Activity`. The executable provenance an
-        Activity carries (`command`, `container_image`, `code_version`) is
-        the machine replay path; this is the agentic one, alongside it rather
-        than instead of it. A prompt is NOT a deterministic replay mechanism,
-        so the two are deliberately not interchangeable.
+    AGENTIC REPLAY. `AgenticWorkspace` — the workspace and prompt an
+      AI agent can use to re-run an `Activity`. The executable provenance an
+      Activity carries (`command`, `container_image`, `code_version`) is
+      the machine replay path; this is the agentic one, alongside it rather
+      than instead of it. A prompt is NOT a deterministic replay mechanism,
+      so the two are deliberately not interchangeable.
 
-    (C) HYPOTHESIS. A FAIR-digital-object hypothesis — the REVEAL output — as
-        a gene -> mechanism -> disease causal chain. Structurally compatible
-        with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
-        grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
-        values verbatim) and carries full attribution/provenance by mixing in
-        `ProvenancedResource`, so a hypothesis is citable exactly like a
-        dataset.
+    HYPOTHESIS. A FAIR-digital-object hypothesis — the REVEAL output — as
+      a gene -> mechanism -> disease causal chain. Structurally compatible
+      with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
+      grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
+      values verbatim) and carries full attribution/provenance by mixing in
+      `ProvenancedResource`, so a hypothesis is citable exactly like a
+      dataset.
 
-    (E) SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
-        representing a biological process, e.g. a factor from cNMF/NMF/
-        Spectra/WGCNA or a curated gene module — extends `Set` the same way
-        `GeneSet` does, with genes as members. `CellState` is the cellular
-        phenotype defined by the combination of `GeneProgram`s active in a
-        cell (or cell population) at once, as distinct from a cell TYPE (a
-        Cell Ontology class), which is what lineage a cell belongs to rather
-        than what functional state it is in.
+    SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
+      representing a biological process, e.g. a factor from cNMF/NMF/
+      Spectra/WGCNA or a curated gene module — extends `Set` the same way
+      `GeneSet` does, with genes as members. `CellState` is the cellular
+      phenotype defined by the combination of `GeneProgram`s active in a
+      cell (or cell population) at once, as distinct from a cell TYPE (a
+      Cell Ontology class), which is what lineage a cell belongs to rather
+      than what functional state it is in.
 
-    (F) BOTTOM LINE RESULTS. `BottomLineResult` — a citable collection
-        of `VariantRecord` entries, the variant-level output of a GWAS/genetic
-        association analysis (a "bottom line" summary-statistics file). Each
-        `VariantRecord` carries the variant itself as a GA4GH VRS
-        representation plus the association statistics (effect size, sample
-        size, significance, standard error) for one phenotype.
+    BOTTOM LINE RESULTS. `BottomLineResult` — a citable collection
+      of `VariantRecord` entries, the variant-level output of a GWAS/genetic
+      association analysis (a "bottom line" summary-statistics file). Each
+      `VariantRecord` carries the variant itself as a GA4GH VRS
+      representation plus the association statistics (effect size, sample
+      size, significance, standard error) for one phenotype.
 
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, hypotheses, and nanopublications are Node entities;
@@ -65,7 +65,7 @@ license: https://creativecommons.org/licenses/by/4.0/
 version:
 
 # ---------------------------------------------------------------------------
-# MIRRORING INVARIANT (George Papanicolaou, NIH/OD — the profile's hard rule)
+# MIRRORING INVARIANT (NIH/OD — the profile's hard rule)
 #
 #   Mirrors (OpenAI, Anthropic, Google, Microsoft, AWS, ... regional caches)
 #   MAY cache NIH resources and MAY APPEND a `mirror_provenance` object, but
@@ -136,20 +136,20 @@ prefixes:
   # DISMECH's own declared prefix for the same namespace.
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
-  HGNC: https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/
-  PMID: http://www.ncbi.nlm.nih.gov/pubmed/
+  HGNC: http://identifiers.org/hgnc/
+  PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —
   # kernel-4 defines XML elements, not RDF properties.
-  datacite: http://purl.org/spar/datacite/
+  DataCite: http://purl.org/spar/datacite/
   # FRAPO — Funding, Research Administration and Projects Ontology.
-  frapo: http://purl.org/cerif/frapo/
+  FRAPO: http://purl.org/cerif/frapo/
   dcterms: http://purl.org/dc/terms/
-  dctype: http://purl.org/dc/dcmitype/
+  dctypes: http://purl.org/dc/dcmitype/
   dcat: http://www.w3.org/ns/dcat#
   foaf: http://xmlns.com/foaf/0.1/
   fabio: http://purl.org/spar/fabio/
   spdx: http://spdx.org/rdf/terms#
-  duo: http://purl.obolibrary.org/obo/DUO_
+  DUO: http://purl.obolibrary.org/obo/DUO_
   obo: http://purl.obolibrary.org/obo/
   orcid: https://orcid.org/
   ror: https://ror.org/
@@ -168,36 +168,36 @@ enums:
   ResourceTypeEnum:
     description: DataCite-style resource type (resourceTypeGeneral) for the returned entity.
     permissible_values:
-      Dataset:
+      dataset:
         meaning: schema:Dataset
-      Collection:
-        meaning: dctype:Collection
-      Set:
+      collection:
+        meaning: dctypes:Collection
+      set:
         meaning: prov:Collection
         description: A collection of members (e.g. a gene set); see the Set class.
-      GeneSet:
+      gene_set:
         description: >-
           A set whose members are genes (dig.geneset). No ontology term is
           asserted (none resolves); grounded via the Set class (prov:Collection).
-      Software:
+      software:
         meaning: schema:SoftwareApplication
-      Workflow:
-      Model:
-      Service:
+      workflow:
+      model:
+      service:
         meaning: schema:Service
 
   CreatorRoleEnum:
     description: The role a creator (Person/Organization) played for the dataset.
     permissible_values:
-      PrincipalInvestigator:
-      Researcher:
-      DataManager:
-      ProjectLeader:
-      Curator:
-      Consortium:
-      Organization:
-      Division:
-      Group:
+      principal_investigator:
+      researcher:
+      data_manager:
+      project_leader:
+      curator:
+      consortium:
+      organization:
+      division:
+      group:
 
   ContributorRoleEnum:
     description: >-
@@ -208,19 +208,19 @@ enums:
     annotations:
       dapper:source_standard: DataCite kernel-4 contributorType
     permissible_values:
-      DataCurator:
+      data_curator:
         description: DataCite contributorType "DataCurator".
-      HostingInstitution:
+      hosting_institution:
         description: DataCite contributorType "HostingInstitution".
-      DataManager:
+      data_manager:
         description: DataCite contributorType "DataManager".
-      Producer:
+      producer:
         description: DataCite contributorType "Producer".
-      RightsHolder:
+      rights_holder:
         description: DataCite contributorType "RightsHolder".
-      Sponsor:
+      sponsor:
         description: DataCite contributorType "Sponsor".
-      Other:
+      other:
         description: DataCite contributorType "Other".
 
   PublicationRelationshipEnum:
@@ -231,15 +231,15 @@ enums:
     annotations:
       dapper:source_standard: DataCite kernel-4 relationType
     permissible_values:
-      IsDescribedBy:
+      is_described_by:
         description: DataCite relationType "IsDescribedBy".
-      IsSupplementTo:
+      is_supplement_to:
         description: DataCite relationType "IsSupplementTo".
-      IsCitedBy:
+      is_cited_by:
         description: DataCite relationType "IsCitedBy".
-      Cites:
+      cites:
         description: DataCite relationType "Cites".
-      IsReferencedBy:
+      is_referenced_by:
         description: DataCite relationType "IsReferencedBy".
 
   AccessLevelEnum:
@@ -252,22 +252,22 @@ enums:
   FunderIdentifierTypeEnum:
     description: Type of the funder identifier.
     permissible_values:
-      Crossref_Funder_ID:
+      crossref_funder_id:
         description: Crossref Funder Registry ID.
-      ROR:
+      ror:
         description: Research Organization Registry ID.
-      GRID:
-      ISNI:
-      Other:
+      grid:
+      isni:
+      other:
 
   IdentifierTypeEnum:
     description: Type of a dataset persistent identifier.
     permissible_values:
-      DOI:
-      Handle:
-      ARK:
-      Accession:
-      URL:
+      doi:
+      handle:
+      ark:
+      accession:
+      url:
 
   DataUsePermissionEnum:
     description: >-
@@ -276,15 +276,15 @@ enums:
       `meaning` CURIEs were verified against EBI OLS4.
     permissible_values:
       no_restriction:
-        meaning: duo:0000004
+        meaning: DUO:0000004
         description: DUO:0000004 — no restriction (NRES).
       general_research_use:
-        meaning: duo:0000042
+        meaning: DUO:0000042
         description: >-
           DUO:0000042 — general research use (GRU); includes health/biomedical,
           fundamental biology, ancestry, methods, and social-sciences research.
       population_origins_ancestry_research_only:
-        meaning: duo:0000011
+        meaning: DUO:0000011
         description: DUO:0000011 — population origins or ancestry research only (POA).
 
   DataUseModifierEnum:
@@ -294,37 +294,37 @@ enums:
       verified against EBI OLS4.
     permissible_values:
       research_specific_restrictions:
-        meaning: duo:0000012
+        meaning: DUO:0000012
       no_general_methods_research:
-        meaning: duo:0000015
+        meaning: DUO:0000015
       genetic_studies_only:
-        meaning: duo:0000016
+        meaning: DUO:0000016
       not_for_profit_non_commercial_use_only:
-        meaning: duo:0000018
+        meaning: DUO:0000018
       publication_required:
-        meaning: duo:0000019
+        meaning: DUO:0000019
       collaboration_required:
-        meaning: duo:0000020
+        meaning: DUO:0000020
       ethics_approval_required:
-        meaning: duo:0000021
+        meaning: DUO:0000021
       geographical_restriction:
-        meaning: duo:0000022
+        meaning: DUO:0000022
       publication_moratorium:
-        meaning: duo:0000024
+        meaning: DUO:0000024
       time_limit_on_use:
-        meaning: duo:0000025
+        meaning: DUO:0000025
       user_specific_restriction:
-        meaning: duo:0000026
+        meaning: DUO:0000026
       project_specific_restriction:
-        meaning: duo:0000027
+        meaning: DUO:0000027
       institution_specific_restriction:
-        meaning: duo:0000028
+        meaning: DUO:0000028
       return_to_database_or_resource:
-        meaning: duo:0000029
+        meaning: DUO:0000029
       clinical_care_use:
-        meaning: duo:0000043
+        meaning: DUO:0000043
       population_origins_ancestry_research_prohibited:
-        meaning: duo:0000044
+        meaning: DUO:0000044
 
   ProvEdgeRoleEnum:
     description: >-
@@ -351,7 +351,7 @@ enums:
   CausalLinkTypeEnum:
     description: >-
       Directness of a causal step. Values are copied VERBATIM from DISMECH's
-      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a NIH-DAPP causal
+      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a DAPPER causal
       step round-trips into a DISMECH `CausalEdge.causal_link_type` with no
       value translation. Do not add or rename values here without changing
       them upstream first.
@@ -413,28 +413,27 @@ enums:
     annotations:
       dapper:source_standard: Nanopub-X (http://purl.org/nanopub/x/)
     permissible_values:
-      ExampleNanopub:
+      example_nanopub:
         meaning: npx:ExampleNanopub
         description: Published for testing; content should not be taken seriously.
-      DraftNanopub:
+      draft_nanopub:
         meaning: npx:DraftNanopub
         description: Marked as work-in-progress.
-      MetaNanopub:
+      meta_nanopub:
         meaning: npx:MetaNanopub
         description: A nanopublication about other nanopublications.
-      ProtectedNanopub:
+      protected_nanopub:
         meaning: npx:ProtectedNanopub
         description: Not intended to be shared publicly.
-      RetractionNanopub:
+      retraction_nanopub:
         meaning: npx:RetractionNanopub
         description: Retracts a previously published nanopublication.
-      IntroNanopub:
+      intro_nanopub:
         meaning: npx:IntroNanopub
         description: Introduces an agent and its public key.
 
 # ===========================================================================
 # SLOTS — the required Dock Knowledge Graph skeleton (do not remove).
-# Shapes match the canonical scaffold in the akleao CLI (models.py).
 # ===========================================================================
 slots:
   id:
@@ -444,7 +443,7 @@ slots:
     exact_mappings:
       - dcterms:identifier
     close_mappings:
-      - datacite:hasIdentifier
+      - DataCite:hasIdentifier
     aliases:
       - identifier
       - PID
@@ -512,7 +511,7 @@ classes:
   Node:
     abstract: true
     description: >-
-      Abstract base for all NIH-DAPP entities (datasets, agents, awards,
+      Abstract base for all DAPPER entities (datasets, agents, awards,
       publications, licenses, activities, mirror records, ...). Not used
       directly.
     slots:
@@ -540,7 +539,7 @@ classes:
     abstract: true
     class_uri: rdf:Statement
     description: >-
-      Abstract base for all NIH-DAPP attribution/provenance relationships,
+      Abstract base for all DAPPER attribution/provenance relationships,
       fixed to rdf:Statement. Not used directly.
     slots:
       - subject
@@ -593,7 +592,7 @@ classes:
       The shared attribution + funding + publication + provenance + license +
       access + mirror slots carried by any citable resource. Applied as a mixin
       to both `Dataset` (a set of data) and `Set` (a collection of members, e.g.
-      a gene set), so George's mirroring invariant and the DataCite/PROV
+      a gene set), so the mirroring invariant and the DataCite/PROV
       attribution model bind identically to datasets and gene sets. Every
       `dapper:mirror_mutable: false` slot here is authoritative NIH provenance a
       mirror MUST NOT rewrite.
@@ -607,13 +606,14 @@ classes:
           - schema:conditionsOfAccess
         aliases:
           - accessRights
+        description: Access tier for the resource (e.g. public, controlled).
       alternate_identifier:
         is_a: literal
         mixins: [hashable]
         multivalued: true
         slot_uri: dcterms:identifier
         exact_mappings:
-          - datacite:hasIdentifier
+          - DataCite:hasIdentifier
         description: >-
           Externally-assigned persistent identifiers for this resource — a DOI,
           an accession, a Handle, an ARK. `id` is DAPPER's own computed content
@@ -629,6 +629,7 @@ classes:
         range: boolean
         close_mappings:
           - dcterms:accessRights
+        description: Whether obtaining this resource requires a controlled-access request/review.
       # --- inline attribution/provenance links (each is a graph edge) ---
       has_creator:
         is_a: relationship
@@ -651,6 +652,7 @@ classes:
         range: uriorcurie
         multivalued: true
         slot_uri: dcterms:contributor
+        description: Contributing agents (Person/Organization CURIEs), distinct from the authoritative creators.
       funded_by:
         is_a: relationship
         mixins: [hashable]
@@ -658,7 +660,7 @@ classes:
         multivalued: true
         slot_uri: schema:funding
         exact_mappings:
-          - frapo:isSupportedBy
+          - FRAPO:isSupportedBy
         close_mappings:
           - schema:funder
         aliases:
@@ -706,12 +708,14 @@ classes:
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasDerivedFrom
+        description: Upstream resource(s) (CURIEs) this one was derived from.
       was_attributed_to:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         multivalued: true
         slot_uri: prov:wasAttributedTo
+        description: Agent(s) (CURIEs) this resource is attributed to.
       has_recommended_citation:
         is_a: relationship
         mixins: [hashable]
@@ -747,7 +751,7 @@ classes:
       - resource
     exact_mappings:
       - dcat:Dataset
-      - dctype:Dataset
+      - dctypes:Dataset
     close_mappings:
       - prov:Entity
       # Cross-walk. Complementary halves of one idea: DISMECH's Dataset
@@ -770,12 +774,12 @@ classes:
         mixins: [hashable]
         range: IdentifierTypeEnum
         close_mappings:
-          - datacite:usesIdentifierScheme
+          - DataCite:usesIdentifierScheme
         aliases:
           - identifierType
         annotations:
           dapper:source_standard: DataCite kernel-4 identifierType
-        description: Type of the dataset's persistent identifier (e.g. DOI).
+        description: Type of the dataset's persistent identifier (e.g. doi).
       version:
         is_a: literal
         mixins: [hashable]
@@ -792,6 +796,7 @@ classes:
           - resourceTypeGeneral
         annotations:
           dapper:source_standard: DataCite kernel-4 resourceTypeGeneral
+        description: DataCite-style resource type (resourceTypeGeneral) for this dataset.
       publication_year:
         is_a: literal
         mixins: [hashable]
@@ -803,6 +808,7 @@ classes:
           - publicationYear
         annotations:
           dapper:source_standard: DataCite kernel-4 publicationYear
+        description: Year the dataset was published.
       description:
         is_a: literal
         mixins: [hashable]
@@ -811,6 +817,7 @@ classes:
           - schema:description
         aliases:
           - abstract
+        description: Free-text description or abstract of the dataset.
       publisher:
         is_a: relationship
         mixins: [hashable]
@@ -828,8 +835,8 @@ classes:
         range: uriorcurie
         multivalued: true
         broad_mappings:
-          - duo:0000001
-          - duo:0000017
+          - DUO:0000001
+          - DUO:0000017
         close_mappings:
           - dcterms:accessRights
         aliases:
@@ -843,17 +850,20 @@ classes:
         slot_uri: dcat:distribution
         close_mappings:
           - schema:distribution
+        description: GA4GH DrsObject CURIEs (file-level identity) making up this dataset.
       packaged_as:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         close_mappings:
           - dcterms:isPartOf
+        description: CURIE of the RoCratePackage this dataset is packaged as.
       has_workflow_provenance:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
         multivalued: true
+        description: BioComputeObject CURIEs describing the workflow(s) that produced this dataset.
 
   # ======================================================================
   # SET — a collection of members (prov:Collection). Distinct from Dataset
@@ -973,7 +983,7 @@ classes:
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
 
   # ======================================================================
-  # GENE PROGRAM / CELL STATE — single-cell functional units. A
+  # BLOCK — SINGLE-CELL: GENE PROGRAM / CELL STATE. A
   # GeneProgram is a coordinated pattern of gene activity — a factor/module
   # inferred from expression covariance (e.g. cNMF, NMF, Spectra, WGCNA) or a
   # curated gene module — representing a biological process a cell can turn
@@ -1080,6 +1090,7 @@ classes:
       description:
         is_a: literal
         mixins: [hashable]
+        description: Free-text description of the cell state.
       cell_type:
         is_a: relationship
         mixins: [hashable]
@@ -1106,164 +1117,215 @@ classes:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether this state may be manually called with high confidence despite mixed evidence.
       biological_category:
         is_a: literal
         mixins: [hashable]
+        description: High-level biological category this state belongs to.
       biological_description:
         is_a: literal
         mixins: [hashable]
+        description: Longer prose description of the state's biology.
       cell_type_id:
         is_a: literal
         mixins: [hashable]
+        description: Ontology identifier for the cell type this state applies to.
       cell_type_label:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable label for the cell type.
       curation_notes:
         is_a: literal
         mixins: [hashable]
+        description: Free-text curator notes on this state.
       curation_version:
         is_a: literal
         mixins: [hashable]
+        description: Version of the curation applied to this state.
       disease_context:
         is_a: literal
         mixins: [hashable]
+        description: Disease context this state was curated in, if any.
       display_name:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable name for portal display.
       display_order:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Sort order for portal display.
       do_not_overinterpret_as:
         is_a: literal
         mixins: [hashable]
+        description: Caveat naming a stronger claim this state should not be read as.
       gene_expression_caveat:
         is_a: literal
         mixins: [hashable]
+        description: Caveat about interpreting the underlying gene expression evidence.
       gene_expression_followup:
         is_a: literal
         mixins: [hashable]
+        description: Suggested follow-up analysis for the gene expression evidence.
       gene_expression_interpretation:
         is_a: literal
         mixins: [hashable]
+        description: Curator's interpretation of the gene expression evidence.
       gene_expression_overinterpretation_warning:
         is_a: literal
         mixins: [hashable]
+        description: Warning against overinterpreting the gene expression evidence.
       gene_set_description:
         is_a: literal
         mixins: [hashable]
+        description: Description of the gene set(s) underlying this state.
       hard_call_notes:
         is_a: literal
         mixins: [hashable]
+        description: Notes justifying a hard (high-confidence) call for this state.
       interpretation_caveat:
         is_a: literal
         mixins: [hashable]
+        description: Caveat qualifying the state's interpretation.
       interpretation_status:
         is_a: literal
         mixins: [hashable]
+        description: Status of the curator's interpretation (e.g. provisional, confirmed).
       is_composite_required:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether more than one GeneProgram must be active for this state to hold.
       is_qc:
         is_a: literal
         mixins: [hashable]
         range: boolean
+        description: Whether this state represents a quality-control artifact rather than biology.
       known_limitations:
         is_a: literal
         mixins: [hashable]
+        description: Known limitations of the evidence supporting this state.
       manual_review_status:
         is_a: literal
         mixins: [hashable]
+        description: Status of manual curator review.
       marker_panel_context:
         is_a: literal
         mixins: [hashable]
+        description: Marker panel this state was curated against.
       marker_provenance_summary:
         is_a: literal
         mixins: [hashable]
+        description: Summary of where the defining markers came from.
       n_markers:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Count of markers used to define this state.
       negative_checks:
         is_a: literal
         mixins: [hashable]
+        description: Checks performed to rule out alternative explanations.
       portal_display_establishment:
         is_a: literal
         mixins: [hashable]
+        description: How firmly established this state is, as shown in the portal.
       portal_methods_details:
         is_a: literal
         mixins: [hashable]
+        description: Methods details shown for this state in the portal.
       portal_primary_badges:
         is_a: literal
         mixins: [hashable]
+        description: Primary badges shown for this state in the portal.
       portal_user_summary:
         is_a: literal
         mixins: [hashable]
+        description: User-facing summary of this state shown in the portal.
       portal_visibility:
         is_a: literal
         mixins: [hashable]
+        description: Visibility tier controlling whether this state is shown in the portal.
       provenance_warning_count:
         is_a: literal
         mixins: [hashable]
         range: integer
+        description: Count of provenance warnings flagged for this state.
       qc_sensitivity:
         is_a: literal
         mixins: [hashable]
+        description: Sensitivity of the QC check that flagged this state.
       quality:
         is_a: literal
         mixins: [hashable]
+        description: Overall quality tier assigned to this state.
       quality_badges:
         is_a: literal
         mixins: [hashable]
+        description: Quality badges shown for this state.
       recommended_portal_label:
         is_a: literal
         mixins: [hashable]
+        description: Recommended short label for portal display.
       recommended_portal_summary:
         is_a: literal
         mixins: [hashable]
+        description: Recommended summary text for portal display.
       release_class:
         is_a: literal
         mixins: [hashable]
+        description: Release classification controlling readiness for publication.
       required_supporting_evidence:
         is_a: literal
         mixins: [hashable]
+        description: Evidence required to support this state's call.
       score_scope:
         is_a: literal
         mixins: [hashable]
+        description: Scope over which the state's score was computed.
       source_gmt:
         is_a: literal
         mixins: [hashable]
+        description: Source .gmt file the underlying gene set was drawn from.
       source_workbook:
         is_a: literal
         mixins: [hashable]
+        description: Source spreadsheet/workbook the curation was recorded in.
       state_class:
         is_a: literal
         mixins: [hashable]
+        description: Classification of the state (e.g. functional, quality-control).
       state_establishment_level:
         is_a: literal
         mixins: [hashable]
+        description: Confidence level at which this state is considered established.
       state_establishment_rationale:
         is_a: literal
         mixins: [hashable]
+        description: Rationale for the state's establishment level.
       state_id:
         is_a: literal
         mixins: [hashable]
+        description: Identifier for this state in the source curation workbook.
       state_label:
         is_a: literal
         mixins: [hashable]
+        description: Short label for this state.
       state_level_citation_ids:
         is_a: literal
         mixins: [hashable]
+        description: Citation identifiers supporting this state.
       tissue_id:
         is_a: literal
         mixins: [hashable]
+        description: Ontology identifier for the tissue this state was observed in.
       tissue_label:
         is_a: literal
         mixins: [hashable]
+        description: Human-readable label for the tissue.
 
   # ======================================================================
-  # BLOCK (F) — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
+  # BLOCK — BOTTOM LINE RESULTS. Variant-level GWAS/genetic
   # association output. BottomLineResult is a citable collection (like Set),
   # but unlike Set — whose `members` are plain CURIEs — its members are
   # VariantRecord nodes carrying per-variant association statistics, so the
@@ -1344,13 +1406,14 @@ classes:
         description: Effect size (regression coefficient) of the association.
         aliases:
           - BETA
-      n:
+      sample_size:
         is_a: literal
         mixins: [hashable]
         range: integer
         description: Sample size the association was computed over.
         aliases:
           - N
+          - n
       p_value:
         is_a: literal
         mixins: [hashable]
@@ -1403,6 +1466,7 @@ classes:
     aliases:
       - individual
       - investigator
+    description: An individual person acting as a creator, contributor, or other responsible party.
     attributes:
       given_name:
         is_a: literal
@@ -1413,6 +1477,7 @@ classes:
         aliases:
           - givenName
           - first name
+        description: Given (first) name.
       family_name:
         is_a: literal
         mixins: [hashable]
@@ -1423,14 +1488,15 @@ classes:
           - familyName
           - surname
           - last name
+        description: Family (last) name.
       orcid:
         is_a: literal
         mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:hasIdentifier
-          - datacite:PersonalIdentifier
+          - DataCite:hasIdentifier
+          - DataCite:PersonalIdentifier
         aliases:
           - ORCID iD
           - nameIdentifier
@@ -1450,6 +1516,7 @@ classes:
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
+        description: The role this agent played as a creator of the resource.
       contributor_role:
         is_a: literal
         mixins: [hashable]
@@ -1458,6 +1525,7 @@ classes:
           - dcterms:contributor
         aliases:
           - contributorType
+        description: The role this agent played as a contributor to the resource.
 
   Organization:
     is_a: HashableNode
@@ -1470,6 +1538,7 @@ classes:
     aliases:
       - institution
       - consortium
+    description: An institution, consortium, or other organizational agent acting as a creator, contributor, or other responsible party.
     attributes:
       ror:
         is_a: literal
@@ -1477,8 +1546,8 @@ classes:
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:hasIdentifier
-          - datacite:OrganizationIdentifier
+          - DataCite:hasIdentifier
+          - DataCite:OrganizationIdentifier
         aliases:
           - ROR ID
         description: ROR identifier (https://ror.org/...).
@@ -1488,6 +1557,7 @@ classes:
         range: CreatorRoleEnum
         close_mappings:
           - dcterms:creator
+        description: The role this agent played as a creator of the resource.
       contributor_role:
         is_a: literal
         mixins: [hashable]
@@ -1496,12 +1566,13 @@ classes:
           - dcterms:contributor
         aliases:
           - contributorType
+        description: The role this agent played as a contributor to the resource.
 
   Award:
     is_a: HashableNode
     class_uri: schema:MonetaryGrant
     exact_mappings:
-      - frapo:Grant
+      - FRAPO:Grant
     close_mappings:
       - schema:Grant
     aliases:
@@ -1521,38 +1592,42 @@ classes:
       funder_name:
         is_a: literal
         mixins: [hashable]
-        slot_uri: frapo:hasFundingAgency
+        slot_uri: FRAPO:hasFundingAgency
         close_mappings:
           - schema:funder
-          - frapo:FundingAgency
+          - FRAPO:FundingAgency
         aliases:
           - funderName
+        description: Name of the funding agency (e.g. National Institutes of Health).
       funder_identifier:
         is_a: literal
         mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:FunderIdentifier
+          - DataCite:FunderIdentifier
         aliases:
           - funderIdentifier
+        description: Identifier for the funding agency (e.g. a Crossref Funder ID or ROR).
       funder_identifier_type:
         is_a: literal
         mixins: [hashable]
         range: FunderIdentifierTypeEnum
         close_mappings:
-          - datacite:usesIdentifierScheme
+          - DataCite:usesIdentifierScheme
         aliases:
           - funderIdentifierType
+        description: Scheme used by `funder_identifier`.
       award_number:
         is_a: literal
         mixins: [hashable]
-        slot_uri: frapo:hasGrantNumber
+        slot_uri: FRAPO:hasGrantNumber
         close_mappings:
           - schema:identifier
         aliases:
           - awardNumber
           - grant number
+        description: The grant/award number.
       award_uri:
         is_a: literal
         mixins: [hashable]
@@ -1560,12 +1635,14 @@ classes:
         slot_uri: schema:url
         aliases:
           - awardURI
+        description: URL to the award's record (e.g. an NIH RePORTER project page).
       award_title:
         is_a: literal
         mixins: [hashable]
         slot_uri: dcterms:title
         aliases:
           - awardTitle
+        description: Title of the funded award/project.
       grant_administering_institute:
         is_a: literal
         mixins: [hashable]
@@ -1585,7 +1662,7 @@ classes:
       # showed) and thinner on IDENTITY (a bare PMID). This class is the
       # identity side; the use side belongs on the edge to the publication.
       - dismech:PublicationReference
-      - dctype:Text
+      - dctypes:Text
     aliases:
       - paper
       - article
@@ -1601,15 +1678,17 @@ classes:
         slot_uri: dcterms:title
         exact_mappings:
           - schema:name
+        description: Title of the publication.
       doi:
         is_a: literal
         mixins: [hashable]
         range: uriorcurie
         slot_uri: schema:identifier
         close_mappings:
-          - datacite:ResourceIdentifier
+          - DataCite:ResourceIdentifier
         aliases:
           - DOI
+        description: Digital Object Identifier for the publication.
       pmid:
         is_a: literal
         mixins: [hashable]
@@ -1624,6 +1703,7 @@ classes:
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
+        description: Formatted bibliographic citation for the publication.
       relationship_type:
         is_a: literal
         mixins: [hashable]
@@ -1634,6 +1714,7 @@ classes:
           - relationType
         annotations:
           dapper:source_standard: DataCite kernel-4 relationType
+        description: How this publication relates to the dataset (e.g. is_described_by).
 
   License:
     is_a: HashableNode
@@ -1654,6 +1735,7 @@ classes:
         slot_uri: schema:url
         close_mappings:
           - dcterms:license
+        description: URL to the license text.
       usage_terms:
         is_a: literal
         mixins: [hashable]
@@ -1760,11 +1842,13 @@ classes:
           - prov:SoftwareAgent
         aliases:
           - software
+        description: Name of the software that performed the activity.
       software_version:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - schema:softwareVersion
+        description: Version of the software that performed the activity.
       generated_at_time:
         is_a: literal
         mixins: [unhashable]  # temporal
@@ -1774,6 +1858,7 @@ classes:
           - schema:dateCreated
         aliases:
           - generatedAtTime
+        description: When the activity ran.
       has_lineage_step:
         is_a: relationship
         mixins: [hashable]
@@ -1782,6 +1867,7 @@ classes:
         slot_uri: dcterms:hasPart
         close_mappings:
           - prov:hadMember
+        description: LineageStep CURIEs making up this activity's ordered provenance lineage.
       has_agentic_workspace:
         is_a: relationship
         mixins: [hashable]
@@ -1792,6 +1878,13 @@ classes:
           AI agent. Complements `command` / `container_image`: those are the
           machine replay path, this is the agentic one. Multivalued because the
           same analysis may be reproducible in more than one workspace.
+
+  # ======================================================================
+  # BLOCK — AGENTIC REPLAY. `AgenticWorkspace` is the workspace and prompt
+  # an AI agent can use to re-run an Activity, alongside the machine replay
+  # path (`command` / `container_image` / `code_version`) rather than
+  # instead of it — a prompt is not a deterministic replay mechanism.
+  # ======================================================================
 
   AgenticWorkspace:
     is_a: HashableNode
@@ -1825,7 +1918,7 @@ classes:
         slot_uri: schema:url
         description: >-
           Resolvable URL for the workspace — where a person or agent goes to
-          open it. For akleao this is a fork URL,
+          open it. In the example of akleao this is a fork URL,
           `https://www.akleao.com/fork/<slug-id>`: one shareable link that
           opens the workspace, rather than a path through project and branch
           ids. Required in spirit: a workspace nobody can reach is not
@@ -1888,6 +1981,7 @@ classes:
           - schema:position
         aliases:
           - order
+        description: Ordinal position of this step within the lineage.
       activity:
         is_a: literal
         mixins: [hashable]
@@ -1919,6 +2013,7 @@ classes:
         slot_uri: dcterms:bibliographicCitation
         close_mappings:
           - schema:citation
+        description: The recommended human-readable citation text.
       required_elements:
         is_a: literal
         mixins: [hashable]
@@ -1950,6 +2045,7 @@ classes:
       mirror_region:
         is_a: literal
         mixins: [hashable]
+        description: Geographic/hosting region of the mirror (e.g. us-west-1).
       synced_from:
         is_a: literal
         mixins: [hashable]
@@ -1962,6 +2058,7 @@ classes:
         range: datetime
         close_mappings:
           - prov:generatedAtTime
+        description: When the mirror last synced this object.
       source_manifest_hash:
         is_a: literal
         mixins: [hashable]
@@ -1977,7 +2074,7 @@ classes:
 
   # ======================================================================
   # NODE classes — ADDITIONS
-  # (best-effort interpretation ahead of George's final schema)
+  # (best-effort interpretation ahead of the final upstream schema)
   # ======================================================================
 
   DrsObject:
@@ -2003,6 +2100,7 @@ classes:
         mixins: [hashable]
         close_mappings:
           - schema:identifier
+        description: GA4GH DRS object identifier.
       self_uri:
         is_a: literal
         mixins: [hashable]
@@ -2019,6 +2117,7 @@ classes:
         slot_uri: dcat:byteSize
         close_mappings:
           - schema:contentSize
+        description: Size of the object in bytes.
       checksum_sha256:
         is_a: literal
         mixins: [hashable]
@@ -2026,6 +2125,7 @@ classes:
           - spdx:checksum
         aliases:
           - sha256
+        description: Hex SHA-256 checksum of the object.
       mime_type:
         is_a: literal
         mixins: [hashable]
@@ -2034,6 +2134,7 @@ classes:
           - schema:encodingFormat
         aliases:
           - mediaType
+        description: MIME type of the object.
       access_methods:
         is_a: literal
         mixins: [hashable]
@@ -2070,6 +2171,7 @@ classes:
         slot_uri: dcterms:description
         exact_mappings:
           - schema:description
+        description: Free-text description of the file.
       filename:
         is_a: literal
         mixins: [hashable]
@@ -2077,11 +2179,12 @@ classes:
           - schema:name
         annotations:
           dapper:source_standard: C2M2 filename
+        description: The file's name.
       persistent_id:
         is_a: literal
         mixins: [hashable]
         close_mappings:
-          - datacite:hasIdentifier
+          - DataCite:hasIdentifier
         annotations:
           dapper:source_standard: C2M2 persistent_id
         description: C2M2 persistent identifier (UUID).
@@ -2127,12 +2230,13 @@ classes:
           - schema:contentSize
         annotations:
           dapper:source_standard: C2M2 size_in_bytes
+        description: Size of the file in bytes.
 
   DataUseTerm:
     is_a: HashableNode
     broad_mappings:
-      - duo:0000001      # data use permission
-      - duo:0000017      # data use modifier
+      - DUO:0000001      # data use permission
+      - DUO:0000017      # data use modifier
     aliases:
       - data use limitation
       - consent code
@@ -2141,7 +2245,7 @@ classes:
       A Data Use Ontology (DUO) term constraining permitted use of the dataset.
       A term is either a data use permission (child of DUO:0000001) or a data
       use modifier (child of DUO:0000017); use `permission` / `modifier`
-      accordingly. Models George's `access.data_use_limitations`.
+      accordingly. Models the `access.data_use_limitations` slot.
     attributes:
       duo_id:
         is_a: literal
@@ -2162,14 +2266,14 @@ classes:
         mixins: [hashable]
         range: DataUsePermissionEnum
         broad_mappings:
-          - duo:0000001
+          - DUO:0000001
         description: The primary data use permission, if this term is a permission.
       modifier:
         is_a: literal
         mixins: [hashable]
         range: DataUseModifierEnum
         broad_mappings:
-          - duo:0000017
+          - DUO:0000017
         description: The data use modifier, if this term is a modifier.
 
   RoCratePackage:
@@ -2234,44 +2338,54 @@ classes:
         range: uriorcurie
         close_mappings:
           - schema:identifier
+        description: Persistent identifier for the BioCompute Object.
       bco_spec_version:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - dcterms:conformsTo
+        description: IEEE 2791 spec version this object conforms to.
       etag:
         is_a: literal
         mixins: [hashable]
         close_mappings:
           - spdx:checksum
+        description: Checksum/etag over the BCO content.
       provenance_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's provenance domain (contributors, review, dates).
       usability_domain:
         is_a: literal
         mixins: [hashable]
         multivalued: true
+        description: Free-text usability notes describing the workflow's purpose.
       description_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's description domain (pipeline steps, keywords, platform).
       execution_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's execution domain (script, software prerequisites, environment).
       io_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's I/O domain (input and output files).
       parametric_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's parametric domain (runtime parameters).
       error_domain:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
+        description: Reference to the BCO's error domain (empirical/algorithmic error rates).
 
   # ======================================================================
   # EDGE (relationship) classes — reified attribution/provenance statements.
@@ -2422,7 +2536,7 @@ classes:
         ifabsent: string(dapper:hasWorkflowProvenance)
 
 # ===========================================================================
-# BLOCK (A) — DISMECH HARMONIZATION
+# BLOCK — DISMECH HARMONIZATION
 #
 # DISMECH (https://w3id.org/monarch-initiative/dismech) is mirrored into this
 # repo VERBATIM from monarch-initiative/dismech and is refreshed by
@@ -2431,20 +2545,20 @@ classes:
 # expressed on THIS side, as mappings and pointers, so both models can evolve
 # independently and still line up.
 #
-# Cross-walk summary (NIH-DAPP <-> DISMECH):
+# Cross-walk summary (DAPPER <-> DISMECH):
 #   dapper:Dataset             <-> dismech:Dataset            (complementary halves:
 #                                DISMECH describes the science of a dataset,
-#                                NIH-DAPP describes its attribution)
+#                                DAPPER describes its attribution)
 #   dapper:Publication         <-> dismech:PublicationReference
 #   dapper:Activity            <-> dismech:CurationEvent      (DISMECH's homegrown
-#                                mini-PROV; NIH-DAPP's PROV-O subsumes it)
+#                                mini-PROV; DAPPER's PROV-O subsumes it)
 #   dapper:Hypothesis          <-> dismech:MechanisticHypothesis
 #   dapper:CausalStep          <-> dismech:CausalEdge
 #   dapper:Mechanism           <-> dismech:Mechanism
 #   dapper:EvidenceItem        <-> dismech:EvidenceItem
 #
 # NOTE ON IDENTITY. DISMECH keys a disease by `Disease.name` (a plain string)
-# and a dataset by `accession` (a CURIE). NIH-DAPP keys every Node by a
+# and a dataset by `accession` (a CURIE). DAPPER keys every Node by a
 # CURIE/URI `id`. When pointing at a DISMECH entry, prefer the ontology term
 # (MONDO CURIE) it carries in `disease_term`, and record the upstream string
 # key separately in `dismech_entry_key` so the join is lossless in both
@@ -2454,7 +2568,7 @@ classes:
   DismechLinked:
     mixin: true
     description: >-
-      Mixin adding pointers from a NIH-DAPP node to the DISMECH entry it
+      Mixin adding pointers from a DAPPER node to the DISMECH entry it
       corresponds to. Applied to any class that has a DISMECH counterpart.
       These are POINTERS, not copies — the curated content stays upstream in
       DISMECH and is fetched by following them. This keeps the two models
@@ -2494,7 +2608,7 @@ classes:
           human review.
 
 # ===========================================================================
-# BLOCK (B) — NANOPUBLICATION (Nanodash / Knowledge Pixels)
+# BLOCK — NANOPUBLICATION (Nanodash / Knowledge Pixels)
 #
 # A nanopublication is FOUR NAMED GRAPHS, not one document:
 #
@@ -2510,7 +2624,7 @@ classes:
 # loader reverses it. Class/slot URIs below are quoted from the live ontology
 # documents at http://www.nanopub.org/nschema and http://purl.org/nanopub/x/.
 #
-# WHY THIS FITS NIH-DAPP. The nanopub split is almost exactly the NIH-DAPP
+# WHY THIS FITS DAPPER. The nanopub split is almost exactly the DAPPER
 # split, which is why the two compose instead of competing:
 #   assertion   <- the scientific claim        (Hypothesis, block C)
 #   provenance  <- prov:wasAttributedTo, Activity, LineageStep
@@ -2524,7 +2638,7 @@ classes:
 # https://w3id.org/np/RAwUp0SmZZwQNOY1zbSPhR21aQoImiUyQrDlyXj5QYXmQ). It is
 # therefore CONTENT-ADDRESSED AND IMMUTABLE: you never edit a nanopub, you
 # publish a new one that npx:supersedes it. This is a strictly stronger form
-# of George's mirroring invariant, and worth saying out loud to him — a signed
+# of the mirroring invariant above, and worth calling out explicitly — a signed
 # trusty URI makes "a mirror MUST NOT rewrite authoritative provenance"
 # cryptographically checkable rather than merely stated.
 # ===========================================================================
@@ -2582,6 +2696,7 @@ classes:
         slot_uri: npx:hasNanopubType
         annotations:
           dapper:np_graph: pubinfo
+        description: Type(s) classifying this nanopublication (e.g. draft_nanopub).
       has_signature_element:
         is_a: relationship
         mixins: [unhashable]  # signature
@@ -2608,6 +2723,7 @@ classes:
         slot_uri: npx:invalidates
         annotations:
           dapper:np_graph: pubinfo
+        description: Nanopublication(s) this one invalidates without formally superseding them.
       was_created_at:
         is_a: relationship
         mixins: [hashable]
@@ -2638,6 +2754,7 @@ classes:
         slot_uri: dcterms:created
         annotations:
           dapper:np_graph: pubinfo
+        description: When the nanopublication was created.
       creator:
         is_a: relationship
         mixins: [hashable]
@@ -2654,12 +2771,14 @@ classes:
         slot_uri: dcterms:license
         annotations:
           dapper:np_graph: pubinfo
+        description: License CURIE/URI the nanopublication is released under.
       label:
         is_a: literal
         mixins: [hashable]
         slot_uri: rdfs:label
         annotations:
           dapper:np_graph: pubinfo
+        description: Human-readable label for the nanopublication.
       trusty_uri:
         is_a: literal
         mixins: [unhashable]   # assigned after the content exists
@@ -2710,7 +2829,7 @@ classes:
     description: >-
       The provenance graph — where the ASSERTION came from (not where the
       nanopub came from; that is pubinfo). Its subject is the assertion graph.
-      This is the natural home for a NIH-DAPP `Activity` / `LineageStep` chain.
+      This is the natural home for a DAPPER `Activity` / `LineageStep` chain.
     annotations:
       dapper:np_graph: provenance
     attributes:
@@ -2734,7 +2853,7 @@ classes:
         mixins: [hashable]
         range: uriorcurie
         slot_uri: prov:wasGeneratedBy
-        description: NIH-DAPP Activity id that produced the assertion.
+        description: DAPPER Activity id that produced the assertion.
       derived_from:
         is_a: relationship
         mixins: [hashable]
@@ -2751,7 +2870,7 @@ classes:
     description: >-
       The publication-info graph — metadata about the NANOPUB itself: who
       published it, when, under what licence, with what signature. Overlaps
-      almost exactly with the NIH-DAPP attribution core.
+      almost exactly with the DAPPER attribution core.
     annotations:
       dapper:np_graph: pubinfo
     attributes:
@@ -2834,14 +2953,14 @@ classes:
         ifabsent: string(npx:supersedes)
 
 # ===========================================================================
-# BLOCK (C) — HYPOTHESIS (the REVEAL output)
+# BLOCK — HYPOTHESIS (the REVEAL output)
 #
 # REVEAL emits a mechanistic hypothesis relating a GENE to a DISEASE through a
 # MECHANISM. The milestone is "define hypothesis schema", and the requirement
 # is that it be (i) a FAIR digital object with full metadata and provenance,
 # (ii) in a format compatible with dismech.monarchinitiative.org, and
 # (iii) recognizably compatible with the portal-wide provenance/FAIRness work
-# (Jeremy's KPN, Vlado's gene sets).
+# (the KPN and gene-set work elsewhere in this schema).
 #
 # HOW EACH REQUIREMENT IS MET
 #   FAIR digital object   -> Hypothesis is_a Node (globally unique resolvable
@@ -2950,6 +3069,7 @@ classes:
         range: HypothesisStatusEnum
         close_mappings:
           - dismech:status
+        description: Review status of the hypothesis (e.g. canonical, candidate).
       description:
         is_a: literal
         mixins: [hashable]
@@ -3173,6 +3293,7 @@ classes:
         mixins: [hashable]
         exact_mappings:
           - dismech:reference_title
+        description: Title of the referenced publication.
       direction:
         is_a: literal
         mixins: [hashable]
@@ -3262,11 +3383,11 @@ classes:
   CorrespondsToDismech:
     is_a: Edge
     description: >-
-      Any NIH-DAPP node → the DISMECH entry it corresponds to. The instance-
+      Any DAPPER node → the DISMECH entry it corresponds to. The instance-
       level counterpart of the class-level `exact_mappings` in block (A).
     slot_usage:
       subject:
-        description: NIH-DAPP node id.
+        description: DAPPER node id.
       predicate:
         ifabsent: string(skos:closeMatch)
       object:
