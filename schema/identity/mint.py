@@ -42,7 +42,12 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "converter"))
 
-from dapper_identity import DOC_GROUPS, assign_ids, load_schema  # noqa: E402
+from dapper_identity import (  # noqa: E402
+    DOC_GROUPS,
+    assign_ids,
+    load_schema,
+    unknown_node_groups,
+)
 
 SCHEMA = HERE.parent / "dapper.yaml"
 
@@ -132,6 +137,19 @@ def main() -> int:
         and not n["id"].startswith("dapper:")
     ]
     total = sum(len(collection.get(g) or []) for g in DOC_GROUPS)
+
+    # The converter always emits known group names, but the .yaml re-mint path
+    # takes whatever the user hands it. A group name this map does not recognise
+    # is skipped silently, so its nodes would land in the output unminted.
+    unknown = unknown_node_groups(collection)
+    if unknown:
+        print(f"unrecognised node group(s) in {args.input}:", file=sys.stderr)
+        for key, count in sorted(unknown.items()):
+            print(f"  {key}: {count} node(s) would never be minted", file=sys.stderr)
+        print("  Node lists must use a known group key (persons:, gene_sets:, ...).",
+              file=sys.stderr)
+        print("  Nothing written.", file=sys.stderr)
+        return 1
 
     assign_ids(collection, sv)
     collapsed = _dedupe(collection)
