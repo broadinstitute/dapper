@@ -42,7 +42,12 @@ Then check it:
 uv run schema/identity/dapper_identity.py verify collection.yaml
 ```
 
-**`0 mismatch(es)` means every ID matches the content it names.**
+**`24 node(s) checked, 0 mismatch(es)` means every ID matches the content it names.**
+
+Read the node count, not just the mismatch count. A document with no grouped node
+lists — a single instance such as `example_nanopub.yaml` — has nothing to check, and
+saying `0 mismatch(es)` on its own would make "I found no problems" and "I looked at
+nothing" identical. That case now reports `0 node(s) checked` instead.
 
 ### The one rule: never write an ID by hand
 
@@ -77,6 +82,7 @@ identifier. Nothing is registered, allocated, or looked up.
 | an ID changed and you didn't expect it | some hashable field changed; diff the YAML |
 | two objects got the same ID | their content is genuinely identical — that's dedup, not a bug |
 | `No geneset.provenance.json found` | point it at the folder your runs were written to, not the repo |
+| `N node(s) unminted` / `unrecognised node group(s)` | a node list is under a group key the minter doesn't know — usually a typo (`gene_set:` for `gene_sets:`). Check it against `DOC_GROUPS`; minting refuses rather than half-minting the document |
 
 ---
 
