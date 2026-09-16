@@ -328,13 +328,23 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     checked, one absent is left alone rather than rejected.
     """
     for group, class_name, edge in doc.edges:
-        spec = vocab.edge_endpoints.get(class_name)
-        if not spec:
-            continue
+        # `or {}` rather than skipping: the both-ends-present rule below is
+        # universal, so it must run even for an edge class with no declared
+        # endpoint types.
+        spec = vocab.edge_endpoints.get(class_name) or {}
         for end in ("subject", "object"):
-            allowed = spec.get(end)
             node_id = edge.get(end)
-            if not allowed or node_id is None:
+
+            # A one-ended edge connects nothing to nothing, so it contributes no
+            # provenance and trips no other check — silently inert. The schema
+            # marks neither end `required`, so nothing else catches it either.
+            if node_id is None or not str(node_id).strip():
+                rep.add("error", "endpoints", f"{group}[{end}]",
+                        f"{class_name} has no {end} — an edge needs both ends")
+                continue
+
+            allowed = spec.get(end)
+            if not allowed:
                 continue
             actual = doc.class_of(str(node_id))
             if actual is None:

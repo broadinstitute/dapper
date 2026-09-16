@@ -193,6 +193,41 @@ def test_edge_endpoint_with_a_fabricated_prefix_is_rejected(bottom_line, tmp_pat
     assert "endpoints" in checks_firing(report, "error")
 
 
+@pytest.mark.parametrize("end", ["subject", "object"])
+def test_edge_missing_an_end_is_rejected(end, bottom_line, tmp_path, vocab, sv, validator):
+    """An edge with only one end is an error.
+
+    Invisible before this check, and hard to spot: such an edge connects nothing
+    to nothing, so it contributes no provenance and trips nothing else. The
+    schema marks neither `subject` nor `object` as required, so a half-written
+    edge is schema-valid. It first looked caught only because the test document
+    happened to put it on a REQUIRED edge, where `required-edges` fired for an
+    unrelated reason; in any other group it passed clean.
+
+    Uses `used_edges` with the Dataset as the surviving end, since `Used` permits
+    a Dataset on either side — so the only defect is the missing end.
+    """
+    edge = {"predicate": "prov:used", "edge_role": "data_input",
+            "subject": bottom_line["datasets"][0]["id"],
+            "object": bottom_line["datasets"][0]["id"]}
+    del edge[end]
+    bottom_line["used_edges"] = [edge]
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert "endpoints" in checks_firing(report, "error")
+    assert any(f"no {end}" in f.message for f in report.errors)
+
+
+def test_edge_with_an_empty_end_is_rejected(bottom_line, tmp_path, vocab, sv, validator):
+    """An end present but blank counts as missing, not as an unresolvable id.
+
+    `uriorcurie` compiles to a bare string in the generated JSON Schema, which
+    accepts `''`, so nothing upstream objects.
+    """
+    bottom_line["was_generated_by_edges"][0]["object"] = "   "
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert "endpoints" in checks_firing(report, "error")
+
+
 def test_external_inline_reference_is_still_allowed(vocab, sv, validator):
     """An inline slot may name something outside the document; an edge may not.
 
