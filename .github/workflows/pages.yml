@@ -1,10 +1,7 @@
-name: Deploy provenance portal to Pages
+name: Deploy portal and model documentation to Pages
 
-# Publishes portal/ to https://broadinstitute.github.io/dapper/
-#
-# The portal is a single self-contained index.html — Cytoscape, ELK and js-yaml
-# are inlined, so there is nothing to build here and no npm install. This
-# workflow only checks the committed page is current and uploads the folder.
+# Publishes site/ to https://broadinstitute.github.io/dapper/:
+# the provenance inspector at the root, generated LinkML docs under /model/.
 #
 # `build.py --check` is the guard that matters: it regenerates index.html from
 # schema/dapper.yaml plus the examples and fails if the committed copy differs.
@@ -17,6 +14,8 @@ on:
     paths:
       - "portal/**"
       - "schema/**"
+      - "docs/**"
+      - "tools/build_docs.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -48,11 +47,14 @@ jobs:
       - name: Replay identifier test vectors
         run: uv run schema/identity/dapper_identity.py verify-vectors
 
+      - name: Build model documentation and combined site
+        run: uv run tools/build_docs.py
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: portal
+          path: site
 
   deploy:
     needs: verify-and-upload

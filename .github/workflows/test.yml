@@ -45,3 +45,6 @@ jobs:
 
       - name: Replay identifier test vectors
         run: uv run schema/identity/dapper_identity.py verify-vectors
+
+      - name: Build model documentation (strict links and navigation)
+        run: uv run tools/build_docs.py

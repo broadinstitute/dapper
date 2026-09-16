@@ -1,0 +1,62 @@
+site_name: DAPPER model
+site_description: Browse DAPPER classes, slots, enums, and provenance relationships.
+site_url: https://broadinstitute.github.io/dapper/model/
+repo_url: https://github.com/broadinstitute/dapper
+repo_name: broadinstitute/dapper
+edit_uri: ""
+docs_dir: ../.build/model-docs
+site_dir: ../site/model
+use_directory_urls: true
+strict: true
+
+theme:
+  name: material
+  font: false
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tracking
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+
+extra_css:
+  - assets/model.css

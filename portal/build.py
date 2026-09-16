@@ -73,6 +73,7 @@ EDGE_GROUPS = {
     "has_agentic_workspace_edges": ("HasAgenticWorkspace", "reverse"),
     # dataset -> its retrievable payload; predicate already points the way the story reads
     "has_drs_object_edges": ("HasDrsObject", "forward"),
+    "drs_representation_edges": ("DrsRepresentation", "forward"),
 }
 
 # Several links live as INLINE FIELDS rather than reified edges. They carry the
@@ -86,11 +87,14 @@ INLINE_LINKS = {
     # CellState -> GeneProgram: the program is upstream of the state it
     # constitutes, same "in" direction as generated_by_activity.
     "has_program": ("dapper:hasProgram", "in"),
+    "drs_representation": ("dapper:drsRepresentation", "out"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
 FAMILY = {
+    "File": "data",
     "C2M2File": "data",
+    "DrsObject": "data",
     "GeneSet": "data",
     "GeneProgram": "data",
     "CellState": "data",
@@ -114,6 +118,16 @@ FAMILY = {
 
 
 GRAPH_DOCS = [
+    {
+        "file": "example_file_graph.yaml",
+        "key": "files",
+        "title": "Intermediate file and DRS access",
+        "blurb": (
+            "An illustrative File produced by one activity and consumed by another. "
+            "An optional DrsObject exposes the same bytes, without changing the file's identity."
+        ),
+        "start": "dapper:File.aYgsG7KuOqG7gJ_yC9i9zCmvjMsTCMQ3",
+    },
     {
         "file": "example_claim_provenance_trace.yaml",
         "key": "trace",
@@ -177,11 +191,25 @@ def is_illustrative(node_id: str, illustrative: set[str]) -> bool:
 def load_schema() -> dict:
     """Pull class docs and the authoritative-slot set out of the LinkML schema."""
     schema = yaml.safe_load(SCHEMA.read_text())
+    definitions = schema.get("classes") or {}
+
+    def inherited_attributes(class_name: str) -> dict:
+        body = definitions.get(class_name) or {}
+        attrs = {}
+        for parent in ([body["is_a"]] if body.get("is_a") else []) + (body.get("mixins") or []):
+            attrs.update(inherited_attributes(parent))
+        for slot_name in body.get("slots") or []:
+            attrs[slot_name] = (schema.get("slots") or {}).get(slot_name) or {}
+        attrs.update(body.get("attributes") or {})
+        for slot_name, override in (body.get("slot_usage") or {}).items():
+            attrs[slot_name] = {**attrs.get(slot_name, {}), **(override or {})}
+        return attrs
+
     classes: dict[str, dict] = {}
     for name, body in (schema.get("classes") or {}).items():
         body = body or {}
         attrs = {}
-        for slot_name, slot in (body.get("attributes") or {}).items():
+        for slot_name, slot in inherited_attributes(name).items():
             slot = slot or {}
             ann = slot.get("annotations") or {}
             attrs[slot_name] = {
@@ -377,6 +405,7 @@ header {
 h1 { margin: 0; font-size: 15px; font-weight: 620; letter-spacing: -.01em; }
 h1 span { color: var(--muted); font-weight: 400; }
 .tagline { color: var(--ink-soft); font-size: 13px; margin: 0; flex: 1 1 320px; min-width: 0; }
+.model-docs { color: var(--focus); font-size: 13px; text-underline-offset: 3px; }
 
 .body { display: grid; grid-template-columns: 224px minmax(0,1fr) 340px; min-height: 0; }
 @media (max-width: 1080px) {
@@ -471,6 +500,7 @@ button.action + button.action { margin-top: 6px; }
   <header>
     <h1>DAPPER <span>· provenance inspector</span></h1>
     <p class="tagline" id="blurb"></p>
+    <a href="model/" class="model-docs">Browse the model →</a>
   </header>
 
   <div class="body">

@@ -8,7 +8,7 @@
 Reads the lab's `geneset.provenance.json` (+ sibling `geneset.meta.json`) emitted by
 `flannick/dig-gene-set-extractors` and writes validated DAPPER nodes/edges:
 
-  <geneset_id>.dapper.yaml   the full provenance graph (C2M2File / Activity / GeneSet
+  <geneset_id>.dapper.yaml   the full provenance graph (File / C2M2File / Activity / GeneSet
                              nodes + Used / WasGeneratedBy edges)
   <geneset_id>.geneset.yaml  the standalone focus GeneSet node
 
@@ -43,7 +43,7 @@ _OUTPUT_LABEL = "data output"
 _EDGE_ROLE = {"data input": "data_input", "metadata input": "metadata_input"}
 
 # DAPPER classes emitted, keyed by the output-doc list name.
-_NODE_BUCKETS = ("c2m2_files", "activities", "gene_sets")
+_NODE_BUCKETS = ("files", "c2m2_files", "activities", "gene_sets")
 _EDGE_BUCKETS = ("used_edges", "was_generated_by_edges")
 
 
@@ -71,6 +71,16 @@ def _c2m2_file(node: dict[str, Any], sha_by_localid: dict[str, str]) -> dict[str
             "drc_url": node.get("drc_url"),
         }
     )
+
+
+def _file(node: dict[str, Any], sha_by_localid: dict[str, str]) -> dict[str, Any]:
+    """A File without C2M2 properties carries generic file metadata directly."""
+    fields = ("id", "name", "description", "filename", "md5", "sha256",
+              "size_in_bytes", "mime_type", "location", "drs_representation")
+    out = {key: node.get(key) for key in fields}
+    if not out["sha256"]:
+        out["sha256"] = sha_by_localid.get(node.get("location"))
+    return _clean(out)
 
 
 def _activity(node: dict[str, Any]) -> dict[str, Any]:
@@ -134,7 +144,10 @@ def convert_graph(graph: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]
     for node in graph.get("nodes", []):
         ntype = node.get("type")
         if ntype == "File":
-            doc["c2m2_files"].append(_c2m2_file(node, sha_by_localid))
+            if node.get("c2m2_properties"):
+                doc["c2m2_files"].append(_c2m2_file(node, sha_by_localid))
+            else:
+                doc["files"].append(_file(node, sha_by_localid))
         elif ntype == "AnalysisType":
             doc["activities"].append(_activity(node))
         elif ntype == "GeneSet":
@@ -258,6 +271,7 @@ def _dump(obj: Any) -> str:
 
 # ---- optional self-validation via linkml-validate -------------------------------------
 _BUCKET_CLASS = {
+    "files": "File",
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",

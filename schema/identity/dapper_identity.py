@@ -91,6 +91,7 @@ MAX_TRIPLES = 10_000
 # than derived: naive pluralisation produced `activitys` and would have
 # renamed a key the examples already use.
 DOC_GROUPS = {
+    "files": "File",
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",

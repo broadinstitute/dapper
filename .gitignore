@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 .venv/
+.build/
+site/
 
 # Converter output
 out/
@@ -9,3 +11,8 @@ dapp-out/
 
 # macOS
 .DS_Store
+
+# Graphify machine-local caches and interpreter paths; keep graph outputs portable.
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root

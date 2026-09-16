@@ -36,7 +36,7 @@ Per gene set, into `-o OUT_DIR`:
 
 | file | contents |
 |------|----------|
-| `<id>.dapper.yaml` | the full provenance graph — `c2m2_files`, `activities`, `gene_sets`, `used_edges`, `was_generated_by_edges` (the shape of `examples/example_geneset_graph.yaml`) |
+| `<id>.dapper.yaml` | the full provenance graph — `files`, `c2m2_files`, `activities`, `gene_sets`, `used_edges`, `was_generated_by_edges` (empty groups are omitted) |
 | `<id>.geneset.yaml` | the standalone focus `GeneSet` node (the shape of `examples/example_geneset.yaml`), with `--overlay` attribution applied |
 
 ### Options
@@ -52,6 +52,7 @@ Per gene set, into `-o OUT_DIR`:
 | dig.geneset | DAPPER |
 |---|---|
 | `File` node + `c2m2_properties` | `C2M2File` (+ `sha256` from the metadata sidecar) |
+| `File` node without nonempty `c2m2_properties` | `File` (generic fields directly on the node; `location` joins sidecar SHA-256) |
 | `AnalysisType` node + `analysis{}` | `Activity` (command / observed_command / script_url / code_version / entrypoint / container_image) |
 | `GeneSet` node + `meta.gene_set` / `summary` | `GeneSet` (assay / organism / genome_build / n_genes / n_sets / term_prefix) |
 | edge `data input` / `metadata input` | `Used` edge (`prov:used`, `edge_role`) |
