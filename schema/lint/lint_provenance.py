@@ -710,7 +710,10 @@ def main() -> int:
         description="Lint a DAPPER end-modality provenance document.")
     ap.add_argument("files", nargs="*", type=Path)
     ap.add_argument("--profile", help="end modality to lint against (default: auto-detect)")
-    ap.add_argument("--schema", type=Path, default=SCHEMA_PATH)
+    ap.add_argument("--schema", type=Path, default=SCHEMA_PATH,
+                    help="DAPPER schema to validate against. Pin this to the release a "
+                         "document was minted against when that differs from the repo's "
+                         f"current schema (default: {SCHEMA_PATH.relative_to(REPO_ROOT)})")
     ap.add_argument("--list-profiles", action="store_true")
     ap.add_argument("--self-test", action="store_true",
                     help="lint every profile's canonical example")
