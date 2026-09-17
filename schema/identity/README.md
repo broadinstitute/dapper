@@ -148,8 +148,14 @@ machine name (`unsigned_term_gene:402cf4a1…`), and the converter carries machi
 example omits. Different descriptions of the same thing are different records, so they get different
 addresses.
 
-If you need to know whether two records describe the same *bytes*, compare `C2M2File.md5` /
-`C2M2File.sha256` — those address the file. The `dapper:` id addresses what DAPPER says about it.
+If you need to know whether two records describe the same *bytes*, compare `File.md5` /
+`File.sha256` (also inherited by `C2M2File`) — those address the file. The `dapper:` id
+addresses what DAPPER says about it. Generic files use the `files` document group.
+
+Moving a file (`File.location`) or adding DRS access (`File.drs_representation`) does
+not change its ID. These fields are unhashable. `C2M2File.local_id` remains hashable
+because it is the source system's identifier. Changing a record's class from `File`
+to `C2M2File` changes its ID, even when it describes the same bytes.
 
 ## Three traps, all found the hard way
 

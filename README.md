@@ -49,12 +49,36 @@ Provenance Profile it's named after. It covers citation, funding, PROV
 lineage, file identity, controlled-access terms, workflow provenance,
 nanopublications, hypotheses, and agentic replay.
 
+Use `File` for generic inputs, intermediates, and outputs, and `C2M2File` for
+files carrying C2M2 metadata. Optional DRS representations are separate nodes.
+See [files and DRS](schema/docs/files-and-drs.md) and the
+[intermediate-file example](schema/examples/example_file_graph.yaml).
+
 Validate from the repository root with:
 
 ```bash
 uv run --with linkml linkml-validate \
   -s schema/dapper.yaml -C Dataset schema/examples/example_dataset.yaml
 ```
+
+## Model documentation
+
+Build the searchable LinkML reference and the provenance inspector together:
+
+```bash
+uv run tools/build_docs.py
+uv run tools/build_docs.py --serve --port 8000
+```
+
+The preview is at `http://127.0.0.1:8000/model/`, with the inspector at `/`.
+The reference includes class inheritance diagrams, inherited slots, enums,
+ontology mappings, and full-text search. Reference pages come directly from
+`schema/dapper.yaml`; the landing page and theme live in `docs/`.
+
+Generated Markdown (`.build/model-docs/`) and HTML (`site/`) are ignored by Git.
+CI builds the documentation in strict mode to catch broken links. The existing
+Pages workflow publishes the combined site after changes reach `main`, with model
+documentation under `/dapper/model/` and the inspector at its existing URL.
 
 ## Contribution workflow
 

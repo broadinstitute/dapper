@@ -1,0 +1,5 @@
+# Generated portal and vendored JavaScript duplicate or obscure the model.
+portal/index.html
+portal/lib/
+.build/
+site/
