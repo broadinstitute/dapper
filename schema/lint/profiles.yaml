@@ -35,7 +35,9 @@ edge_group_overrides:
 #
 # Where a description says "Dataset/Set/File", every concrete class in the union
 # is listed, because the check compares against the node's actual class. An edge
-# class omitted here has its endpoints left unchecked rather than rejected.
+# class omitted here still requires both endpoints to resolve to local nodes;
+# only the additional class constraints are omitted. The same type constraints
+# apply to equivalent inline relationships whose targets are present locally.
 edge_endpoints:
   Used:
     subject: [Activity]
@@ -96,9 +98,10 @@ edge_endpoints:
 # around how it was generated. Each profile names the terminal node and the
 # provenance it must carry.
 #
-# `terminal.class` doubles as the auto-detection key: a document is matched to
-# the profile whose terminal class it contains. Two profiles must therefore
-# never share a terminal class.
+# `terminal.class` is matched against end results after excluding resources
+# consumed by prov:used or named as prov:wasDerivedFrom sources. This includes
+# both reified edges and schema-declared inline relationships. Two profiles
+# must still never share a terminal class.
 profiles:
 
   bottom-line-result:
@@ -112,9 +115,8 @@ profiles:
     canonical_example: schema/examples/example_bottom_line_result.yaml
     terminal:
       class: Dataset
-      # Exactly one. The premise is one file per instantiation, so a second
-      # Dataset means two results were merged into one document and the
-      # provenance below can no longer be attributed unambiguously.
+      # Exactly one final Dataset. Other Datasets may appear as inputs or
+      # derivation sources in that result's provenance.
       min: 1
       max: 1
     required_edges:

@@ -72,7 +72,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import yaml
 
@@ -157,6 +157,11 @@ class Vocabulary:
     edge_endpoints: dict[str, dict[str, list[str]]]
     edge_predicates: dict[str, str]               # Edge class -> expected predicate
     profiles: dict[str, dict]
+    relationship_slots: dict[str, dict[str, str]] # class -> slot -> predicate URI
+    predicate_uris: dict[str, str]               # schema CURIE -> expanded URI
+
+    def predicate_uri(self, value: Any) -> str | None:
+        return self.predicate_uris.get(value, value) if isinstance(value, str) else None
 
     @classmethod
     def build(cls, sv, profiles_doc: dict) -> "Vocabulary":
@@ -185,13 +190,36 @@ class Vocabulary:
             if match:
                 edge_predicates[class_name] = match.group(1)
 
+        relationship_slots = {}
+        predicate_uris = {p: sv.expand_curie(p) for p in edge_predicates.values()}
+        for class_name in DOC_GROUPS.values():
+            if class_name not in sv.all_classes():
+                continue
+            relationship_slots[class_name] = {}
+            for slot in sv.class_induced_slots(class_name):
+                if slot.is_a == "relationship":
+                    predicate = str(slot.slot_uri or sv.get_uri(slot))
+                    predicate_uris[predicate] = sv.expand_curie(predicate)
+                    relationship_slots[class_name][slot.name] = predicate_uris[predicate]
+
         return cls(
             node_groups=dict(DOC_GROUPS),
             edge_groups=edge_groups,
             edge_endpoints=profiles_doc.get("edge_endpoints") or {},
             edge_predicates=edge_predicates,
             profiles=profiles_doc.get("profiles") or {},
+            relationship_slots=relationship_slots,
+            predicate_uris=predicate_uris,
         )
+
+
+@dataclass(frozen=True)
+class Relationship:
+    subject: str
+    predicate: str
+    object: str
+    where: str
+    reified: bool
 
 
 @dataclass
@@ -203,34 +231,67 @@ class Document:
     nodes: dict[str, tuple[str, str, dict]]       # id -> (group, class, node)
     edges: list[tuple[str, str, dict]]            # (group, edge class, edge)
     unknown_keys: list[str]
+    node_records: list[tuple[str, str, dict]]     # includes missing/duplicate ids
+    shape_errors: list[tuple[str, str]]
 
     @classmethod
     def load(cls, path: Path, vocab: Vocabulary) -> "Document":
-        raw = yaml.safe_load(path.read_text()) or {}
+        raw = yaml.safe_load(path.read_text())
+        shape_errors = []
         if not isinstance(raw, dict):
-            raise SystemExit(f"{path}: top level is {type(raw).__name__}, expected a mapping")
+            shape_errors.append((path.name, f"top level is {type(raw).__name__}, expected a mapping"))
+            raw = {}
 
         nodes: dict[str, tuple[str, str, dict]] = {}
         edges: list[tuple[str, str, dict]] = []
         unknown: list[str] = []
+        node_records = []
 
         for key, value in raw.items():
             if key in META_KEYS:
                 continue
-            if key in vocab.node_groups:
-                for node in value or []:
-                    if isinstance(node, dict) and "id" in node:
-                        # A duplicate id is reported by check_duplicate_ids; keep
-                        # the first so the rest of the walk stays deterministic.
-                        nodes.setdefault(str(node["id"]), (key, vocab.node_groups[key], node))
-            elif key in vocab.edge_groups:
-                for edge in value or []:
-                    if isinstance(edge, dict):
-                        edges.append((key, vocab.edge_groups[key], edge))
-            else:
+            if key not in vocab.node_groups and key not in vocab.edge_groups:
                 unknown.append(key)
+                continue
+            if not isinstance(value, list):
+                shape_errors.append((key, f"expected a list, got {type(value).__name__}"))
+                continue
+            for index, record in enumerate(value):
+                where = f"{key}[{index}]"
+                if not isinstance(record, dict):
+                    shape_errors.append((where, f"expected a mapping, got {type(record).__name__}"))
+                    continue
+                if key in vocab.node_groups:
+                    class_name = vocab.node_groups[key]
+                    node_records.append((where, class_name, record))
+                    node_id = record.get("id")
+                    if not isinstance(node_id, str) or not node_id.strip():
+                        shape_errors.append((where, "node needs a nonempty string id; mint ids before linting"))
+                        continue
+                    # Validate every record; index only the first duplicate for walking.
+                    nodes.setdefault(node_id, (key, class_name, record))
+                else:
+                    edges.append((key, vocab.edge_groups[key], record))
 
-        return cls(path=path, raw=raw, nodes=nodes, edges=edges, unknown_keys=unknown)
+        return cls(path=path, raw=raw, nodes=nodes, edges=edges, unknown_keys=unknown,
+                   node_records=node_records, shape_errors=shape_errors)
+
+    def relationships(self, vocab: Vocabulary) -> list[Relationship]:
+        """Normalize reified edges and schema-declared inline relationships."""
+        links = []
+        for group, class_name, edge in self.edges:
+            subject, obj = edge.get("subject"), edge.get("object")
+            predicate = vocab.predicate_uri(edge.get("predicate") or vocab.edge_predicates.get(class_name))
+            if isinstance(subject, str) and isinstance(obj, str) and predicate:
+                links.append(Relationship(subject, predicate, obj, group, True))
+        for node_id, (group, class_name, node) in self.nodes.items():
+            for slot, predicate in vocab.relationship_slots.get(class_name, {}).items():
+                value = node.get(slot)
+                for obj in value if isinstance(value, list) else [value]:
+                    if isinstance(obj, str):
+                        links.append(Relationship(node_id, predicate, obj,
+                                                  f"{group}[{node_id}].{slot}", False))
+        return links
 
     def class_of(self, node_id: str) -> str | None:
         entry = self.nodes.get(node_id)
@@ -258,6 +319,8 @@ def check_shape(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     means those nodes are never minted, never validated and never rendered,
     while the document still parses and still looks complete.
     """
+    for where, message in doc.shape_errors:
+        rep.add("error", "shape", where, message)
     for key in doc.unknown_keys:
         value = doc.raw.get(key)
         hint = ""
@@ -278,9 +341,9 @@ def check_nodes(doc: Document, validator, rep: Report) -> None:
     all is that it cannot be run on a whole document — only per node against a
     named class, which requires knowing the group-key map above.
     """
-    for node_id, (group, class_name, node) in doc.nodes.items():
+    for where, class_name, node in doc.node_records:
         for result in validator.validate(node, class_name).results:
-            rep.add("error", "nodes", f"{group}[{node_id}]",
+            rep.add("error", "nodes", where,
                     f"{class_name}: {result.message}")
 
 
@@ -311,7 +374,7 @@ def check_predicates(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     for group, class_name, edge in doc.edges:
         expected = vocab.edge_predicates.get(class_name)
         actual = edge.get("predicate")
-        if expected is None or actual is None or actual == expected:
+        if expected is None or actual is None or vocab.predicate_uri(actual) == vocab.predicate_uri(expected):
             continue
         rep.add("warning", "predicates",
                 f"{group}[{edge.get('subject')} -> {edge.get('object')}]",
@@ -324,8 +387,8 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     dapper.yaml types both ends as bare `uriorcurie` and records the real
     constraint only in prose on the Edge class, so without this a
     `prov:wasGeneratedBy` edge from a Dataset to an Award is accepted.
-    Endpoint types come from profiles.yaml; an edge class listed there gets
-    checked, one absent is left alone rather than rejected.
+    Endpoint existence is checked for every reified edge. Endpoint types come
+    from profiles.yaml and also apply to equivalent inline links to local nodes.
     """
     for group, class_name, edge in doc.edges:
         # `or {}` rather than skipping: the both-ends-present rule below is
@@ -343,9 +406,6 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
                         f"{class_name} has no {end} — an edge needs both ends")
                 continue
 
-            allowed = spec.get(end)
-            if not allowed:
-                continue
             actual = doc.class_of(str(node_id))
             if actual is None:
                 # An endpoint resolving to nothing. `check_refs` covers the
@@ -357,14 +417,34 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
                             f"{class_name}.{end} resolves to no node in this document",
                             "An edge endpoint must be the id of a node defined here.")
                 continue
+            allowed = spec.get(end)
+            if not allowed:
+                continue
             if actual not in allowed:
                 rep.add("error", "endpoints", f"{group}[{end}={node_id}]",
                         f"{class_name}.{end} is a {actual}, but must be one of "
                         f"{', '.join(allowed)}")
 
+    # Apply the same types to inline relationships when their targets are local.
+    # External inline references (e.g. an ORCID) remain allowed; DAPPER references
+    # to absent local records are reported by check_refs.
+    by_predicate = {vocab.predicate_uri(vocab.edge_predicates.get(name)): spec
+                    for name, spec in vocab.edge_endpoints.items()}
+    for link in doc.relationships(vocab):
+        if link.reified:
+            continue
+        spec = by_predicate.get(link.predicate) or {}
+        for end in ("subject", "object"):
+            actual = doc.class_of(getattr(link, end))
+            allowed = spec.get(end)
+            if actual is not None and allowed and actual not in allowed:
+                rep.add("error", "endpoints", link.where,
+                        f"inline relationship {end} is a {actual}, but must be one of "
+                        f"{', '.join(allowed)}")
 
-def check_refs(doc: Document, rep: Report) -> None:
-    """Every `dapper:` identifier mentioned anywhere resolves to a node here.
+
+def check_refs(doc: Document, vocab: Vocabulary, rep: Report) -> None:
+    """DAPPER identifiers in relationship positions must resolve locally.
 
     The document is meant to be self-contained: the end result plus all of its
     provenance. A reference to a node that is not present means either a typo
@@ -372,7 +452,8 @@ def check_refs(doc: Document, rep: Report) -> None:
     trace stops there. Generalises the referential-integrity pass in
     check_provenance_trace.py.
 
-    Only `dapper:{Class}.{digest}` strings count as node references. The
+    Only relationship slots and edge endpoints are scanned, never literals.
+    Only `dapper:{Class}.{digest}` strings require local inline targets. The
     `dapper:` prefix is shared with the schema's OWN term namespace, so
     `predicate: dapper:hasDrsObject` is a vocabulary term that names no node
     and must not be chased — matching on the prefix alone reported every
@@ -381,21 +462,14 @@ def check_refs(doc: Document, rep: Report) -> None:
     lint_identity.py check 9 guards that property).
     """
     dangling: dict[str, set[str]] = {}
-
-    def scan(obj: Any, where: str) -> None:
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                # A node's own id is a definition, not a reference.
-                if key != "id":
-                    scan(value, f"{where}.{key}" if where else str(key))
-        elif isinstance(obj, list):
-            for i, value in enumerate(obj):
-                scan(value, f"{where}[{i}]")
-        elif (isinstance(obj, str) and digest_of(obj) is not None
-              and obj not in doc.nodes):
-            dangling.setdefault(obj, set()).add(where)
-
-    scan(doc.raw, "")
+    references = []
+    # Inspect endpoints even when another field makes an edge malformed.
+    for group, _, edge in doc.edges:
+        references.extend((edge.get(end), f"{group}.{end}") for end in ("subject", "object"))
+    references.extend((link.object, link.where) for link in doc.relationships(vocab) if not link.reified)
+    for ref, where in references:
+        if isinstance(ref, str) and digest_of(ref) is not None and ref not in doc.nodes:
+            dangling.setdefault(ref, set()).add(where)
     for ref, wheres in sorted(dangling.items()):
         rep.add("error", "refs", sorted(wheres)[0],
                 f"reference to {ref} does not resolve to any node in this document"
@@ -409,17 +483,14 @@ def check_duplicate_ids(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     cannot be walked reliably.
     """
     seen: dict[str, str] = {}
-    for key, value in doc.raw.items():
-        if key not in vocab.node_groups:
+    for where, _, node in doc.node_records:
+        node_id = node.get("id")
+        if not isinstance(node_id, str) or not node_id.strip():
             continue
-        for node in value or []:
-            if not isinstance(node, dict) or "id" not in node:
-                continue
-            node_id = str(node["id"])
-            if node_id in seen:
-                rep.add("error", "duplicate-ids", node_id,
-                        f"appears in both {seen[node_id]} and {key}")
-            seen[node_id] = key
+        if node_id in seen:
+            rep.add("error", "duplicate-ids", node_id,
+                    f"appears in both {seen[node_id]} and {where}")
+        seen[node_id] = where
 
 
 def check_id_class(doc: Document, rep: Report) -> None:
@@ -473,24 +544,28 @@ def check_ids_match_content(doc: Document, sv, rep: Report) -> None:
 # ---------------------------------------------------------------------------
 # profile checks — per end modality
 # ---------------------------------------------------------------------------
-def _terminal_ids(doc: Document, profile: dict) -> list[str]:
-    return [i for i, _ in doc.nodes_of_class(profile["terminal"]["class"])]
+def _terminal_ids(doc: Document, profile: dict, vocab: Vocabulary) -> list[str]:
+    """End results exclude resources consumed or derived from in this graph."""
+    upstream_predicates = {vocab.predicate_uri(p) for p in ("prov:used", "prov:wasDerivedFrom")}
+    upstream = {link.object for link in doc.relationships(vocab)
+                if link.predicate in upstream_predicates}
+    return [i for i, _ in doc.nodes_of_class(profile["terminal"]["class"]) if i not in upstream]
 
 
-def check_terminal(doc: Document, profile: dict, rep: Report) -> list[str]:
+def check_terminal(doc: Document, profile: dict, vocab: Vocabulary, rep: Report) -> list[str]:
     """The document holds the expected number of end-result nodes."""
     spec = profile["terminal"]
     class_name = spec["class"]
-    found = _terminal_ids(doc, profile)
+    found = _terminal_ids(doc, profile, vocab)
     low, high = spec.get("min"), spec.get("max")
 
     if low is not None and len(found) < low:
         rep.add("error", "terminal", str(doc.path.name),
-                f"found {len(found)} {class_name} node(s), expected at least {low}",
+                f"found {len(found)} terminal {class_name} node(s), expected at least {low}",
                 f"A {profile['title']} document is built around its {class_name}.")
     if high is not None and len(found) > high:
         rep.add("error", "terminal", str(doc.path.name),
-                f"found {len(found)} {class_name} node(s), expected at most {high}: "
+                f"found {len(found)} terminal {class_name} node(s), expected at most {high}: "
                 + ", ".join(found),
                 "One document per instantiation — with more than one end result in a "
                 "file, the provenance below cannot be attributed unambiguously.")
@@ -505,25 +580,27 @@ def check_required_edges(doc: Document, profile: dict, terminals: list[str],
     same classes are reused across modalities — so a bottom-line result with no
     generating Activity validates perfectly while carrying no provenance at all.
     """
+    links = doc.relationships(vocab)
     for spec in profile.get("required_edges") or []:
         group = spec["group"]
+        predicate = vocab.predicate_uri(vocab.edge_predicates.get(vocab.edge_groups[group]))
         want_class = spec.get("object_class")
         minimum = spec.get("min", 1)
         severity = spec.get("severity", "error")
         for terminal in terminals:
-            matching = [
-                e for e in doc.out_edges(terminal, group)
-                if want_class is None or doc.class_of(str(e.get("object"))) == want_class
-            ]
+            matching = {link.object for link in links
+                        if link.subject == terminal and link.predicate == predicate
+                        and (want_class is None or doc.class_of(link.object) == want_class)}
             if len(matching) < minimum:
                 target = f" to a {want_class}" if want_class else ""
                 rep.add(severity, "required-edges", terminal,
-                        f"has {len(matching)} `{group}` edge(s){target}, expected "
+                        f"has {len(matching)} `{group}` relationship(s){target} "
+                        f"(reified or inline), expected "
                         f"at least {minimum}",
                         spec.get("why", ""))
 
 
-def check_activities_have_inputs(doc: Document, profile: dict, rep: Report) -> None:
+def check_activities_have_inputs(doc: Document, profile: dict, vocab: Vocabulary, rep: Report) -> None:
     """Every Activity declares at least one input it used.
 
     An Activity with no inputs is either a genuine raw-data producer or a step
@@ -535,11 +612,11 @@ def check_activities_have_inputs(doc: Document, profile: dict, rep: Report) -> N
     severity = profile.get("activities_require_inputs")
     if severity not in SEVERITIES:
         return
+    consumers = {link.subject for link in doc.relationships(vocab)
+                 if link.predicate == vocab.predicate_uri("prov:used")}
     for activity_id, node in doc.nodes_of_class("Activity"):
-        if doc.out_edges(activity_id, "used_edges"):
+        if activity_id in consumers:
             continue
-        if node.get("used"):
-            continue  # declared inline rather than as a reified edge
         rep.add(severity, "activity-inputs", activity_id,
                 f"Activity {node.get('name', '')!r} declares no inputs",
                 "Add `used_edges` naming what it consumed, or confirm it is a "
@@ -547,7 +624,7 @@ def check_activities_have_inputs(doc: Document, profile: dict, rep: Report) -> N
 
 
 def check_reachability(doc: Document, profile: dict, terminals: list[str],
-                       rep: Report) -> None:
+                       vocab: Vocabulary, rep: Report) -> None:
     """All provenance hangs off the end result, and nothing dangles.
 
     The traversal from each end result follows three kinds of step, and all
@@ -580,13 +657,15 @@ def check_reachability(doc: Document, profile: dict, terminals: list[str],
     if not terminals:
         return
 
-    # Activity -> everything that declares it as its generator (step 2).
+    # Normalize both representations before walking: literal fields never add links.
+    outgoing: dict[str, list[str]] = {}
     outputs_of: dict[str, list[str]] = {}
-    for group, _, edge in doc.edges:
-        if group == "was_generated_by_edges":
-            subject, obj = edge.get("subject"), edge.get("object")
-            if isinstance(subject, str) and isinstance(obj, str):
-                outputs_of.setdefault(obj, []).append(subject)
+    generated = set()
+    for link in doc.relationships(vocab):
+        outgoing.setdefault(link.subject, []).append(link.object)
+        if link.predicate == vocab.predicate_uri("prov:wasGeneratedBy"):
+            outputs_of.setdefault(link.object, []).append(link.subject)
+            generated.add(link.subject)
 
     reached: set[str] = set()
     worklist = list(terminals)
@@ -596,17 +675,8 @@ def check_reachability(doc: Document, profile: dict, terminals: list[str],
             continue
         reached.add(node_id)
 
-        for edge in doc.out_edges(node_id):                      # 1
-            worklist.append(str(edge.get("object")))
-        worklist.extend(outputs_of.get(node_id, []))             # 2
-
-        _, _, node = doc.nodes[node_id]                          # 3
-        for key, value in node.items():
-            if key == "id":
-                continue
-            for item in (value if isinstance(value, list) else [value]):
-                if isinstance(item, str) and item in doc.nodes:
-                    worklist.append(item)
+        worklist.extend(outgoing.get(node_id, []))
+        worklist.extend(outputs_of.get(node_id, []))
 
     unreachable = sorted(set(doc.nodes) - reached)
     for node_id in unreachable:
@@ -617,8 +687,6 @@ def check_reachability(doc: Document, profile: dict, terminals: list[str],
                 "Every node in the document should be provenance for the end result. "
                 "Either a reference is wrong, or this node belongs in another file.")
 
-    generated = {str(e.get("subject")) for g, _, e in doc.edges
-                 if g == "was_generated_by_edges"}
     rep.counts["raw_sources"] = len([i for i in doc.nodes if i not in generated])
 
 
@@ -626,18 +694,22 @@ def check_reachability(doc: Document, profile: dict, terminals: list[str],
 # driver
 # ---------------------------------------------------------------------------
 def detect_profile(doc: Document, vocab: Vocabulary) -> tuple[str | None, list[str]]:
-    """Pick the profile whose terminal class this document contains."""
+    """Pick the profile of terminal resources, excluding upstream inputs."""
     matches = [
         name for name, profile in vocab.profiles.items()
-        if doc.nodes_of_class(profile["terminal"]["class"])
+        if _terminal_ids(doc, profile, vocab)
     ]
     return (matches[0] if len(matches) == 1 else None), matches
 
 
 def lint(path: Path, vocab: Vocabulary, sv, validator,
          profile_name: str | None = None) -> Report:
-    doc = Document.load(path, vocab)
     rep = Report(path=path)
+    try:
+        doc = Document.load(path, vocab)
+    except (OSError, yaml.YAMLError) as exc:
+        rep.add("error", "shape", path.name, f"cannot read YAML document: {exc}")
+        return rep
     rep.counts.update(nodes=len(doc.nodes), edges=len(doc.edges))
 
     # Generic checks run regardless of modality, and run even when no profile
@@ -648,7 +720,7 @@ def lint(path: Path, vocab: Vocabulary, sv, validator,
     check_edges(doc, validator, rep)
     check_predicates(doc, vocab, rep)
     check_endpoints(doc, vocab, rep)
-    check_refs(doc, rep)
+    check_refs(doc, vocab, rep)
     check_duplicate_ids(doc, vocab, rep)
     check_id_class(doc, rep)
     check_ids_match_content(doc, sv, rep)
@@ -670,10 +742,10 @@ def lint(path: Path, vocab: Vocabulary, sv, validator,
     rep.profile = profile_name
     profile = vocab.profiles[profile_name]
 
-    terminals = check_terminal(doc, profile, rep)
+    terminals = check_terminal(doc, profile, vocab, rep)
     check_required_edges(doc, profile, terminals, vocab, rep)
-    check_activities_have_inputs(doc, profile, rep)
-    check_reachability(doc, profile, terminals, rep)
+    check_activities_have_inputs(doc, profile, vocab, rep)
+    check_reachability(doc, profile, terminals, vocab, rep)
     return rep
 
 
