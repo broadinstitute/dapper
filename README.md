@@ -54,12 +54,32 @@ files carrying C2M2 metadata. Optional DRS representations are separate nodes.
 See [files and DRS](schema/docs/files-and-drs.md) and the
 [intermediate-file example](schema/examples/example_file_graph.yaml).
 
-Validate from the repository root with:
+Validate a single instance from the repository root with:
 
 ```bash
 uv run --with linkml linkml-validate \
   -s schema/dapper.yaml -C Dataset schema/examples/example_dataset.yaml
 ```
+
+## End-result documents
+
+An *end modality* is a terminal product of a pipeline — a bottom-line result, a
+gene set. Each instantiation is published as one self-contained YAML file: the
+end result object plus all the provenance around how it was generated.
+
+`linkml-validate` cannot check such a file. The schema declares no `tree_root`,
+so pointing it at a graph document raises rather than validating; it only works
+on one node at a time against a named class. Lint a whole document with:
+
+```bash
+uv run schema/lint/lint_provenance.py path/to/result.yaml   # modality auto-detected
+uv run schema/lint/lint_provenance.py --list-profiles
+```
+
+On top of per-node schema conformance, it checks the document shape, typed edge endpoints, referential
+integrity, identifier correctness, and that every node is reachable from the end
+result. Modalities are declared as data in
+[`schema/lint/profiles.yaml`](schema/lint/profiles.yaml) Please see [schema/lint/README.md](schema/lint/README.md) for additional documentation.
 
 ## Model documentation
 
