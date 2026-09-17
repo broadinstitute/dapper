@@ -8,8 +8,9 @@ this is the guide.
 
 One YAML file per end result. Each file holds **the end result object plus all
 the provenance around how it was generated** — the activities that ran, the
-files they consumed and produced, and the edges connecting them. The file is
-self-contained: everything it references is defined inside it.
+files they consumed and produced, and the edges connecting them. All reified
+edge endpoints and inline DAPPER identifiers must resolve inside the file.
+Inline relationships may also reference external identifiers such as ORCIDs.
 
 An *end modality* is a terminal product of a pipeline. Two are currently
 supported:
@@ -19,10 +20,13 @@ supported:
 | `bottom-line-result` | A `Dataset` — variant-level summary statistics from a meta-analysis | exactly 1 |
 | `geneset` | A `GeneSet` | 1 or more |
 
-A bottom-line result is capped at one per file on purpose. With two results in
-one document, the provenance below them can no longer be attributed to either
-one unambiguously. A gene set has no cap because one converter run genuinely
-emits many gene sets sharing a single provenance subgraph.
+A bottom-line document has exactly one final Dataset, but may contain other
+Datasets as upstream inputs or derivation sources. Terminal selection excludes
+resources consumed by `prov:used` or named as `prov:wasDerivedFrom` sources,
+whether represented inline or as edges. Profile detection and required
+provenance checks apply to the remaining end results. Multiple final Datasets
+are still rejected. Gene sets have no cap because a converter run may emit
+many gene sets sharing a single provenance subgraph.
 
 ## The three things you need
 
@@ -83,6 +87,10 @@ Common edge keys: `was_generated_by_edges` (result → the activity that made it
 `used_edges` (activity → an input it consumed), `has_drs_object_edges`
 (dataset → retrievable bytes).
 
+Every node or edge group must be a list of mappings. Each node must have a
+nonempty string `id`; records with missing IDs are reported and still checked
+for schema violations. Unknown keys and malformed containers are errors.
+
 The full list of node keys is `DOC_GROUPS` in
 [`../identity/dapper_identity.py`](../identity/dapper_identity.py); edge keys are
 the snake-cased name of any `Edge` class in the schema, plus `_edges`.
@@ -121,10 +129,16 @@ Generic, applied to every modality:
 
 Per modality, from [`profiles.yaml`](profiles.yaml): how many end results the
 file may contain, and which provenance edges each must carry. A
-`bottom-line-result` must have a `was_generated_by` edge to an `Activity`
+`bottom-line-result` must have a `was_generated_by` relationship to an `Activity`
 (error) and should have a `has_drs_object` edge to a `DrsObject` (warning —
 without it the result has no checksum, so the claim cannot be verified against
 the data).
+
+Inline and reified forms satisfy the same requirements. For example,
+`Dataset.was_generated_by: <activity-id>` is equivalent to a `WasGeneratedBy`
+edge. Predicate CURIEs and expanded URIs are compared by their expanded URI;
+an omitted edge predicate uses the schema default. Repeating the same
+relationship in both forms counts once.
 
 ### Two rules worth understanding
 
@@ -138,7 +152,10 @@ provenance, so a node nothing connects to does not belong in it. This is the
 check that catches a plausible-looking object that is attached to nothing.
 Reachability follows edges from the result backwards through
 `was_generated_by` → activity → `used` → inputs, and also picks up an
-activity's other outputs.
+activity's other outputs, including outputs linked by inline generation
+relationships. Only schema-declared relationship slots are traversed: literal
+fields such as `description` never create a connection or a dangling-reference
+error merely because their text happens to look like an identifier.
 
 ## Adding a modality
 

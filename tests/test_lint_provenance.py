@@ -24,6 +24,7 @@ import pytest
 import yaml
 
 from conftest import EXAMPLES, REPO_ROOT, SCHEMA
+from dapper_identity import assign_ids
 
 import lint_provenance as lp
 
@@ -63,6 +64,146 @@ def lint_doc(doc: dict, tmp_path, vocab, sv, validator, profile=None) -> lp.Repo
 def checks_firing(report: lp.Report, severity: str | None = None) -> set[str]:
     return {f.check for f in report.findings
             if severity is None or f.severity == severity}
+
+
+REVIEW_FIXTURES = REPO_ROOT / "tests/fixtures/linter-review"
+
+
+@pytest.mark.parametrize("name, expected", [
+    ("00-valid-control.yaml", set()),
+    ("01-file-without-id.yaml", {"shape", "nodes"}),
+    ("02-node-group-is-mapping.yaml", {"shape"}),
+    ("03-edge-is-scalar.yaml", {"shape"}),
+    ("04-upstream-dataset.yaml", set()),
+    ("05-dangling-unconfigured-edge.yaml", {"endpoints"}),
+    ("06-literal-masquerades-as-link.yaml", {"reachability"}),
+    ("07-inline-generation.yaml", set()),
+])
+def test_review_regressions(name, expected, vocab, sv, validator):
+    report = lp.lint(REVIEW_FIXTURES / name, vocab, sv, validator)
+    assert checks_firing(report, "error") == expected, report.findings
+    assert not report.warnings
+
+
+@pytest.mark.parametrize("value", [None, 0, 42, False, "not a list", {"name": "not a list"}])
+@pytest.mark.parametrize("group", ["persons", "used_edges"])
+def test_non_list_groups_report_shape_errors(value, group, bottom_line, tmp_path,
+                                             vocab, sv, validator):
+    bottom_line[group] = value
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert "shape" in checks_firing(report, "error")
+
+
+@pytest.mark.parametrize("node_id", [None, "", "  ", 42, [], {}])
+def test_invalid_node_ids_are_reported(node_id, bottom_line, tmp_path, vocab, sv, validator):
+    bottom_line["persons"] = [{"id": node_id, "invented": "field"}]
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert {"shape", "nodes"} <= checks_firing(report, "error")
+
+
+def test_duplicate_record_is_also_schema_validated(bottom_line, tmp_path, vocab, sv, validator):
+    duplicate = dict(bottom_line["datasets"][0], invented="field")
+    bottom_line["datasets"].append(duplicate)
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert {"nodes", "duplicate-ids"} <= checks_firing(report, "error")
+
+
+@pytest.mark.parametrize("content", ["", "[]", "42", "datasets: ["])
+def test_bad_document_shape_returns_a_report(content, tmp_path, vocab, sv, validator):
+    path = tmp_path / "bad.yaml"
+    path.write_text(content)
+    report = lp.lint(path, vocab, sv, validator)
+    assert "shape" in checks_firing(report, "error")
+
+
+def test_literal_dapper_identifier_is_not_a_reference(bottom_line, tmp_path, vocab, sv, validator):
+    bottom_line["datasets"][0]["description"] = "dapper:Person." + "a" * 32
+    assign_ids(bottom_line, sv)
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert not report.errors, report.findings
+
+
+@pytest.mark.parametrize("inline", [False, True])
+def test_derivation_source_is_not_a_terminal(inline, tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    source = {"id": "urn:review:upstream", "name": "Upstream dataset"}
+    doc["datasets"].append(source)
+    if inline:
+        doc["datasets"][0]["was_derived_from"] = [source["id"]]
+    else:
+        doc["was_derived_from_edges"] = [{"subject": doc["datasets"][0]["id"],
+                                        "predicate": "prov:wasDerivedFrom", "object": source["id"]}]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert report.profile == "bottom-line-result"
+    assert not report.findings
+
+
+def test_gene_set_with_dataset_input_detects_gene_set_profile(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "04-upstream-dataset.yaml").read_text())
+    doc["gene_sets"] = [doc["datasets"].pop(0)]
+    del doc["gene_sets"][0]["resource_type"]
+    del doc["has_drs_object_edges"], doc["drs_objects"]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert report.profile == "geneset"
+    assert not report.findings
+
+
+def test_inline_dangling_reference_is_rejected(bottom_line, tmp_path, vocab, sv, validator):
+    bottom_line["datasets"][0]["was_attributed_to"] = ["dapper:Person." + "a" * 32]
+    assign_ids(bottom_line, sv)
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert "refs" in checks_firing(report, "error")
+
+
+def test_inline_endpoint_types_are_checked(bottom_line, tmp_path, vocab, sv, validator):
+    bottom_line["datasets"][0]["was_generated_by"] = bottom_line["drs_objects"][0]["id"]
+    assign_ids(bottom_line, sv)
+    report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
+    assert "endpoints" in checks_firing(report, "error")
+
+
+def test_inline_sibling_output_is_reachable(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    doc["gene_programs"] = [{"id": "urn:review:program", "name": "Sibling program",
+                             "was_generated_by": doc["activities"][0]["id"]}]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert not report.findings
+
+
+def test_full_predicate_uris_are_equivalent_to_curies(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "04-upstream-dataset.yaml").read_text())
+    for group in vocab.edge_groups:
+        for edge in doc.get(group, []):
+            edge["predicate"] = sv.expand_curie(edge["predicate"])
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert not report.findings
+
+
+def test_predicate_defaults_satisfy_required_relationships(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    del doc["was_generated_by_edges"][0]["predicate"]
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert not report.findings
+
+
+def test_wrong_predicate_cannot_supply_required_relationship(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    doc["was_generated_by_edges"][0]["predicate"] = "prov:wasAttributedTo"
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert "required-edges" in checks_firing(report, "error")
+
+
+def test_inline_and_reified_forms_do_not_double_count(tmp_path, vocab, sv, validator):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    doc["datasets"][0]["was_generated_by"] = doc["activities"][0]["id"]
+    assign_ids(doc, sv)
+    stricter = copy.deepcopy(vocab)
+    stricter.profiles["bottom-line-result"]["required_edges"][0]["min"] = 2
+    report = lint_doc(doc, tmp_path, stricter, sv, validator)
+    assert "required-edges" in checks_firing(report, "error")
 
 
 # ---------------------------------------------------------------------------

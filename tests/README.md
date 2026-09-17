@@ -20,6 +20,10 @@ script directories on `sys.path`.
 
 ## Fixtures
 
+[`fixtures/linter-review/`](fixtures/linter-review/README.md) contains a valid
+control and seven synthetic regression cases for PR #27. Some are deliberately
+invalid; `test_lint_provenance.py` checks their intended acceptance or rejection.
+
 `fixtures/geneset-hubmap-hz2/` is a real `dig.geneset` run — HuBMAP gene set
 `402cf4a1f3682a2e5bf1b002`, 9 File / 2 AnalysisType / 1 GeneSet nodes and 11 edges. It
 moved here from `schema/examples/`, which is the model's worked examples in DAPPER's own
