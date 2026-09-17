@@ -9,4 +9,8 @@ pytest>=8
 pyyaml
 rdflib
 linkml-runtime
+# The full linkml package, not just the runtime: schema/lint/lint_provenance.py
+# validates nodes through `linkml.validator`, which lives here rather than in
+# linkml-runtime.
+linkml
 ruamel.yaml

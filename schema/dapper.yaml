@@ -1,4 +1,4 @@
-id: https://cfdeknowledge.org/nih-mcp-gateway/dapper
+id: https://github.com/broadinstitute/dapper
 name: dapper
 title: DAPPER - NIH Dataset Attribution and Provenance Profile
 description: >-
@@ -54,7 +54,7 @@ description: >-
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, hypotheses, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
-license: https://creativecommons.org/licenses/by/4.0/
+license: https://opensource.org/license/mit
 version: 0.1.0
 
 # ---------------------------------------------------------------------------
@@ -129,6 +129,7 @@ prefixes:
   # DISMECH's own declared prefix for the same namespace.
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
+  CL: http://purl.obolibrary.org/obo/CL_
   HGNC: http://identifiers.org/hgnc/
   PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —

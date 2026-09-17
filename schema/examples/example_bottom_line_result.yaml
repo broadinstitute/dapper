@@ -33,7 +33,7 @@ activities:
     entrypoint: loadAnalysis.py
     repo_url: https://github.com/broadinstitute/MethodsBioindex
     code_version: 4f2c9ab
-    generated_at_time: "2026-08-14T12:00:00"
+    generated_at_time: "2026-08-14T12:00:00Z"
 
 drs_objects:
   - id: dapper:DrsObject.15vrw2UABhaPg2JROaFspKEOiJMFPIbe
