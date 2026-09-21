@@ -16,6 +16,7 @@ on:
       - "schema/**"
       - "docs/**"
       - "tools/build_docs.py"
+      - "tools/model_uris.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 

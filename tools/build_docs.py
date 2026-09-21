@@ -22,9 +22,9 @@ import shutil
 import subprocess
 import sys
 
-from linkml.generators.docgen import DocGenerator
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
+from model_uris import ModelDocGenerator, write_namespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +39,7 @@ def build_site() -> None:
         shutil.rmtree(GENERATED)
     reference = GENERATED / "reference"
     reference.mkdir(parents=True)
-    generator = DocGenerator(
+    generator = ModelDocGenerator(
         str(ROOT / "schema" / "dapper.yaml"),
         directory=str(reference),
         dialect="python",
@@ -53,6 +53,11 @@ def build_site() -> None:
     # following heading, which Python Markdown otherwise treats as another row.
     for page in reference.rglob("*.md"):
         markdown = page.read_text()
+        if page.parent.name == "enums":
+            markdown = generator.enum_mapping_documentation(
+                markdown, generator.schemaview.get_enum(page.stem))
+        if page.parent.name in ("classes", "slots", "enums", "types"):
+            markdown = re.sub(r"(?m)^URI:", "Documentation URI:", markdown, count=1)
         page.write_text(re.sub(r"(?m)^(\|[^\n]*)\n(?=#{1,6} )", r"\1\n\n", markdown))
 
     shutil.copy2(ROOT / "docs" / "index.md", GENERATED / "index.md")
@@ -61,11 +66,15 @@ def build_site() -> None:
     guides.mkdir()
     guide = (ROOT / "schema" / "docs" / "files-and-drs.md").read_text()
     (guides / "files-and-drs.md").write_text(guide.replace("../identity/README.md", "identity.md"))
+    shutil.copy2(ROOT / "schema" / "docs" / "claims.md", guides / "claims.md")
+    shutil.copy2(ROOT / "schema" / "docs" / "bottom-line-results.md", guides / "bottom-line-results.md")
+    shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
     shutil.copy2(ROOT / "schema" / "identity" / "README.md", guides / "identity.md")
     shutil.copytree(ROOT / "schema" / "examples", GENERATED / "examples",
                     ignore=shutil.ignore_patterns("*.py", "__pycache__"))
     (GENERATED / "schema").mkdir()
-    shutil.copy2(ROOT / "schema" / "dapper.yaml", GENERATED / "schema" / "dapper.yaml")
+    for module in (ROOT / "schema").glob("*.yaml"):
+        shutil.copy2(module, GENERATED / "schema" / module.name)
 
     navigation = [{"Overview": "index.md"}]
     counts = {}
@@ -82,6 +91,9 @@ def build_site() -> None:
         ]})
     navigation.extend([
         {"Guides": [{"Files and DRS": "guides/files-and-drs.md"},
+                    {"Bottom-line results": "guides/bottom-line-results.md"},
+                    {"Genetic ancestry": "guides/ancestry.md"},
+                    {"Claims and the PIGEAN example": "guides/claims.md"},
                     {"Computed identifiers": "guides/identity.md"}]},
         {"Full schema": "reference/index.md"},
     ])
@@ -91,6 +103,7 @@ def build_site() -> None:
     # The inspector remains at the existing Pages root, with docs under /model/.
     shutil.copy2(ROOT / "portal" / "index.html", SITE / "index.html")
     (SITE / ".nojekyll").touch()
+    write_namespace(generator.schemaview, SITE)
     print("Built model documentation: " + ", ".join(f"{n} {s}" for s, n in counts.items()))
     print(f"Pages artifact: {SITE}")
 

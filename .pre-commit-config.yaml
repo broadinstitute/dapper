@@ -13,6 +13,6 @@ repos:
         name: pytest
         entry: pytest tests/ -q
         language: python
-        additional_dependencies: [pytest>=8, pyyaml, rdflib, linkml-runtime, linkml, ruamel.yaml]
+        additional_dependencies: [pytest>=8, pyyaml, rdflib, linkml-runtime, ruamel.yaml, linkml==1.11.1, jsonschema]
         pass_filenames: false
         always_run: true

@@ -17,6 +17,15 @@ def test_file_relocation_and_drs_registration_preserve_identity(sv):
     assert compute_id(node, "File", sv) != original
 
 
+def test_dataset_relocation_preserves_identity_but_distribution_changes_it(sv):
+    dataset = {"name": "Result", "location": "s3://old/prefix/", "has_file": ["urn:file:one"]}
+    original = compute_id(dataset, "Dataset", sv)
+    dataset["location"] = "s3://new/prefix/"
+    assert compute_id(dataset, "Dataset", sv) == original
+    dataset["has_file"] = ["urn:file:two"]
+    assert compute_id(dataset, "Dataset", sv) != original
+
+
 def test_file_graph_mints_access_refs_without_changing_file_id(sv):
     doc = {
         "files": [{"id": "urn:example:file", "filename": "x.tsv", "sha256": "a" * 64,

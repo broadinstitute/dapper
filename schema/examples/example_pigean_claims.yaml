@@ -1,0 +1,264 @@
+# DAPPER Claim / CompositeClaim: the user's PIGEAN sentence.
+# Entirely illustrative: no analysis was run, no numbers are empirical, and
+# demo_*.py commands are schematic stand-ins for commands captured from real runs.
+# P1=0.82, P2=0.67, P3=0.74 stand in for the user's probability variables.
+# They are NOT source PIGEAN/EAGGL metric names or a conversion of real weights.
+# Gene A, Trait T, Factor C, software URNs and predicates are example identifiers.
+# Factor C is scoped to its fitted analysis; its definition resides in the factor output.
+# Every DAPPER node id below was minted using DAPPER-ID-1, not authored by hand.
+# See ../docs/claims.md for semantics, the mapping, and validation instructions.
+
+files:
+- id: dapper:File.dZ45FQuwqm2RYpQ111AfaJWUOEpO7QFx
+  filename: expression.tsv
+  description: Illustrative expression input for gene-set generation; no real dataset is represented.
+- id: dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+  filename: gene-set-b.gmt
+  description: Illustrative gene-set membership output.
+- id: dapper:File.R7ysXaFcxoDyGTXZwrFFPFw1A7gZ_T2U
+  filename: raw-gwas.tsv
+  description: Illustrative GWAS summary-statistics input for Trait T.
+- id: dapper:File.TWIIM_WWVfcfFtu6LVCYdxNNgZRATSqY
+  filename: processed-gwas.tsv
+  description: Illustrative harmonized GWAS intermediate.
+- id: dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+  filename: pigean-results.tsv
+  description: Hypothetical P1/P2 probability columns for this design example, not actual PIGEAN output
+    columns.
+- id: dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+  filename: eaggl-results.tsv
+  description: Illustrative factor fit, including Factor C and a hypothetical P3. Real EAGGL loadings
+    must retain their own metric and scale.
+activities:
+- id: dapper:Activity.atHaPR_CUDTbMWjt8sRHiEgBlEJKKPuP
+  name: Gene-set generation (illustrative)
+  command: python demo_gene_set.py --input expression.tsv --output gene-set-b.gmt
+  code_version: illustrative-only
+  description: Non-executed example. The demo command is schematic, not the official software CLI.
+- id: dapper:Activity.UK8mGwryMyERHJlWtcZMCGFl9gQy7VeA
+  name: GWAS preprocessing (illustrative)
+  command: python demo_prepare_gwas.py --input raw-gwas.tsv --output processed-gwas.tsv
+  code_version: illustrative-only
+  description: Non-executed example. The demo command is schematic, not the official software CLI.
+- id: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  name: PIGEAN execution (illustrative)
+  command: python demo_pigean.py --gwas processed-gwas.tsv --gene-sets gene-set-b.gmt --output pigean-results.tsv
+  code_version: illustrative-only
+  description: Non-executed example. The demo command is schematic, not the official software CLI.
+- id: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+  name: EAGGL execution (illustrative)
+  command: python demo_eaggl.py --input pigean-results.tsv --gene-sets gene-set-b.gmt --output eaggl-results.tsv
+  code_version: illustrative-only
+  description: Non-executed example. The demo command is schematic, not the official software CLI.
+- id: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  name: Claim assembly (illustrative)
+  command: python demo_assemble_claims.py --pigean pigean-results.tsv --factors eaggl-results.tsv
+  code_version: illustrative-only
+  description: Non-executed example. The demo command is schematic, not the official software CLI.
+gene_sets:
+- id: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+  name: GeneSet B
+  term: GeneSet B
+  members:
+  - urn:example:gene:A
+  description: Illustrative named gene set containing Gene A. Source context is retained here; it is not
+    automatically the scope of the predicted association.
+  was_generated_by: dapper:Activity.atHaPR_CUDTbMWjt8sRHiEgBlEJKKPuP
+  was_derived_from:
+  - dapper:File.dZ45FQuwqm2RYpQ111AfaJWUOEpO7QFx
+  - dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+used_edges:
+- subject: dapper:Activity.atHaPR_CUDTbMWjt8sRHiEgBlEJKKPuP
+  predicate: prov:used
+  object: dapper:File.dZ45FQuwqm2RYpQ111AfaJWUOEpO7QFx
+- subject: dapper:Activity.UK8mGwryMyERHJlWtcZMCGFl9gQy7VeA
+  predicate: prov:used
+  object: dapper:File.R7ysXaFcxoDyGTXZwrFFPFw1A7gZ_T2U
+- subject: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  predicate: prov:used
+  object: dapper:File.TWIIM_WWVfcfFtu6LVCYdxNNgZRATSqY
+- subject: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  predicate: prov:used
+  object: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+- subject: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  predicate: prov:used
+  object: dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+- subject: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+  predicate: prov:used
+  object: dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+- subject: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+  predicate: prov:used
+  object: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+- subject: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+  predicate: prov:used
+  object: dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:Claim.jF7aKUtn6qOVy3EuF6rZu-ycWvxK9VFI
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:Claim.67miCizih-jpSg4MhR2yrAcZ-DjaZcH4
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:Claim.63vVcTpzb0oxwqEq_MCQozU8hzO6dCV0
+- subject: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  predicate: prov:used
+  object: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+was_generated_by_edges:
+- subject: dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.atHaPR_CUDTbMWjt8sRHiEgBlEJKKPuP
+- subject: dapper:File.TWIIM_WWVfcfFtu6LVCYdxNNgZRATSqY
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.UK8mGwryMyERHJlWtcZMCGFl9gQy7VeA
+- subject: dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+- subject: dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+propositions:
+- id: dapper:Proposition.OnlE4SpAkF5bWr24v7zEAughKYl0JNez
+  name: gene trait
+  statement: Gene A is associated with Trait T.
+  subject_entity: urn:example:gene:A
+  relation: urn:example:associatedWith
+  object_entity: urn:example:trait:T
+  scope: Trait T; no tissue restriction is inferred from the gene-set input.
+- id: dapper:Proposition.cjh_TVboFrtif5fhQySXq74ThXuuVe3G
+  name: geneset trait
+  statement: GeneSet B predicts trait-relevant genes for Trait T.
+  subject_entity: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+  relation: urn:example:predictsTraitRelevantGenesFor
+  object_entity: urn:example:trait:T
+  scope: Trait T; annotation relevance, not a claim of biological mediation.
+- id: dapper:Proposition.2Aq9J2ah8MdGCNmrKokmxWcjdS4aX_8w
+  name: geneset factor
+  statement: GeneSet B is a possible readout of latent Factor C in the Trait T fit.
+  subject_entity: dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+  relation: urn:example:possibleReadoutOf
+  object_entity: urn:example:eaggl-fit-1:trait-T:factor-C
+  scope: Trait T; Factor C belongs only to the illustrative EAGGL fit identified by its URI. No named
+    biological mechanism is asserted.
+- id: dapper:Proposition.Ndks7xEMDAFg7TnjeWtvlEAIIXVk7Ij-
+  name: Combined annotation-based explanation
+  statement: Gene A is associated with Trait T, with an annotation-based explanation through GeneSet B,
+    which contains Gene A, predicts trait-relevant genes, and is a possible readout of latent Factor C
+    in the Trait T fit.
+  scope: Via refers to an annotation-based explanation. It does not assert biological mediation, establish
+    a causal mechanism, or identify the fitted factor with a known mechanism.
+claim_scores:
+- id: dapper:ClaimScore.0mUjkB0LB62dlhgFGhuT7b09fakowBLB
+  name: P1
+  score_kind: POSTERIOR_PROBABILITY
+  value: 0.82
+  metric: illustrative_gene_trait_posterior
+  interpretation: Illustrative posterior probability of Gene A being trait-relevant, conditional on the
+    specified GWAS, annotation library and model. Not an actual PIGEAN estimate.
+- id: dapper:ClaimScore.dczx0VcdLBdfSYNAmUG7uOEusIAs-HUN
+  name: P2
+  score_kind: POSTERIOR_PROBABILITY
+  value: 0.67
+  metric: illustrative_geneset_trait_posterior
+  interpretation: Illustrative posterior probability that GeneSet B is informative about trait-relevant
+    genes, conditional on the GWAS, annotation library and model. The real beta_uncorrected effect is
+    not this probability.
+- id: dapper:ClaimScore.IhzFZe0OfcZvHC3YDQtFHMwHFWzKC6u2
+  name: P3
+  score_kind: PROBABILITY
+  value: 0.74
+  metric: illustrative_geneset_factor_probability
+  interpretation: Hypothetical probability that GeneSet B is a readout of Factor C, conditional on this
+    fitted model and its inputs. Illustrates the user-proposed P3; it is not an EAGGL loading or a validated
+    mechanism probability.
+claims:
+- id: dapper:Claim.jF7aKUtn6qOVy3EuF6rZu-ycWvxK9VFI
+  name: 'P1: Gene A is associated with Trait T.'
+  proposition: dapper:Proposition.OnlE4SpAkF5bWr24v7zEAughKYl0JNez
+  statement: Gene A is associated with Trait T. The illustrative assessment reports P1=0.82.
+  has_score:
+  - dapper:ClaimScore.0mUjkB0LB62dlhgFGhuT7b09fakowBLB
+  was_generated_by: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  was_attributed_to:
+  - urn:example:software:pigean
+  was_derived_from:
+  - dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+  source_locator: gene=Gene A; trait=Trait T; column=illustrative_gene_trait_posterior
+- id: dapper:Claim.67miCizih-jpSg4MhR2yrAcZ-DjaZcH4
+  name: 'P2: GeneSet B predicts trait-relevant genes for Trait T.'
+  proposition: dapper:Proposition.cjh_TVboFrtif5fhQySXq74ThXuuVe3G
+  statement: GeneSet B predicts trait-relevant genes for Trait T. The illustrative assessment reports
+    P2=0.67.
+  has_score:
+  - dapper:ClaimScore.dczx0VcdLBdfSYNAmUG7uOEusIAs-HUN
+  was_generated_by: dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+  was_attributed_to:
+  - urn:example:software:pigean
+  was_derived_from:
+  - dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+  source_locator: gene_set=GeneSet B; trait=Trait T; column=illustrative_geneset_trait_posterior
+- id: dapper:Claim.63vVcTpzb0oxwqEq_MCQozU8hzO6dCV0
+  name: 'P3: GeneSet B is a possible readout of latent Factor C in the Trait T fit.'
+  proposition: dapper:Proposition.2Aq9J2ah8MdGCNmrKokmxWcjdS4aX_8w
+  statement: GeneSet B is a possible readout of latent Factor C in the Trait T fit. The illustrative assessment
+    reports P3=0.74.
+  has_score:
+  - dapper:ClaimScore.IhzFZe0OfcZvHC3YDQtFHMwHFWzKC6u2
+  was_generated_by: dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+  was_attributed_to:
+  - urn:example:software:eaggl
+  was_derived_from:
+  - dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+  source_locator: gene_set=GeneSet B; factor=Factor C; trait=Trait T; column=illustrative_geneset_factor_probability
+composite_claims:
+- id: dapper:CompositeClaim.vpV4R3QB_WlIpam8CtNV-5A0I6vseSmn
+  name: Gene A / Trait T via GeneSet B and Factor C
+  proposition: dapper:Proposition.Ndks7xEMDAFg7TnjeWtvlEAIIXVk7Ij-
+  statement: Gene A is associated (P1=0.82) with Trait T, explained through GeneSet B (P2=0.67), a possible
+    readout of Factor C (P3=0.74). All numbers are illustrative.
+  component_claims:
+  - dapper:Claim.jF7aKUtn6qOVy3EuF6rZu-ycWvxK9VFI
+  - dapper:Claim.67miCizih-jpSg4MhR2yrAcZ-DjaZcH4
+  - dapper:Claim.63vVcTpzb0oxwqEq_MCQozU8hzO6dCV0
+  composition: EXPLANATION
+  composition_description: P1 assesses gene-trait relevance. Gene A is a member of GeneSet B. P2 assesses
+    the gene set as an annotation predictive of trait-relevant genes. P3 links that gene set to a factor
+    in the same trait context. These describe an explanatory path, not evidence that the association is
+    mediated by B or C. No joint probability is inferred.
+  was_generated_by: dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+  was_attributed_to:
+  - urn:example:software:claim-assembler
+  was_derived_from:
+  - dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+  - dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+  - dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+_illustrative:
+- dapper:File.dZ45FQuwqm2RYpQ111AfaJWUOEpO7QFx
+- dapper:File.J7MsmfpdqmI4ug54ylh1LrLbkj65_3ag
+- dapper:File.R7ysXaFcxoDyGTXZwrFFPFw1A7gZ_T2U
+- dapper:File.TWIIM_WWVfcfFtu6LVCYdxNNgZRATSqY
+- dapper:File.NO2286x8JszxdBUImwDJCrayNQ2UCl0t
+- dapper:File._3JZe1DxVscNlV_xFaAi9Aufb4IX4zhH
+- dapper:Activity.atHaPR_CUDTbMWjt8sRHiEgBlEJKKPuP
+- dapper:Activity.UK8mGwryMyERHJlWtcZMCGFl9gQy7VeA
+- dapper:Activity.6SQEJDsLypZuIDqdT2ZgTLD0S4tRu8S7
+- dapper:Activity.8-ClM9JaU6JNhXiKl0Yabo0QJo4DQlO9
+- dapper:Activity.2kQiPK8FZXe7LgmPIbN_ka1oWiHu4fxr
+- dapper:GeneSet.nm1OIRfiEuPJP_GBfzVGhbKGumvDgXr_
+- dapper:Proposition.OnlE4SpAkF5bWr24v7zEAughKYl0JNez
+- dapper:ClaimScore.0mUjkB0LB62dlhgFGhuT7b09fakowBLB
+- dapper:Claim.jF7aKUtn6qOVy3EuF6rZu-ycWvxK9VFI
+- dapper:Proposition.cjh_TVboFrtif5fhQySXq74ThXuuVe3G
+- dapper:ClaimScore.dczx0VcdLBdfSYNAmUG7uOEusIAs-HUN
+- dapper:Claim.67miCizih-jpSg4MhR2yrAcZ-DjaZcH4
+- dapper:Proposition.2Aq9J2ah8MdGCNmrKokmxWcjdS4aX_8w
+- dapper:ClaimScore.IhzFZe0OfcZvHC3YDQtFHMwHFWzKC6u2
+- dapper:Claim.63vVcTpzb0oxwqEq_MCQozU8hzO6dCV0
+- dapper:Proposition.Ndks7xEMDAFg7TnjeWtvlEAIIXVk7Ij-
+- dapper:CompositeClaim.vpV4R3QB_WlIpam8CtNV-5A0I6vseSmn

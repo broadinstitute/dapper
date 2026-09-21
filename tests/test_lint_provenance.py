@@ -598,9 +598,48 @@ def test_required_edge_groups_are_real_edge_groups(vocab):
     """
     for name, profile in vocab.profiles.items():
         for spec in profile.get("required_edges") or []:
-            assert spec["group"] in vocab.edge_groups, (
-                f"{name}: {spec['group']} is not a known edge group"
-            )
+            for option in spec.get("any_of", [spec]):
+                assert option["group"] in vocab.edge_groups, (
+                    f"{name}: {option['group']} is not a known edge group"
+                )
+
+
+@pytest.mark.parametrize("inline", [False, True])
+@pytest.mark.parametrize("file_class,file_group", [("File", "files"), ("C2M2File", "c2m2_files")])
+def test_file_distribution_satisfies_access_requirement(inline, file_class, file_group,
+                                                       vocab, sv, validator, tmp_path):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    del doc["drs_objects"], doc["has_drs_object_edges"]
+    file = {"id": "urn:output", "name": "Published result", "filename": "result.tsv.gz"}
+    doc.setdefault(file_group, []).append(file)
+    result = doc["datasets"][0]
+    if inline:
+        result["has_file"] = [file["id"]]
+    else:
+        doc["has_file_edges"] = [{"subject": result["id"], "predicate": "dapper:hasFile",
+                                  "object": file["id"]}]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert not report.findings, report.findings
+    assert file["id"].startswith(f"dapper:{file_class}.")
+
+
+def test_file_distribution_must_target_a_file(vocab, sv, validator, tmp_path):
+    doc = yaml.safe_load((REVIEW_FIXTURES / "00-valid-control.yaml").read_text())
+    del doc["has_drs_object_edges"]
+    doc["has_file_edges"] = [{"subject": doc["datasets"][0]["id"],
+                              "predicate": "dapper:hasFile", "object": doc["drs_objects"][0]["id"]}]
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert "endpoints" in checks_firing(report, "error")
+    assert "required-edges" in checks_firing(report, "warning")
+
+
+def test_bottom_line_mapping_lints_without_fabricated_drs(vocab, sv, validator):
+    report = lp.lint(EXAMPLES / "example_bottom_line_af_aa.yaml", vocab, sv, validator)
+    assert not report.findings, report.findings
+    assert report.profile == "bottom-line-result"
+    assert report.counts["nodes"] == 21
+    assert report.counts["edges"] == 24
 
 
 def test_derived_edge_group_keys_match_what_the_examples_use(vocab):

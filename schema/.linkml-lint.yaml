@@ -26,5 +26,15 @@ rules:
       - INDIRECT_KNOWN_INTERMEDIATES
       - INDIRECT_UNKNOWN_INTERMEDIATES
       - UNKNOWN
+      # DIG ancestry folder codes round-trip without changing case.
+      - AA
+      - AF
+      - EA
+      - EU
+      - GME
+      - HS
+      - Mixed
+      - SA
+      - SSAF
   canonical_prefixes:
     level: warning

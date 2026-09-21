@@ -2,6 +2,7 @@
 
 ```
 uv run --with-requirements tests/requirements.txt pytest tests/ -q
+node --test tests/portal.test.cjs
 ```
 
 Nothing to install first. The code under test — `schema/converter/geneset_to_dapper.py`,
@@ -11,12 +12,23 @@ editable mode. `tests/requirements.txt` exists only so `uv` can assemble one env
 holding pytest *and* those scripts' dependencies at once. `tests/conftest.py` puts the two
 script directories on `sys.path`.
 
+The portal's JavaScript tests use Node's built-in test runner and the bundled
+Cytoscape library, with no npm install. They exercise reference links, safe value
+rendering, uploaded graph defaults, and tracing across nested graph groups.
+They also check that arrow views preserve input-to-output order, that stored
+predicate arrows point from subject to object, and that both views trace the
+same upstream provenance without including unrelated outputs.
+
 | File | Covers |
 |---|---|
 | `test_converter.py` | the dig.geneset → DAPPER crosswalk: node mapping, the sha256 join across the metadata sidecar, edge direction, overlay precedence, and an end-to-end `convert_one` |
 | `test_identity.py` | the minting algorithm: the GA4GH digest primitive, `digest_of` parsing, what constitutes identity, `assign_ids`/`verify`, the frozen vectors, and `DOC_GROUPS` coverage |
 | `test_examples.py` | every `schema/examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
 | `test_files.py` | generic intermediate files, stable IDs across relocation and DRS registration, converter provenance, and portal inheritance |
+| `test_ancestry.py` | ancestry validation and identity, qualified ontology mappings, example scope, and optional DIG folder consistency checks |
+| `test_traits.py` | catalog trait references, AF's stable KPN identifier, trait identity, and portal inheritance |
+| `test_model_uris.py` | documentation CURIEs, preserved semantic mappings, and namespace redirects to generated pages |
+| `test_portal.py` | portal links agree with model routes; enum mapping strength and embedded-data escaping |
 
 ## Fixtures
 

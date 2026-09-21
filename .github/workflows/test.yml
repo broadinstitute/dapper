@@ -40,6 +40,9 @@ jobs:
       - name: Fail if the committed portal is stale
         run: uv run portal/build.py --check
 
+      - name: Portal links and graph tracing
+        run: node --test tests/portal.test.cjs
+
       - name: Check identity invariants
         run: uv run schema/identity/lint_identity.py
 

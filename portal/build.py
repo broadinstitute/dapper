@@ -55,12 +55,10 @@ def _node_groups() -> dict[str, str]:
 
 NODE_GROUPS = _node_groups()
 
-# Edge-list key -> (LinkML class, flow direction).
+# Edge-list key -> (LinkML class, layout/trace direction).
 #
-# `flow` is the direction the STORY runs, which is not always the direction the
-# predicate points. `prov:used` points activity -> file (backwards through
-# time), but data flows file -> activity. "reverse" means draw the arrow from
-# object to subject so the graph reads raw data first, claim last.
+# `flow` orders inputs before outputs. It never changes the stored statement:
+# subject/predicate/object are retained separately from layout source/target.
 EDGE_GROUPS = {
     "used_edges": ("Used", "reverse"),
     "was_generated_by_edges": ("WasGeneratedBy", "reverse"),
@@ -73,6 +71,7 @@ EDGE_GROUPS = {
     "has_agentic_workspace_edges": ("HasAgenticWorkspace", "reverse"),
     # dataset -> its retrievable payload; predicate already points the way the story reads
     "has_drs_object_edges": ("HasDrsObject", "forward"),
+    "has_file_edges": ("HasFile", "forward"),
     "drs_representation_edges": ("DrsRepresentation", "forward"),
 }
 
@@ -80,10 +79,18 @@ EDGE_GROUPS = {
 # trace and the nanopub's internal structure; without them the graph-part nodes
 # float unconnected. "in" = the field's target flows into this node.
 INLINE_LINKS = {
+    "has_file": ("dapper:hasFile", "out"),
+    "was_generated_by": ("prov:wasGeneratedBy", "in"),
+    "was_derived_from": ("prov:wasDerivedFrom", "in"),
+    "proposition": ("dapper:proposition", "out"),
+    "has_score": ("dapper:has_score", "out"),
+    "component_claims": ("dapper:component_claims", "in"),
+    "subject_entity": ("dapper:subject_entity", "in"),
+    "object_entity": ("dapper:object_entity", "out"),
     "generated_by_activity": ("prov:wasGeneratedBy", "in"),
     "asserts": ("hycl:claims", "in"),
-    "has_agentic_workspace": ("dapper:hasAgenticWorkspace", "in"),
-    "provenance_of": ("np:hasProvenance", "out"),
+    "has_agentic_workspace": ("dapper:has_agentic_workspace", "in"),
+    "provenance_of": ("dapper:provenance_of", "out"),
     # CellState -> GeneProgram: the program is upstream of the state it
     # constitutes, same "in" direction as generated_by_activity.
     "has_program": ("dapper:hasProgram", "in"),
@@ -101,6 +108,10 @@ FAMILY = {
     "Dataset": "data",
     "Activity": "process",
     "Hypothesis": "claim",
+    "Claim": "claim",
+    "CompositeClaim": "claim",
+    "Proposition": "claim",
+    "ClaimScore": "data",
     "CausalStep": "claim",
     "Nanopublication": "publication",
     "NanopubAssertion": "part",
@@ -110,7 +121,7 @@ FAMILY = {
     "AgenticWorkspace": "workspace",
 }
 
-# Which nodes are transcribed from a real pipeline run vs. drawn to show shape.
+# Which nodes are explicitly marked illustrative for exploring concepts.
 # Read from the example's own `_illustrative:` list rather than inferred from the
 # id, because ids are now content digests (`dapper:Class.digest`) and carry no
 # provenance hint. Honesty about this distinction is the point of the examples,
@@ -118,6 +129,18 @@ FAMILY = {
 
 
 GRAPH_DOCS = [
+    {
+        "file": "example_pigean_claims.yaml",
+        "key": "pigean_claims",
+        "title": "PIGEAN: claims and composition",
+        "blurb": (
+            "Entirely illustrative: three individually assessed claims form one "
+            "annotation-based explanation. P1/P2/P3 are hypothetical probabilities, "
+            "not real PIGEAN/EAGGL outputs. Follow both the GWAS and gene-set "
+            "generation branches to their input files."
+        ),
+        "start": "dapper:CompositeClaim.vpV4R3QB_WlIpam8CtNV-5A0I6vseSmn",
+    },
     {
         "file": "example_file_graph.yaml",
         "key": "files",
@@ -182,15 +205,85 @@ GRAPH_DOCS = [
         ),
         "start": "dapper:Dataset.3_QblmXDJVn8WX9JZWuf7tVXDM8201F8",
     },
+    {
+        "file": "example_bottom_line_af_aa.yaml",
+        "key": "bottom_line_af_aa",
+        "title": "AF / AA bottom-line mapping",
+        "blurb": (
+            "A reconstruction of the supplied AF / AA provenance payload: "
+            "S3 prefix collections are Datasets, stages are Activities, and "
+            "the published .tsv.gz is a File distribution. QC and staging "
+            "outputs inferred by the source are labeled in their descriptions. "
+            "This is a schema-valid mapping, not verified execution provenance."
+        ),
+        "start": "dapper:Dataset.CBE87jpWVPa6Xtocr66ztw75eR0CUw53",
+    },
 ]
 
 def is_illustrative(node_id: str, illustrative: set[str]) -> bool:
     return node_id in illustrative
 
 
-def load_schema() -> dict:
-    """Pull class docs and the authoritative-slot set out of the LinkML schema."""
-    schema = yaml.safe_load(SCHEMA.read_text())
+def read_schema() -> dict:
+    """Read local LinkML modules without adding a LinkML runtime dependency."""
+    # Local modules contribute classes and slots to the root schema. Resolve
+    # them without pulling LinkML itself into this lightweight portal builder.
+    schema = {section: {} for section in ("classes", "slots", "enums", "types", "prefixes")}
+    visited = set()
+
+    def read_module(path: Path) -> None:
+        path = path.resolve()
+        if path in visited:
+            return
+        visited.add(path)
+        module = yaml.safe_load(path.read_text())
+        for imported in module.get("imports") or []:
+            if ":" not in imported:
+                read_module(path.parent / (imported if imported.endswith(".yaml") else imported + ".yaml"))
+        for section in schema:
+            schema[section].update(module.get(section) or {})
+
+    read_module(SCHEMA)
+    return schema
+
+
+def doc_url(section: str, name: str) -> str:
+    return f"model/reference/{section}/{name}/"
+
+
+def mappings(body: dict) -> list[dict]:
+    """Keep mapping strength: a close match is not an equivalence assertion."""
+    return [{"relation": relation, "target": target}
+            for relation in ("exact", "close", "broad", "narrow", "related")
+            for target in body.get(f"{relation}_mappings") or []]
+
+
+def vocabulary_links(schema: dict) -> dict:
+    """Known native terms and aliases only; computed record IDs have no page."""
+    links = {}
+    for section in ("classes", "slots", "enums", "types"):
+        definitions = dict(schema[section])
+        if section == "slots":
+            for body in schema["classes"].values():
+                definitions.update(body.get("attributes") or {})
+        for name, body in definitions.items():
+            url = doc_url(section, name)
+            links[name] = url
+            uri = (body or {}).get({"classes": "class_uri", "slots": "slot_uri",
+                                   "enums": "enum_uri", "types": "uri"}[section])
+            if uri and uri.startswith("dapper:"):
+                links[uri.removeprefix("dapper:")] = url
+    for name, body in schema["classes"].items():
+        predicate = (body.get("slot_usage") or {}).get("predicate") or {}
+        default = predicate.get("ifabsent", "")
+        if default.startswith("string(dapper:") and default.endswith(")"):
+            links.setdefault(default[len("string(dapper:"):-1], doc_url("classes", name))
+    return links
+
+
+def load_schema(schema: dict | None = None) -> dict:
+    """Embed model links, enum meanings and inherited authoritative fields."""
+    schema = read_schema() if schema is None else schema
     definitions = schema.get("classes") or {}
 
     def inherited_attributes(class_name: str) -> dict:
@@ -213,22 +306,46 @@ def load_schema() -> dict:
             slot = slot or {}
             ann = slot.get("annotations") or {}
             attrs[slot_name] = {
+                "url": doc_url("slots", slot_name),
+                "mappings": mappings(slot),
                 "description": (slot.get("description") or "").strip(),
                 # A mirror must never rewrite these (see the mirroring invariant in schema/dapper.yaml).
                 "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
+            enum_name = slot.get("range")
+            if enum_name in schema["enums"]:
+                enum = schema["enums"][enum_name] or {}
+                attrs[slot_name]["enum"] = {
+                    "name": enum_name, "url": doc_url("enums", enum_name),
+                    "values": {str(value): {**(body or {}), "mappings": mappings(body or {})}
+                               for value, body in (enum.get("permissible_values") or {}).items()},
+                }
         ann = body.get("annotations") or {}
         classes[name] = {
+            "url": doc_url("classes", name),
+            "uri": body.get("class_uri") or f"dapper:{name}",
             "description": (body.get("description") or "").strip(),
             "npGraph": ann.get("dapper:np_graph") or "",
-            "mappings": (body.get("exact_mappings") or []) + (body.get("close_mappings") or []),
+            "mappings": mappings(body),
             "attributes": attrs,
             "family": FAMILY.get(name, "part"),
         }
     return classes
 
 
-def build_graph(spec: dict) -> dict:
+def edge_predicates(schema: dict) -> dict:
+    """Resolve omitted predicates from the Edge class's schema default."""
+    result = {}
+    for cls, _ in EDGE_GROUPS.values():
+        predicate = (schema["classes"][cls].get("slot_usage") or {}).get("predicate") or {}
+        default = predicate.get("ifabsent", "")
+        if default.startswith("string(") and default.endswith(")"):
+            result[cls] = default[len("string("):-1]
+    return result
+
+
+def build_graph(spec: dict, defaults: dict | None = None) -> dict:
+    defaults = edge_predicates(read_schema()) if defaults is None else defaults
     raw = yaml.safe_load((EXAMPLES / spec["file"]).read_text())
     illustrative = set(raw.get("_illustrative") or [])
     nodes, edges = [], []
@@ -239,7 +356,7 @@ def build_graph(spec: dict) -> dict:
                 "cls": cls,
                 "family": FAMILY.get(cls, "part"),
                 "illustrative": is_illustrative(node["id"], illustrative),
-                "label": node.get("name") or node.get("filename") or node["id"].split(":")[-1],
+                "label": node.get("filename") or node.get("name") or node["id"].split(":")[-1],
                 "fields": {k: v for k, v in node.items() if k != "id"},
             })
     for key, (cls, flow) in EDGE_GROUPS.items():
@@ -248,7 +365,8 @@ def build_graph(spec: dict) -> dict:
             if flow == "reverse":
                 src, dst = dst, src
             edges.append({"source": src, "target": dst, "cls": cls,
-                          "predicate": edge.get("predicate", "")})
+                          "subject": edge["subject"], "object": edge["object"],
+                          "predicate": edge.get("predicate") or defaults.get(cls, "")})
 
     # A nanopublication IS its four named graphs. Nest them inside it so the
     # document boundary is visible: what is inside the box belongs to the
@@ -265,7 +383,7 @@ def build_graph(spec: dict) -> dict:
                 by_id[child]["parent"] = node["id"]
 
     ids = {n["id"] for n in nodes}
-    seen = {(e["source"], e["target"]) for e in edges}
+    seen = {(e["subject"], e["predicate"], e["object"]) for e in edges}
     for node in nodes:
         for field, (predicate, direction) in INLINE_LINKS.items():
             value = node["fields"].get(field)
@@ -276,10 +394,12 @@ def build_graph(spec: dict) -> dict:
                 if not isinstance(target, str) or target not in ids:
                     continue
                 src, dst = (target, node["id"]) if direction == "in" else (node["id"], target)
-                if src == dst or (src, dst) in seen:
+                statement = (node["id"], predicate, target)
+                if src == dst or statement in seen:
                     continue
-                seen.add((src, dst))
+                seen.add(statement)
                 edges.append({"source": src, "target": dst, "cls": "(inline)",
+                              "subject": node["id"], "object": target,
                               "predicate": predicate})
 
     # drop edges pointing at nodes this document does not define
@@ -307,7 +427,7 @@ def read_lib() -> str:
 def render(payload: dict, lib_js: str) -> str:
     return (TEMPLATE
             .replace("/*__VENDOR__*/", lib_js)
-            .replace("/*__DATA__*/", json.dumps(payload, indent=None)))
+            .replace("/*__DATA__*/", json.dumps(payload, indent=None).replace("<", r"\u003c")))
 
 
 def main() -> int:
@@ -316,13 +436,18 @@ def main() -> int:
                     help="exit non-zero if index.html is out of date")
     args = ap.parse_args()
 
-    payload = {"schema": load_schema(),
-               "graphs": [build_graph(g) for g in GRAPH_DOCS],
+    schema = read_schema()
+    defaults = edge_predicates(schema)
+    payload = {"schema": load_schema(schema),
+               "graphs": [build_graph(g, defaults) for g in GRAPH_DOCS],
                # Emitted so the in-browser uploader can build a graph from an
                # arbitrary DAPPER document using the same rules as this script,
                # rather than a second hand-maintained copy of them.
                "config": {"nodeGroups": NODE_GROUPS,
+                          "prefixes": schema["prefixes"],
+                          "vocabulary": vocabulary_links(schema),
                           "edgeGroups": {k: list(v) for k, v in EDGE_GROUPS.items()},
+                          "edgePredicates": defaults,
                           "inlineLinks": {k: list(v) for k, v in INLINE_LINKS.items()},
                           "family": FAMILY}}
     html = render(payload, read_lib())
@@ -370,6 +495,9 @@ TEMPLATE = r"""<!doctype html>
 
   --trace: #B4531F;
   --focus: #1F5C4D;
+  --link-model: #6A42A4;
+  --link-instance: #00645A;
+  --link-external: #245EA2;
   /* text drawn ON a filled family colour — flips with the theme so it stays legible */
   --on-fill: #FFFFFF;
 
@@ -383,6 +511,7 @@ TEMPLATE = r"""<!doctype html>
     --data: #8FA3C0; --process: #64B39C; --claim: #A79BDA; --publication: #D0AA55;
     --part: #8C958D; --workspace: #6FBACB; --trace: #E68A4E; --focus: #64B39C;
     --on-fill: #12161C;
+    --link-model: #C0A2F6; --link-instance: #69C9B6; --link-external: #8FBAF8;
   }
 }
 * { box-sizing: border-box; }
@@ -463,6 +592,13 @@ button.action + button.action { margin-top: 6px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 .insp-empty { color: var(--muted); font-size: 13px; }
+.insp-title { margin: 10px 0 8px; font-size: 19px; line-height: 1.3; font-weight: 620; overflow-wrap: anywhere; }
+.insp-kind { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.insp-kind .badge { margin: 0; }
+.inspector details { margin-top: 12px; font-size: 12px; }
+.inspector summary { cursor: pointer; color: var(--ink-soft); }
+.model-details { border-top: 1px solid var(--rule); padding-top: 12px; }
+.value-title { color: var(--ink-soft); font-size: 11.5px; }
 .insp-cls {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
@@ -477,7 +613,6 @@ button.action + button.action { margin-top: 6px; }
   border: 1px solid var(--rule-strong); color: var(--ink-soft);
 }
 .badge.warn { border-color: var(--trace); color: var(--trace); }
-.badge.solid { background: var(--focus); border-color: var(--focus); color: var(--on-fill); }
 
 .fields { margin: 18px 0 0; border-top: 1px solid var(--rule); }
 .field { border-bottom: 1px solid var(--rule); padding: 9px 0; }
@@ -489,10 +624,28 @@ button.action + button.action { margin-top: 6px; }
 .lock { color: var(--trace); font-size: 10px; }
 .ref {
   display: block; background: none; border: none; padding: 0; cursor: pointer;
-  font-family: var(--mono); font-size: 11.5px; color: var(--focus); text-align: left;
+  font-family: var(--mono); font-size: 11.5px; color: var(--link-external); text-align: left;
   text-decoration: underline; text-underline-offset: 2px; word-break: break-all;
 }
-.ref:hover { color: var(--trace); }
+.term-link { color: var(--link-external); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.ref:hover, .term-link:hover { text-decoration-thickness: 2px; }
+.link-model, .ref.link-model { color: var(--link-model); }
+.link-instance, .ref[data-goto] { color: var(--link-instance); }
+.link-external { color: var(--link-external); }
+.insp-cls.link-model { color: var(--link-model); background: none; border: 1px solid currentColor; }
+.link-legend { display: flex; flex-wrap: wrap; gap: 5px 12px; font-size: 11.5px; }
+.link-legend span::before { content: "●"; margin-right: 5px; font-size: 9px; }
+.ref.inline { display: inline; font: inherit; word-break: normal; overflow-wrap: anywhere; }
+.nested-fields { margin: 0; padding-left: 12px; border-left: 1px solid var(--rule); }
+.nested-fields dt { margin-top: 6px; }
+.connections { margin-top: 18px; font-size: 12px; }
+.connections summary { cursor: pointer; color: var(--ink-soft); }
+.connections li { margin: 8px 0; }
+.connections ul { padding-left: 16px; }
+.view-label { display: block; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+#edge-mode { width: 100%; margin: 5px 0 8px; padding: 6px; font: inherit; font-size: 12px;
+  border: 1px solid var(--rule-strong); border-radius: 3px; color: var(--ink); background: var(--paper); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 </style>
 </head>
 <body>
@@ -500,7 +653,7 @@ button.action + button.action { margin-top: 6px; }
   <header>
     <h1>DAPPER <span>· provenance inspector</span></h1>
     <p class="tagline" id="blurb"></p>
-    <a href="model/" class="model-docs">Browse the model →</a>
+    <a href="model/" class="model-docs link-model">Browse the model →</a>
   </header>
 
   <div class="body">
@@ -508,6 +661,7 @@ button.action + button.action { margin-top: 6px; }
       <div class="rail-group">
         <span class="eyebrow">Graphs</span>
         <div id="graph-picker"></div>
+        <a class="term-link note" id="graph-source" target="_blank" rel="noopener noreferrer">View graph YAML</a>
       </div>
 
       <div class="rail-group">
@@ -525,7 +679,7 @@ button.action + button.action { margin-top: 6px; }
 
       <div class="rail-group">
         <span class="eyebrow">Trace</span>
-        <button class="action" id="btn-trace">Follow the claim</button>
+        <button class="action" id="btn-trace">Trace upstream</button>
         <button class="action ghost" id="btn-clear">Clear</button>
         <p class="note" style="margin-top:10px" id="trace-note"></p>
       </div>
@@ -536,6 +690,21 @@ button.action + button.action { margin-top: 6px; }
           <button class="action ghost" id="btn-fit">Fit</button>
           <button class="action ghost" id="btn-reset">Reset</button>
         </div>
+        <label class="view-label" for="edge-mode">Arrows and labels</label>
+        <select id="edge-mode">
+          <option value="statements">Stored predicates</option>
+          <option value="flow">Forward flow</option>
+        </select>
+        <p class="note" id="edge-note">Inputs appear before outputs. Arrows follow the stored subject → predicate → object.</p>
+      </div>
+
+      <div class="rail-group">
+        <span class="eyebrow">Links</span>
+        <div class="link-legend">
+          <span class="link-model">Model definition</span>
+          <span class="link-instance">Graph instance</span>
+          <span class="link-external">Other resource</span>
+        </div>
       </div>
 
       <div class="rail-group">
@@ -544,11 +713,10 @@ button.action + button.action { margin-top: 6px; }
       </div>
 
       <div class="rail-group">
-        <span class="eyebrow">Provenance</span>
+        <span class="eyebrow">Illustrative content</span>
         <div id="legend-real"></div>
         <p class="note" style="margin-top:8px">
-          Solid nodes are transcribed from a real pipeline run. Dashed nodes show the
-          shape of a step that has not been run.
+          Dashed nodes mark illustrative examples used to explore concepts.
         </p>
       </div>
     </aside>
@@ -562,8 +730,8 @@ button.action + button.action { margin-top: 6px; }
 <script>
 const DATA = /*__DATA__*/;
 
-const FAMILY_LABEL = { data: "Data", process: "Analysis", claim: "Claim",
-                       publication: "Publication", part: "Nanopub graph",
+const FAMILY_LABEL = { data: "Data", process: "Activity", claim: "Claim",
+                       publication: "Publication", part: "Graph / supporting node",
                        workspace: "Agentic workspace" };
 const FAMILY_VAR = { data: "--data", process: "--process", claim: "--claim",
                      publication: "--publication", part: "--part",
@@ -583,10 +751,36 @@ const FAMILY_SWATCH = {
 };
 
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const state = { graphKey: DATA.graphs[0].key, selected: null, traced: null };
+const state = { graphKey: DATA.graphs[0].key, selected: null, traced: null, edgeMode: "statements" };
 let cy = null;
 
 cytoscape.use(cytoscapeElk);
+
+function edgeAppearance(edge, mode) {
+  const reversed = edge.source !== edge.subject;
+  const predicate = edge.predicate || edge.cls;
+  // prov:generated is a declared inverse. Other inverse labels below are
+  // reading aids, not invented vocabulary terms. The inspector always shows
+  // the original RDF statement and links its original predicate.
+  const inverseLabels = {
+    "prov:wasGeneratedBy": "prov:generated",
+    "prov:used": "was used by",
+    "prov:wasDerivedFrom": "source for",
+    "dapper:supportedByNanopub": "supports",
+    "dapper:hasAgenticWorkspace": "workspace for",
+    "dapper:has_agentic_workspace": "workspace for",
+    "dapper:component_claims": "component of",
+    "dapper:subject_entity": "subject of",
+    "dapper:hasProgram": "program of",
+    "hycl:claims": "asserted by",
+  };
+  const backwardArrow = mode === "statements" && reversed;
+  return {
+    label: mode === "flow" && reversed ? (inverseLabels[predicate] || `inverse of ${predicate}`) : predicate,
+    sourceArrow: backwardArrow ? "triangle" : "none",
+    targetArrow: backwardArrow ? "none" : "triangle",
+  };
+}
 
 function buildElements(graph) {
   const els = [];
@@ -597,9 +791,10 @@ function buildElements(graph) {
     els.push({ data: d });
   }
   for (const e of graph.edges) {
-    els.push({ data: { id: `${e.source}->${e.target}:${e.predicate}`,
+    els.push({ data: { id: JSON.stringify([e.subject, e.predicate, e.object]),
                        source: e.source, target: e.target,
-                       label: e.predicate || e.cls } });
+                       subject: e.subject, object: e.object, predicate: e.predicate,
+                       ...edgeAppearance(e, state.edgeMode) } });
   }
   return els;
 }
@@ -623,26 +818,22 @@ function styleSheet() {
     }},
     { selector: "edge", style: {
         width: 1.4, "line-color": css("--rule-strong"),
-        "target-arrow-color": css("--rule-strong"), "target-arrow-shape": "triangle",
+        "source-arrow-color": css("--rule-strong"), "source-arrow-shape": "data(sourceArrow)",
+        "target-arrow-color": css("--rule-strong"), "target-arrow-shape": "data(targetArrow)",
         "arrow-scale": .85, "curve-style": "bezier",
         label: "data(label)", "font-family": css("--mono"), "font-size": 8,
         color: css("--muted"), "font-size": 9,
         "text-background-color": css("--paper-sunk"), "text-background-opacity": 1,
         "text-background-padding": 3, "text-margin-y": -2,
     }},
-    // Selection must be obvious against ANY family fill, so it is a halo
-    // outside the node rather than a border-colour change that vanishes on a
-    // node whose fill is already that colour.
-    { selector: "node:selected", style: {
-        "outline-width": 4, "outline-color": css("--focus"),
-        "outline-opacity": 1, "outline-offset": 3,
-        "border-width": 2.5, "border-color": css("--focus"),
-    }},
     { selector: ".dim", style: { opacity: .16 } },
-    { selector: "node.lit", style: { "border-width": 3, "border-color": css("--trace") } },
     { selector: "edge.lit", style: {
-        "line-color": css("--trace"), "target-arrow-color": css("--trace"),
+        "line-color": css("--trace"), "source-arrow-color": css("--trace"), "target-arrow-color": css("--trace"),
         width: 2.4, color: css("--trace"),
+    }},
+    { selector: "edge.context", style: {
+        "line-color": css("--ink-soft"), "source-arrow-color": css("--ink-soft"),
+        "target-arrow-color": css("--ink-soft"), color: css("--ink-soft"),
     }},
   ];
   for (const [fam, v] of Object.entries(FAMILY_VAR)) {
@@ -669,6 +860,10 @@ function styleSheet() {
   sheet.push({ selector: 'node[family = "claim"]', style: { padding: 26 } });
   sheet.push({ selector: 'node[family = "publication"]', style: { padding: 22 } });
   sheet.push({ selector: 'node[family = "workspace"]', style: { padding: 34 } });
+  // Apply after family and compound styles so selection has one clean border.
+  sheet.push({ selector: "node:selected", style: {
+    "outline-width": 0, "border-width": 2.25, "border-color": css("--trace"),
+  }});
   return sheet;
 }
 
@@ -716,28 +911,47 @@ function applyTrace(startId) {
   // contained by — a nanopub's provenance graph is part of the nanopub, not a
   // separate hop. Repeat until the set stops growing.
   let keep = start.union(start.ancestors()).union(start.descendants());
-  for (let i = 0; i < 20; i++) {
+  while (true) {
     const next = keep.union(keep.predecessors()).union(keep.ancestors()).union(keep.descendants());
     if (next.length === keep.length) break;
     keep = next;
   }
-  cy.elements().addClass("dim");
+  // A selected result's distributions and access records are useful context,
+  // even though they are not upstream dependencies. Do not walk from these
+  // attachments into unrelated downstream analyses or sibling outputs.
+  const attachmentPredicates = new Set(["dapper:hasFile", "dapper:hasDrsObject", "dapper:drsRepresentation"]);
+  let attachments = start;
+  while (true) {
+    const edges = attachments.nodes().outgoers("edge").filter(e => attachmentPredicates.has(e.data("predicate")));
+    const next = attachments.union(edges).union(edges.targets());
+    if (next.length === attachments.length) break;
+    attachments = next;
+  }
+  const visibleNodes = keep.nodes().union(attachments.nodes());
+  attachments = attachments.union(cy.edges().filter(e =>
+    visibleNodes.contains(e.source()) && visibleNodes.contains(e.target())));
+  const context = attachments.difference(keep);
+  const visible = keep.union(attachments);
+  cy.elements().removeClass("lit context").addClass("dim");
   keep.removeClass("dim").addClass("lit");
+  context.removeClass("dim").addClass("context");
   state.traced = startId;
-  const roots = keep.nodes().filter(n => n.incomers("edge").length === 0);
+  const roots = keep.nodes().filter(n => !n.isParent() && n.incomers("edge").length === 0);
   document.getElementById("trace-note").textContent =
-    `${keep.nodes().length} nodes upstream, ${roots.length} raw source${roots.length === 1 ? "" : "s"}. ` +
+    `${keep.nodes().length} nodes in this trace from “${start.data("label") || start.id()}”, including grouped contents. ` +
+    `${roots.length} root node${roots.length === 1 ? "" : "s"} with no incoming connections. ` +
+    (context.nodes().length ? `${context.nodes().length} linked file/access record${context.nodes().length === 1 ? " stays" : "s stay"} visible. ` : "") +
     `Everything else is dimmed.`;
-  cy.animate({ fit: { eles: keep, padding: 40 } }, { duration: 320,
-    complete: () => { if (cy.zoom() > 1.1) { cy.zoom(1.1); cy.center(keep); } } });
+  cy.animate({ fit: { eles: visible, padding: 40 } }, { duration: 320,
+    complete: () => { if (cy.zoom() > 1.1) { cy.zoom(1.1); cy.center(visible); } } });
 }
 
 function clearTrace() {
   if (!cy) return;
-  cy.elements().removeClass("dim").removeClass("lit");
+  cy.elements().removeClass("dim lit context");
   state.traced = null;
   document.getElementById("trace-note").textContent =
-    "Lights the path from a claim back to every raw C2M2 file it rests on. Select any node first to trace from there.";
+    "Select any node to trace its upstream connections. Its grouped contents, files, and access records stay visible. With no selection, tracing starts at this graph’s default node.";
 }
 
 /* ---- inspector ---- */
@@ -748,16 +962,102 @@ function splitId(id) {
   return i < 0 ? ["", id] : [id.slice(0, i + 1), id.slice(i + 1)];
 }
 
-function valueHtml(v, ids) {
+function curieUrl(value) {
+  const match = /^([A-Za-z][A-Za-z0-9._-]*):([^\s<>"`]+)$/.exec(value);
+  if (!match) return null;
+  // Only known vocabulary terms have documentation. Never send a computed
+  // dapper:File.<digest> record ID to a class or namespace page.
+  if (match[1] === "dapper") return own(DATA.config.vocabulary, match[2]) || null;
+  const base = (DATA.config.prefixes || {})[match[1]];
+  if (typeof base !== "string" || !httpUrl(base)) return null;
+  return base + match[2] + (match[1] === "KPN.TRAIT" ? "/" : "");
+}
+
+function own(object, key) {
+  return object && Object.prototype.hasOwnProperty.call(object, key) ? object[key] : undefined;
+}
+
+function httpUrl(value) {
+  if (!/^https?:\/\//i.test(value) || /[\s<>"`]/.test(value)) return null;
+  try { return new URL(value).hostname ? value : null; } catch { return null; }
+}
+
+function referenceUrl(value) {
+  const direct = httpUrl(value);
+  if (direct) return direct;
+  // S3 objects open over HTTPS; a trailing slash denotes a prefix listing.
+  // https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+  const s3 = /^s3:\/\/([a-z0-9][a-z0-9.-]{1,61}[a-z0-9])(?:\/(.*))?$/.exec(value);
+  if (s3) {
+    const base = `https://s3.amazonaws.com/${s3[1]}/`, key = s3[2] || "";
+    return !key || key.endsWith("/")
+      ? base + "?list-type=2&prefix=" + encodeURIComponent(key)
+      : base + key.split("/").map(encodeURIComponent).join("/");
+  }
+  return curieUrl(value);
+}
+
+function linkKind(url) {
+  const prefixes = DATA.config.prefixes || {};
+  const model = url.startsWith("model/") ||
+    ["dapper_class", "dapper_slot", "dapper_enum", "dapper_type"].some(prefix =>
+      typeof prefixes[prefix] === "string" && url.startsWith(prefixes[prefix]));
+  return model ? "model" : "external";
+}
+
+function linkHtml(url, label, className = "term-link", title = "", kind = linkKind(url)) {
+  return `<a class="${className} link-${kind}" href="${esc(url)}" target="_blank" rel="noopener noreferrer"${title ? ` title="${esc(title)}"` : ""}>${esc(label)}</a>`;
+}
+
+function referenceHtml(value) {
+  const url = referenceUrl(value);
+  return url ? linkHtml(url, value) : esc(value);
+}
+
+function textHtml(value, ids = new Set()) {
+  // Link references inside descriptions without interpreting user data as HTML
+  // or Markdown. Strip sentence punctuation, preserving balanced DOI brackets.
+  const pattern = /\b(?:https?:\/\/|s3:\/\/|[A-Za-z][A-Za-z0-9._-]*:)[^\s<>"`]+/g;
+  let html = "", last = 0;
+  for (const match of value.matchAll(pattern)) {
+    let token = match[0].replace(/[.,;!?]+$/, "");
+    for (const [open, close] of [["(", ")"], ["[", "]"], ["{", "}"]]) {
+      while (token.endsWith(close) && token.split(close).length > token.split(open).length)
+        token = token.slice(0, -1);
+    }
+    html += esc(value.slice(last, match.index));
+    html += ids.has(token)
+      ? `<button class="ref inline" data-goto="${esc(token)}">${esc(token)}</button>`
+      : referenceHtml(token);
+    html += esc(match[0].slice(token.length));
+    last = match.index + match[0].length;
+  }
+  return html + esc(value.slice(last));
+}
+
+function mappingsHtml(items) {
+  return (items || []).map(m => `<span>${esc(m.relation)}: ${referenceHtml(m.target)}</span>`).join("; ");
+}
+
+function valueHtml(v, ids, meta = {}) {
   if (Array.isArray(v))
-    return `<span class="list-item">${v.map(x => valueHtml(x, ids)).join('</span><span class="list-item">')}</span>`;
-  if (v && typeof v === "object") return `<span class="mono">${esc(JSON.stringify(v))}</span>`;
+    return `<span class="list-item">${v.map(x => valueHtml(x, ids, meta)).join('</span><span class="list-item">')}</span>`;
+  if (v && typeof v === "object")
+    return `<dl class="nested-fields">${Object.entries(v).map(([k, value]) =>
+      `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids)}</dd>`).join("")}</dl>`;
   const s = String(v);
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
-  if (/^https?:\/\//.test(s))
-    return `<a class="ref" href="${esc(s)}" target="_blank" rel="noopener noreferrer">${esc(s)}</a>`;
-  const looksId = /^(dapper:|MONDO:|HGNC:|CL:|GO:|PMID:|orcid:|s3:)/.test(s);
-  return `<span class="${looksId ? "mono" : ""}">${esc(s)}</span>`;
+  const pv = own(meta.enum && meta.enum.values, s);
+  if (pv) {
+    const titleUrl = pv.meaning && referenceUrl(pv.meaning);
+    const title = pv.title && (titleUrl ? linkHtml(titleUrl, pv.title) : esc(pv.title));
+    return linkHtml(meta.enum.url, s, "ref mono", `Browse ${meta.enum.name}`) +
+      (title ? `<span class="value-title">${title}</span>` : "");
+  }
+  const resolved = referenceUrl(s);
+  if (resolved)
+    return linkHtml(resolved, s, "ref mono", s.startsWith("s3://") ? "Open S3 location over HTTPS" : "");
+  return textHtml(s, ids);
 }
 
 function fieldsHtml(fields, cls, ids) {
@@ -766,18 +1066,47 @@ function fieldsHtml(fields, cls, ids) {
     const meta = (cls.attributes || {})[k] || {};
     const lock = meta.authoritative
       ? `<span class="lock" title="Authoritative — a mirror must not rewrite this">&#9679; locked</span>` : "";
-    html += `<div class="field"><dt>${esc(k)} ${lock}</dt><dd>${valueHtml(v, ids)}</dd>`;
-    if (meta.description) html += `<div class="why">${esc(meta.description)}</div>`;
+    const name = meta.url ? linkHtml(meta.url, k, "term-link", `Browse the ${k} field`) : esc(k);
+    html += `<div class="field"><dt>${name} ${lock}</dt><dd>${valueHtml(v, ids, meta)}</dd>`;
     html += `</div>`;
   }
   return html + `</dl>`;
 }
 
+function modelDetailsHtml(cls, fields) {
+  let html = `<details class="model-details"><summary>Model details</summary>`;
+  if (cls.description) html += `<p class="insp-desc">${textHtml(cls.description)}</p>`;
+  if (cls.uri) html += `<p class="insp-desc"><strong>Class URI</strong> ${referenceHtml(cls.uri)}</p>`;
+  if (cls.mappings && cls.mappings.length)
+    html += `<p class="insp-desc"><strong>Mappings</strong> ${mappingsHtml(cls.mappings)}</p>`;
+  html += `<dl class="fields">`;
+  for (const [key, value] of Object.entries(fields)) {
+    const meta = own(cls.attributes, key);
+    if (!meta) continue;
+    html += `<div class="field"><dt>${meta.url ? linkHtml(meta.url, key) : esc(key)}</dt><dd>`;
+    if (meta.description) html += `<div class="why">${textHtml(meta.description)}</div>`;
+    if (meta.mappings && meta.mappings.length)
+      html += `<div class="why">Mappings: ${mappingsHtml(meta.mappings)}</div>`;
+    if (meta.enum) {
+      html += `<div class="why">Vocabulary: ${linkHtml(meta.enum.url, meta.enum.name)}</div>`;
+      for (const v of Array.isArray(value) ? value : [value]) {
+        const pv = own(meta.enum.values, String(v));
+        if (!pv) continue;
+        const notes = [pv.meaning && `Meaning: ${referenceHtml(pv.meaning)}`, mappingsHtml(pv.mappings)].filter(Boolean);
+        if (notes.length) html += `<div class="why">${esc(v)} — ${notes.join("; ")}</div>`;
+        if (pv.description) html += `<div class="why">${textHtml(pv.description)}</div>`;
+      }
+    }
+    html += `</dd></div>`;
+  }
+  return html + `</dl></details>`;
+}
+
 function renderInspector() {
   if (!state.selected) {
     inspector.innerHTML = `<span class="eyebrow">Inspector</span>
-      <p class="insp-empty" style="margin-top:10px">Select a node to see its fields, what its
-      class means, and which values a mirror is forbidden to rewrite.</p>`;
+      <p class="insp-empty" style="margin-top:10px">Select a node to inspect its fields and connections.
+      Follow links to model definitions, controlled vocabularies, and external resources.</p>`;
     return;
   }
   const graph = DATA.graphs.find(g => g.key === state.graphKey);
@@ -787,25 +1116,47 @@ function renderInspector() {
   const color = `var(${FAMILY_VAR[node.family] || "--part"})`;
   const [pfx, tail] = splitId(node.id);
 
-  const badges = [node.illustrative
-    ? `<span class="badge warn">Illustrative</span>`
-    : `<span class="badge solid">Real run</span>`];
+  const badges = node.illustrative ? [`<span class="badge warn">Illustrative</span>`] : [];
   if (cls.npGraph) badges.push(`<span class="badge">${cls.npGraph} graph</span>`);
 
+  const idUrl = referenceUrl(node.id);
+  const idHtml = idUrl ? linkHtml(idUrl, node.id, "term-link", "Open this record's identifier", "instance") : `<span class="pfx">${esc(pfx)}</span>${esc(tail)}`;
+  const classHtml = cls.url
+    ? linkHtml(cls.url, node.cls, "insp-cls term-link", `Browse the ${node.cls} class`)
+    : `<span class="insp-cls" style="background:${color}">${esc(node.cls)}</span>`;
+  const ids = new Set(graph.nodes.map(n => n.id));
+  const titleField = node.fields.name ? "name" : node.fields.filename ? "filename" : null;
+  const title = titleField ? node.fields[titleField] : node.label;
   let html = `<span class="eyebrow">Inspector</span>
-    <div style="margin-top:10px"><span class="insp-cls" style="background:${color}">${node.cls}</span></div>
-    <p class="insp-id"><span class="pfx">${esc(pfx)}</span>${esc(tail)}</p>
-    <div>${badges.join("")}</div>`;
-  if (cls.description) html += `<p class="insp-desc">${esc(cls.description)}</p>`;
-  if (cls.mappings && cls.mappings.length)
-    html += `<p class="insp-desc"><strong>Maps to</strong> ${cls.mappings.map(esc).join(", ")}</p>`;
-  html += fieldsHtml(node.fields, cls, new Set(graph.nodes.map(n => n.id)));
+    <h2 class="insp-title">${esc(title)}</h2>
+    <div class="insp-kind">${classHtml}${badges.join("")}</div>
+    <details><summary>Identifier</summary><p class="insp-id">${idHtml}</p></details>`;
+  if (node.fields.description)
+    html += `<details><summary>Description</summary><p class="insp-desc">${valueHtml(node.fields.description, ids)}</p></details>`;
+  // Name is already the heading; long narrative and model explanations are
+  // optional so that the record's actual values are easy to scan.
+  const fields = Object.fromEntries(Object.entries(node.fields)
+    .filter(([key]) => key !== titleField && key !== "description"));
+  html += fieldsHtml(fields, cls, ids);
+  const connections = graph.edges.filter(e => e.subject === node.id || e.object === node.id);
+  if (connections.length) {
+    html += `<details class="connections"><summary>Graph connections (${connections.length})</summary>
+      <p class="note">Stored statements: subject → predicate → object.</p><ul>`;
+    for (const e of connections) {
+      const incoming = e.object === node.id;
+      const peer = graph.nodes.find(n => n.id === (incoming ? e.subject : e.object));
+      const peerHtml = `<button class="ref inline" data-goto="${esc(peer.id)}" title="${esc(peer.id)}">${esc(peer.label)}</button>`;
+      html += `<li>${incoming ? peerHtml : "This node"} — ${referenceHtml(e.predicate || e.cls)} → ${incoming ? "this node" : peerHtml}</li>`;
+    }
+    html += `</ul></details>`;
+  }
+  html += modelDetailsHtml(cls, node.fields);
   inspector.innerHTML = html;
   wireRefs();
 }
 
 function wireRefs() {
-  inspector.querySelectorAll(".ref").forEach(b => {
+  inspector.querySelectorAll(".ref[data-goto]").forEach(b => {
     b.addEventListener("click", () => {
       const id = b.dataset.goto;
       state.selected = id;
@@ -847,13 +1198,25 @@ function renderRail() {
 
   document.getElementById("legend-real").innerHTML = `
     <div class="legend-row"><svg width="32" height="20" viewBox="0 0 32 20" aria-hidden="true">
-      <path d="${FAMILY_SWATCH.data}" fill="var(--data)"/></svg><span>Real run</span></div>
-    <div class="legend-row"><svg width="32" height="20" viewBox="0 0 32 20" aria-hidden="true">
       <path d="${FAMILY_SWATCH.data}" fill="none" stroke="var(--data)" stroke-width="1.5"
         stroke-dasharray="4 3"/></svg><span>Illustrative</span></div>`;
+  const graph = DATA.graphs.find(g => g.key === state.graphKey);
+  const source = document.getElementById("graph-source");
+  source.hidden = graph.key === "__upload__";
+  if (!source.hidden) source.href = "model/examples/" + encodeURIComponent(graph.source);
+  else source.removeAttribute("href");
 }
 
 /* ---- actions ---- */
+document.getElementById("edge-mode").addEventListener("change", e => {
+  state.edgeMode = e.target.value;
+  // Arrowheads and wording can change without moving nodes or changing the
+  // input-to-output topology used by ELK and upstream tracing.
+  cy.edges().forEach(edge => edge.data(edgeAppearance(edge.data(), state.edgeMode)));
+  document.getElementById("edge-note").textContent = state.edgeMode === "flow"
+    ? "Arrows follow input → output flow. Inverse labels read in that direction; Graph connections shows the stored statements."
+    : "Inputs appear before outputs. Arrows follow the stored subject → predicate → object.";
+});
 document.getElementById("btn-trace").addEventListener("click", () => {
   const graph = DATA.graphs.find(g => g.key === state.graphKey);
   const start = state.selected || graph.start;
@@ -894,7 +1257,7 @@ function graphFromDoc(raw, filename) {
       nodes.push({
         id: n.id, cls: cls, family: C.family[cls] || "part",
         illustrative: illustrative.has(n.id),
-        label: n.name || n.filename || String(n.id).split(/[:.]/).pop(),
+        label: n.filename || n.name || String(n.id).split(/[:.]/).pop(),
         fields: fields
       });
     }
@@ -906,7 +1269,8 @@ function graphFromDoc(raw, filename) {
     for (const e of raw[group] || []) {
       let src = e.subject, dst = e.object;
       if (flow === "reverse") { const t = src; src = dst; dst = t; }
-      edges.push({ source: src, target: dst, cls: cls, predicate: e.predicate || "" });
+      edges.push({ source: src, target: dst, cls: cls, subject: e.subject, object: e.object,
+        predicate: e.predicate || C.edgePredicates[cls] || "" });
     }
   }
 
@@ -922,7 +1286,7 @@ function graphFromDoc(raw, filename) {
     }
   }
 
-  const seen = new Set(edges.map(e => e.source + " " + e.target));
+  const seen = new Set(edges.map(e => JSON.stringify([e.subject, e.predicate, e.object])));
   for (const n of nodes) {
     for (const field in C.inlineLinks) {
       const predicate = C.inlineLinks[field][0], dir = C.inlineLinks[field][1];
@@ -932,20 +1296,24 @@ function graphFromDoc(raw, filename) {
         if (typeof t !== "string" || !ids.has(t)) continue;
         const src = dir === "in" ? t : n.id;
         const dst = dir === "in" ? n.id : t;
-        const key = src + " " + dst;
+        const key = JSON.stringify([n.id, predicate, t]);
         if (src === dst || seen.has(key)) continue;
         seen.add(key);
-        edges.push({ source: src, target: dst, cls: "(inline)", predicate: predicate });
+        edges.push({ source: src, target: dst, cls: "(inline)", subject: n.id, object: t, predicate: predicate });
       }
     }
   }
 
-  const startNode = nodes.find(n => n.fields.supported_by_nanopub) || nodes[0];
+  // Start at a terminal node regardless of domain; the user can select any
+  // other starting point. Compound contents are reached through their group.
+  const validEdges = edges.filter(e => ids.has(e.source) && ids.has(e.target));
+  const outgoing = new Set(validEdges.map(e => e.source));
+  const startNode = nodes.find(n => !n.parent && !outgoing.has(n.id)) || nodes[0];
   return {
     key: "__upload__", title: filename, blurb: "", source: filename,
     start: startNode ? startNode.id : null,
     nodes: nodes,
-    edges: edges.filter(e => ids.has(e.source) && ids.has(e.target))
+    edges: validEdges
   };
 }
 
@@ -995,7 +1363,7 @@ function loadDoc(text, filename) {
   if (!g.nodes.length) {
     note.className = "note bad";
     note.textContent = "No DAPPER nodes in " + filename +
-      ". Expected keys like c2m2_files, activities, gene_sets — the shape mint.py writes.";
+      ". Expected node lists such as datasets, files, or activities.";
     return;
   }
   const report = inspectDoc(g);
