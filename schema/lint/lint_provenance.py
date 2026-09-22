@@ -582,19 +582,28 @@ def check_required_edges(doc: Document, profile: dict, terminals: list[str],
     """
     links = doc.relationships(vocab)
     for spec in profile.get("required_edges") or []:
-        group = spec["group"]
-        predicate = vocab.predicate_uri(vocab.edge_predicates.get(vocab.edge_groups[group]))
-        want_class = spec.get("object_class")
+        choices = []
+        labels = []
+        for option in spec.get("any_of", [spec]):
+            group = option["group"]
+            predicate = vocab.predicate_uri(vocab.edge_predicates.get(vocab.edge_groups[group]))
+            want_classes = option.get("object_class")
+            if isinstance(want_classes, str):
+                want_classes = [want_classes]
+            choices.append((predicate, want_classes))
+            target = f" to {'/'.join(want_classes)}" if want_classes else ""
+            labels.append(f"`{group}`{target}")
         minimum = spec.get("min", 1)
         severity = spec.get("severity", "error")
         for terminal in terminals:
             matching = {link.object for link in links
-                        if link.subject == terminal and link.predicate == predicate
-                        and (want_class is None or doc.class_of(link.object) == want_class)}
+                        if link.subject == terminal
+                        and any(link.predicate == predicate
+                                and (want_classes is None or doc.class_of(link.object) in want_classes)
+                                for predicate, want_classes in choices)}
             if len(matching) < minimum:
-                target = f" to a {want_class}" if want_class else ""
                 rep.add(severity, "required-edges", terminal,
-                        f"has {len(matching)} `{group}` relationship(s){target} "
+                        f"has {len(matching)} relationship(s) via {' or '.join(labels)} "
                         f"(reified or inline), expected "
                         f"at least {minimum}",
                         spec.get("why", ""))

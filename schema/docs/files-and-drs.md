@@ -20,7 +20,15 @@ stored under `drs_representation_edges`. A bundle that contains a file is not a
 representation of that single file. DAPPER's compact DrsObject profile does not
 yet model bundle contents or the full DRS API response.
 
-`Dataset.has_drs_object` / `HasDrsObject` continues to describe a dataset's
+`Dataset.has_file` / `HasFile` links a logical dataset to ordinary `File` or
+`C2M2File` distributions. No DRS service is required. The inline `has_file`
+list and `has_file_edges` graph group express the same relationship.
+`Dataset.location` can record a current storage prefix; like `File.location`,
+it is excluded from identity. Neither a mutable prefix nor a metadata digest
+fixes the bytes in a dataset version: capture files, checksums, and an actual
+manifest when available. `has_file` membership is hashable.
+
+`Dataset.has_drs_object` / `HasDrsObject` continues to describe DRS-backed
 distributions. It has different semantics from a file's optional DRS access
 relationship. Registering a file with DRS does not mean an activity generated
 new file bytes; it adds an access relationship to the existing provenance node.

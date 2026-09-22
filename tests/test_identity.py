@@ -258,7 +258,7 @@ def test_verify_catches_content_edited_after_minting(sv):
 
     This is the drift the whole scheme exists to prevent: an identifier that no
     longer describes its content is a name that lies. It is also the exact bug
-    found in example_bottom_line_result.yaml and example_graph.yaml.
+    found in example_graph.yaml.
     """
     doc = {"datasets": [{"id": "tmp-1", "name": "one"}]}
     assign_ids(doc, sv)

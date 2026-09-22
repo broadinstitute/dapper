@@ -56,8 +56,7 @@ def test_every_example_id_matches_its_content(path, sv):
     The most valuable test in the file. Editing an example without re-minting
     leaves an id that describes something else — and because the document still
     parses, still validates and still renders, nothing else notices. Caught the
-    three stale ids in example_bottom_line_result.yaml and the
-    BioComputeObject id in example_graph.yaml that 5ff61ad left behind.
+    stale BioComputeObject id in example_graph.yaml that 5ff61ad left behind.
     """
     doc = yaml.safe_load(path.read_text())
     problems = verify(doc, sv)

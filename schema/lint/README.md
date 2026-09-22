@@ -34,7 +34,7 @@ many gene sets sharing a single provenance subgraph.
    list of every class and every field. If a field is not in there, it does not
    exist.
 2. **The canonical example** for your modality — copy its shape:
-   - `bottom-line-result` → [`example_bottom_line_result.yaml`](../examples/example_bottom_line_result.yaml)
+   - `bottom-line-result` → [`example_bottom_line_af_aa.yaml`](../examples/example_bottom_line_af_aa.yaml)
    - `geneset` → [`example_geneset_graph.yaml`](../examples/example_geneset_graph.yaml)
 3. **The linter** — this directory. Run it before you hand anything back.
 
@@ -54,6 +54,18 @@ uv run schema/lint/lint_provenance.py --self-test    # lint the canonical exampl
 Exit status is 0 only when there are no errors. Warnings do not fail the run
 unless you pass `--strict`. Errors mean the document is wrong; warnings mean it
 is probably incomplete.
+
+For DIG bottom-line exports, run the optional source-specific check:
+
+```bash
+uv run schema/lint/lint_dig_ancestry.py path/to/your/result.yaml
+```
+
+It runs DAPPER validation first, then compares Dataset ancestry with its own
+or linked File's production/staging export folder. It reports unknown folder
+codes and conflicting declarations without changing metadata or querying S3.
+See the [ancestry guide](../docs/ancestry.md) for its exact scope. These storage
+conventions are not part of generic DAPPER validation.
 
 ## Document shape
 
@@ -84,8 +96,9 @@ was_generated_by_edges:
 Common node keys: `datasets`, `gene_sets`, `activities`, `files`, `c2m2_files`,
 `drs_objects`, `persons`, `organizations`, `awards`, `publications`.
 Common edge keys: `was_generated_by_edges` (result → the activity that made it),
-`used_edges` (activity → an input it consumed), `has_drs_object_edges`
-(dataset → retrievable bytes).
+`used_edges` (activity → an input it consumed), `has_file_edges`
+(dataset → an ordinary file), and `has_drs_object_edges`
+(dataset → a registered DRS representation).
 
 Every node or edge group must be a list of mappings. Each node must have a
 nonempty string `id`; records with missing IDs are reported and still checked
@@ -130,9 +143,11 @@ Generic, applied to every modality:
 Per modality, from [`profiles.yaml`](profiles.yaml): how many end results the
 file may contain, and which provenance edges each must carry. A
 `bottom-line-result` must have a `was_generated_by` relationship to an `Activity`
-(error) and should have a `has_drs_object` edge to a `DrsObject` (warning —
-without it the result has no checksum, so the claim cannot be verified against
-the data).
+(error) and should identify a distribution through `has_file` to a `File` or
+`C2M2File`, or `has_drs_object` to a `DrsObject` (warning if neither exists).
+The link alone does not establish that bytes are accessible or checksummed.
+The profile's `any_of` alternatives share a minimum count of distinct targets;
+`object_class` accepts one class name or a list of accepted classes.
 
 Inline and reified forms satisfy the same requirements. For example,
 `Dataset.was_generated_by: <activity-id>` is equivalent to a `WasGeneratedBy`

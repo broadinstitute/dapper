@@ -51,6 +51,9 @@ edge_endpoints:
   HasDrsObject:
     subject: [Dataset]
     object: [DrsObject]
+  HasFile:
+    subject: [Dataset]
+    object: [File, C2M2File]
   DrsRepresentation:
     subject: [File, C2M2File]
     object: [DrsObject]
@@ -110,9 +113,10 @@ profiles:
       A final variant-level summary-statistics result from a genetic
       association meta-analysis. There is no dedicated bottom-line class — the
       result is a Dataset, distinguished by its name/description — and
-      multi-file Spark output is represented as one manifest-backed DrsObject
-      rather than as variant-level nodes.
-    canonical_example: schema/examples/example_bottom_line_result.yaml
+      its bytes may be exposed through ordinary Files or registered DrsObjects.
+      Multi-file Spark outputs are datasets whose file membership should be
+      captured by an actual manifest, rather than by variant-level nodes.
+    canonical_example: schema/examples/example_bottom_line_af_aa.yaml
     terminal:
       class: Dataset
       # Exactly one final Dataset. Other Datasets may appear as inputs or
@@ -127,13 +131,17 @@ profiles:
         why: >-
           A bottom-line result with no generating Activity carries no
           provenance at all — it is the one edge the document exists for.
-      - group: has_drs_object_edges
-        object_class: DrsObject
+      - any_of:
+          - group: has_file_edges
+            object_class: [File, C2M2File]
+          - group: has_drs_object_edges
+            object_class: DrsObject
         min: 1
         severity: warning
         why: >-
-          Without a DrsObject the result has no retrievable bytes and no
-          checksum, so the claim cannot be verified against the data.
+          The result should identify its concrete files or a registered DRS
+          representation. A location, checksum, and immutable version must
+          still be supplied when known; the relationship alone proves none of them.
     activities_require_inputs: warning
 
   geneset:

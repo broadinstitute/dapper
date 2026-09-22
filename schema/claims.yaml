@@ -1,0 +1,295 @@
+id: https://broadinstitute.github.io/dapper/model/schema/claims.yaml
+name: dapper_claims
+title: DAPPER scientific claims
+description: >-
+  Propositions, attributed assessments, and explicit compositions of assessments.
+  Imported by dapper.yaml, which supplies HashableNode, ProvenancedResource,
+  DismechLinked, and the literal/relationship and identity slot mixins.
+license: https://creativecommons.org/licenses/by/4.0/
+default_prefix: dapper
+default_range: string
+prefixes:
+  dapper: https://broadinstitute.github.io/dapper/ns#
+  dapper_class: https://broadinstitute.github.io/dapper/model/reference/classes/
+  dapper_slot: https://broadinstitute.github.io/dapper/model/reference/slots/
+  dapper_enum: https://broadinstitute.github.io/dapper/model/reference/enums/
+  dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
+  linkml: https://w3id.org/linkml/
+imports:
+  - linkml:types
+
+# SEPIO's draft source still declares an example.org default namespace.
+# Use documentation links and explicit conceptual alignment rather than assert
+# OWL equivalence to a provisional or invented SEPIO class URI.
+enums:
+  ClaimDirectionEnum:
+    description: Direction of an assessment relative to its target proposition.
+    permissible_values:
+      SUPPORTS:
+        description: The assessment favors the proposition.
+      DISPUTES:
+        description: The assessment argues against the proposition.
+      NEUTRAL:
+        description: The assessment does not favor either direction; not missing evidence.
+  ClaimScoreKindEnum:
+    description: Mathematical meaning of a reported value, independent of its magnitude.
+    permissible_values:
+      PROBABILITY:
+        description: Probability of the event specified in interpretation, in [0,1].
+      POSTERIOR_PROBABILITY:
+        description: Probability conditional on the specified data and model, in [0,1].
+      EFFECT_ESTIMATE:
+        description: Estimated effect on the scale named by metric; may be negative.
+      LOADING:
+        description: Factor loading or membership weight; not necessarily a probability.
+      SCORE:
+        description: Method-specific score whose scale is defined by interpretation.
+  ClaimCompositionEnum:
+    description: How component claims contribute to the composite statement.
+    permissible_values:
+      CONJUNCTION:
+        description: All component propositions are jointly put forward; no joint score is implied.
+      EXPLANATION:
+        description: Components form an explanatory account described by composition_description.
+
+classes:
+  Proposition:
+    is_a: HashableNode
+    description: >-
+      The content being asserted or evaluated, independent of a particular
+      assessment, score, or execution. A text statement is required; a structured
+      subject-predicate-object form is optional. DAPPER identifiers address the
+      representation, not a guarantee of semantic equivalence between paraphrases.
+    see_also:
+      - https://sepio-framework.github.io/sepio-linkml/Proposition/
+    annotations:
+      dapper:source_standard: SEPIO LinkML Proposition (conceptual alignment)
+    attributes:
+      statement:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        description: >-
+          Self-contained proposition text, including its scientific scope but
+          excluding a particular assessor's confidence and execution metadata.
+      subject_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Subject of the optional structured proposition.
+      relation:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Predicate of the optional structured proposition; does not itself assert truth.
+      object_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Object of the optional structured proposition.
+      scope:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Conditions that constrain the proposition's meaning (trait, population,
+          tissue, or fitted-factor context). Input provenance alone does not imply
+          that the conclusion is restricted to the input's biological context.
+      negated:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+        description: >-
+          Whether the structured proposition is negated. Distinct from an
+          assessment that disputes the unnegated proposition.
+    rules:
+      - preconditions:
+          slot_conditions:
+            subject_entity:
+              required: true
+        postconditions:
+          slot_conditions:
+            relation:
+              required: true
+            object_entity:
+              required: true
+      - preconditions:
+          slot_conditions:
+            relation:
+              required: true
+        postconditions:
+          slot_conditions:
+            subject_entity:
+              required: true
+            object_entity:
+              required: true
+      - preconditions:
+          slot_conditions:
+            object_entity:
+              required: true
+        postconditions:
+          slot_conditions:
+            subject_entity:
+              required: true
+            relation:
+              required: true
+
+  ClaimScore:
+    is_a: HashableNode
+    description: >-
+      One explicitly typed quantitative assessment. A Claim links the score to
+      its proposition and provenance. Values are not interchangeable across
+      metrics, and a factor loading must not be relabeled as a probability.
+    attributes:
+      score_kind:
+        is_a: literal
+        mixins: [hashable]
+        range: ClaimScoreKindEnum
+        required: true
+        description: Mathematical kind of the value.
+      value:
+        is_a: literal
+        mixins: [hashable]
+        range: float
+        required: true
+        description: Reported numeric value on the metric's scale.
+      metric:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        description: Exact source metric or output-column name; never inferred from the value.
+      interpretation:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        description: >-
+          What is estimated, its scale, and (for probabilities) the event and
+          conditioning data/model. A posterior for a latent variable is not
+          automatically a probability that a biological mechanism is true.
+    rules:
+      - preconditions:
+          slot_conditions:
+            score_kind:
+              equals_string: PROBABILITY
+        postconditions:
+          slot_conditions:
+            value:
+              minimum_value: 0
+              maximum_value: 1
+      - preconditions:
+          slot_conditions:
+            score_kind:
+              equals_string: POSTERIOR_PROBABILITY
+        postconditions:
+          slot_conditions:
+            value:
+              minimum_value: 0
+              maximum_value: 1
+
+  Claim:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+      - DismechLinked
+    description: >-
+      An attributed assertion or assessment of a Proposition, produced by a
+      particular activity. This is DAPPER's counterpart to SEPIO Statement.
+      It may be computational, curated, or reported by an author; being a Claim
+      does not imply established truth, causality, or a mechanistic hypothesis.
+    see_also:
+      - https://sepio-framework.github.io/sepio-linkml/Statement/
+    annotations:
+      dapper:source_standard: SEPIO LinkML Statement (conceptual alignment)
+    slot_usage:
+      was_generated_by:
+        required: true
+      was_attributed_to:
+        required: true
+    attributes:
+      proposition:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        required: true
+        description: Identifier of the proposition being asserted or assessed.
+      statement:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Human-readable rendering of this assessment, optionally including its
+          scores. The proposition text separately captures the evaluated content.
+      direction:
+        is_a: literal
+        mixins: [hashable]
+        range: ClaimDirectionEnum
+        description: >-
+          Assessment direction, when reported. Omit for a simple assertion or
+          when the method supplies no directional judgment; do not infer it
+          by thresholding a score without a specified interpretation rule.
+      has_score:
+        is_a: relationship
+        mixins: [hashable]
+        range: ClaimScore
+        inlined: false
+        multivalued: true
+        description: Scores assessing this claim's proposition, not its component propositions.
+      source_locator:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Record key, row selector, or passage locating this assessment in the
+          output artifacts referenced by was_derived_from. Name the artifact
+          when more than one is referenced.
+      has_evidence:
+        is_a: relationship
+        mixins: [hashable]
+        range: EvidenceItem
+        inlined: false
+        multivalued: true
+        description: >-
+          Existing DAPPER/DISMECH-style evidence interpretations bearing on this
+          claim. Computational input lineage belongs in PROV links; a used file
+          is not automatically a separate supporting evidence line.
+      asserted_in:
+        is_a: relationship
+        mixins: [unhashable]
+        range: uriorcurie
+        multivalued: true
+        description: Publication back-references; excluded from claim identity to avoid cycles.
+
+  CompositeClaim:
+    is_a: Claim
+    description: >-
+      A Claim that explicitly combines two or more component Claims (which may
+      themselves be CompositeClaims). Its proposition states the combined
+      content; its composition describes how the components contribute. A
+      DAPPER extension, not a SEPIO core class or a synonym for a causal chain.
+      Components must be distinct and form an acyclic reference graph.
+    attributes:
+      component_claims:
+        is_a: relationship
+        mixins: [hashable]
+        range: Claim
+        inlined: false
+        multivalued: true
+        required: true
+        minimum_cardinality: 2
+        description: >-
+          Identifiers of the component assessments. List order is presentation
+          order and is identity-bearing under DAPPER-ID-1; it does not encode
+          causation or logical implication.
+      composition:
+        is_a: literal
+        mixins: [hashable]
+        range: ClaimCompositionEnum
+        required: true
+        description: Whether the components are conjoined or assembled into an explanation.
+      composition_description:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        description: >-
+          Explicit account of how the component claims fit together, including
+          the meaning of connections such as 'via'. Component scores are not
+          multiplied or promoted to a composite score. Any has_score on this
+          object must assess its whole proposition with its own justification.

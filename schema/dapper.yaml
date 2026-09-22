@@ -1,4 +1,4 @@
-id: https://github.com/broadinstitute/dapper
+id: https://broadinstitute.github.io/dapper/model/schema/dapper.yaml
 name: dapper
 title: DAPPER - NIH Dataset Attribution and Provenance Profile
 description: >-
@@ -11,7 +11,12 @@ description: >-
   PROV-O + schema.org) plus GA4GH DRS object identity, DUO data-use terms,
   RO-Crate packaging, and BioCompute/IEEE-2791 executable workflow provenance.
 
-  On top of that core, the profile adds six further blocks:
+  On top of that core, the profile adds the following blocks:
+
+    CLAIMS. `Claim` assesses a reusable Proposition with typed scores and
+      execution provenance. `CompositeClaim` combines component assessments
+      with explicit composition semantics. Defined in claims.yaml and
+      conceptually aligned with SEPIO's Proposition and Statement model.
 
     DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
       DISMECH disease-pathophysiology schema
@@ -34,7 +39,7 @@ description: >-
       than instead of it. A prompt is NOT a deterministic replay mechanism,
       so the two are deliberately not interchangeable.
 
-    HYPOTHESIS. A FAIR-digital-object hypothesis — the REVEAL output — as
+    HYPOTHESIS. A FAIR-digital-object mechanistic hypothesis expressed as
       a gene -> mechanism -> disease causal chain. Structurally compatible
       with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
       grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
@@ -81,8 +86,8 @@ default_prefix: dapper
 default_range: string
 
 # PREFIX POLICY
-#   A CURIE is asserted here ONLY if it resolves to a defined term in a real
-#   RDF/OWL vocabulary. Several standards in this profile (DataCite kernel-4,
+#   A semantic mapping is asserted here ONLY if it resolves to a defined term
+#   in a real RDF/OWL vocabulary. Several standards in this profile (DataCite kernel-4,
 #   GA4GH DRS, RO-Crate, IEEE-2791/BioCompute) are XML- or JSON-Schema specs
 #   with NO RDF vocabulary — inventing `drs:DrsObject`-style IRIs for them
 #   would produce mappings that never dereference. Those standards are instead
@@ -98,16 +103,17 @@ default_range: string
 #   the upstream DISMECH schema's own declared prefix, copied verbatim from
 #   its `prefixes:` block so cross-walk CURIEs resolve.
 prefixes:
-  # This schema's own namespace (default_prefix) for classes/slots/enums with
-  # no external `meaning:`, plus the bookkeeping annotations below
-  # (mirror_mutable, source_standard, ...). Served from this repo's existing
-  # GitHub Pages deploy (see .github/workflows/pages.yml), not a placeholder
-  # domain nobody here controls. Shared with the `dapper:{ClassName}.{digest}`
-  # minted-identifier scheme (schema/identity/dapper_identity.py) — the two
-  # never collide today, but a self-defined term's local name must never
-  # contain a literal `.`, or digest_of() will mistake it for an id and
-  # truncate it.
+  # Stable vocabulary and record-identifier namespace. /ns/ resolves known
+  # vocabulary fragments (e.g. dapper:Edge) to their model documentation.
+  # Record IDs remain dapper:{ClassName}.{digest}; they are not schema terms.
   dapper: https://broadinstitute.github.io/dapper/ns#
+  # Documentation CURIEs identify definitions in this model, independently
+  # of their semantic class_uri/slot_uri/enum_uri and external mappings.
+  # GitHub Pages redirects the expanded URLs to their trailing-slash pages.
+  dapper_class: https://broadinstitute.github.io/dapper/model/reference/classes/
+  dapper_slot: https://broadinstitute.github.io/dapper/model/reference/slots/
+  dapper_enum: https://broadinstitute.github.io/dapper/model/reference/enums/
+  dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
   linkml: https://w3id.org/linkml/
   schema: http://schema.org/
   prov: http://www.w3.org/ns/prov#
@@ -130,6 +136,8 @@ prefixes:
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
   CL: http://purl.obolibrary.org/obo/CL_
+  HANCESTRO: http://purl.obolibrary.org/obo/HANCESTRO_
+  KPN.TRAIT: https://broadinstitute.github.io/kpn-data-models/kpn.trait/
   HGNC: http://identifiers.org/hgnc/
   PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —
@@ -154,11 +162,57 @@ prefixes:
 
 imports:
   - linkml:types
+  - claims
 
 # ===========================================================================
 # ENUMS
 # ===========================================================================
 enums:
+  AncestryEnum:
+    description: >-
+      Source-reported ancestry grouping of a genetic dataset or analysis.
+      Initial codes follow DIG. Mixed denotes a combined analysis grouping,
+      not individual genetic admixture. Omit ancestry when unknown.
+    see_also:
+      - https://ebispot.github.io/hancestro/
+      - https://github.com/broadinstitute/dig-dug-portal/blob/859ebdf777d498dab583bb5d49b952ccf167e946/src/utils/formatters.js#L27-L48
+    annotations:
+      dapper:ontology_version: HANCESTRO releases/2025-10-14
+    permissible_values:
+      AA:
+        title: African American / Afro-Caribbean
+        meaning: HANCESTRO:0016
+      AF:
+        title: African, unspecified
+        meaning: HANCESTRO:0010
+      EA:
+        title: East Asian
+        meaning: HANCESTRO:0009
+      EU:
+        title: European
+        meaning: HANCESTRO:0005
+      GME:
+        title: Middle Eastern / North African / Persian
+        meaning: HANCESTRO:0015
+      HS:
+        title: Hispanic / Latin American, as reported
+        description: >-
+          Source-reported grouping; participant classification method is
+          unspecified. Do not infer genetic admixture from this label alone.
+        close_mappings:
+          - HANCESTRO:0014
+      Mixed:
+        title: Multiple ancestry groups
+        description: >-
+          Analysis or data collection combining ancestry groups; component
+          groups may be unspecified. Does not assert individual admixture.
+      SA:
+        title: South Asian
+        meaning: HANCESTRO:0006
+      SSAF:
+        title: Sub-Saharan African
+        meaning: HANCESTRO:0011
+
   ResourceTypeEnum:
     description: DataCite-style resource type (resourceTypeGeneral) for the returned entity.
     permissible_values:
@@ -462,6 +516,35 @@ slots:
     description: >-
       Abstract base for scalar (data) attributes. Concrete scalar slots
       declare `is_a: literal`.
+  ancestry:
+    is_a: literal
+    mixins: [hashable]
+    range: AncestryEnum
+    multivalued: false
+    required: false
+    slot_uri: dapper:ancestry
+    description: >-
+      Source-reported population grouping represented by a Dataset or
+      targeted by an Activity. Omit when unknown or not applicable. This
+      records analysis scope, not individual ancestry proportions or the
+      participant classification method.
+  trait:
+    is_a: relationship
+    mixins: [hashable]
+    range: uriorcurie
+    multivalued: false
+    required: false
+    slot_uri: dapper:trait
+    broad_mappings:
+      - schema:about
+    id_prefixes:
+      - KPN.TRAIT
+    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
+    description: >-
+      Identifier of the trait measured by a Dataset or targeted by an Activity.
+      Prefer a stable catalog CURIE, such as KPN.TRAIT:0000096 for atrial
+      fibrillation, over a source abbreviation such as AF. External trait
+      definitions remain in their catalog; no local trait node is required.
   relationship:
     slot_uri: rdf:type
     range: uriorcurie
@@ -500,6 +583,18 @@ slots:
 # CLASSES
 # ===========================================================================
 classes:
+
+  AncestryContext:
+    mixin: true
+    description: Optional ancestry scope for genetic data and analyses.
+    slots:
+      - ancestry
+
+  TraitContext:
+    mixin: true
+    description: Optional trait scope for datasets and analyses.
+    slots:
+      - trait
 
   # ---- Required KG skeleton base classes ---------------------------------
   Node:
@@ -736,6 +831,8 @@ classes:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
+      - AncestryContext
+      - TraitContext
       # Lets a Dataset point at the DISMECH entry describing its science.
       - DismechLinked
     class_uri: schema:Dataset
@@ -823,6 +920,28 @@ classes:
       # attribution/funding/provenance/license/access/mirror slots come from
       # the ProvenancedResource mixin. Dataset-specific links follow.
       # --- additional links ---
+      location:
+        is_a: literal
+        mixins: [unhashable]
+        description: >-
+          Current retrieval URI or storage prefix for this dataset, such as
+          an S3 prefix containing partitioned output. This mutable location
+          does not identify an immutable version or prove file membership;
+          capture concrete files or a manifest and their checksums separately.
+      has_file:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        slot_uri: dapper:hasFile
+        close_mappings:
+          - dcat:distribution
+          - schema:distribution
+        description: >-
+          File or C2M2File records carrying a distribution of this dataset.
+          Links the logical dataset to concrete files without requiring DRS
+          registration. An S3 prefix is a dataset location, not a single File;
+          enumerate its files or link an actual manifest when available.
       has_data_use_term:
         is_a: relationship
         mixins: [hashable]
@@ -1694,6 +1813,8 @@ classes:
     is_a: HashableNode
     mixins:
       - PortalLinked
+      - AncestryContext
+      - TraitContext
     class_uri: prov:Activity
     close_mappings:
       - schema:Action
@@ -2508,6 +2629,13 @@ classes:
       predicate:
         ifabsent: string(dapper:hasDataUseTerm)
 
+  HasFile:
+    is_a: Edge
+    description: Dataset -> File (including C2M2File) carrying a distribution of its data.
+    slot_usage:
+      predicate:
+        ifabsent: string(dapper:hasFile)
+
   HasDrsObject:
     is_a: Edge
     description: Dataset → DrsObject (GA4GH DRS).
@@ -2804,8 +2932,9 @@ classes:
     class_uri: np:Assertion
     description: >-
       The assertion graph — the claim being made, and the only part a reader is
-      asked to believe. In this profile the assertion is normally a
-      `Hypothesis` (block C); `asserts` points at it.
+      asked to believe. `asserts` points at a Claim, CompositeClaim, or the
+      existing mechanistic Hypothesis. The assertion graph is distinct from
+      the scientific object it carries.
     annotations:
       dapper:np_graph: assertion
     attributes:
@@ -2815,7 +2944,8 @@ classes:
         range: uriorcurie
         slot_uri: hycl:claims
         description: >-
-          The claim carried by this assertion graph — typically a Hypothesis id.
+          The scientific object carried by this graph: a Claim, CompositeClaim,
+          or mechanistic Hypothesis id.
       as_sentence:
         is_a: literal
         mixins: [hashable]

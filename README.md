@@ -13,6 +13,7 @@ repository tooling.
 ```text
 schema/
   dapper.yaml               # current root model
+  claims.yaml               # propositions, claims, scores, and composition
   trusty-identifiers.md     # Trusty URI and nanopublication design notes
   identity/                 # computed content identifiers (DAPPER-ID-1)
   examples/                 # LinkML instance and graph examples
@@ -49,6 +50,12 @@ Provenance Profile it's named after. It covers citation, funding, PROV
 lineage, file identity, controlled-access terms, workflow provenance,
 nanopublications, hypotheses, and agentic replay.
 
+Scientific assessments use `Claim` and `CompositeClaim`, with reusable
+`Proposition` records and typed `ClaimScore` values. See the
+[Scientific Claims design](schema/docs/claims.md) for the proposed paragraph-based
+organization and distinctions between questions, hypotheses, and claims.
+The existing `Hypothesis` remains the DISMECH-oriented mechanistic model.
+
 Use `File` for generic inputs, intermediates, and outputs, and `C2M2File` for
 files carrying C2M2 metadata. Optional DRS representations are separate nodes.
 See [files and DRS](schema/docs/files-and-drs.md) and the
@@ -83,6 +90,20 @@ result. Modalities are declared as data in
 
 ## Model documentation
 
+The [AF / AA bottom-line mapping](schema/docs/bottom-line-results.md) shows how
+to represent S3 prefix collections, pipeline activities, and a published File
+distribution without inventing C2M2 or DRS registrations. Its
+[complete YAML example](schema/examples/example_bottom_line_af_aa.yaml) passes
+the provenance linter and is included in the portal.
+
+The [ancestry guide](schema/docs/ancestry.md) describes `AncestryEnum`, its
+HANCESTRO mappings, and the optional `ancestry` field on Dataset and Activity.
+The AF / AA example includes explicit ancestry scope. Use
+`uv run schema/lint/lint_dig_ancestry.py path/to/result.yaml` to also check
+declared ancestry against DIG's public/staging export folder conventions.
+The example also uses `trait: KPN.TRAIT:0000096` for atrial fibrillation;
+the portal links this CURIE to the renamed KPN trait catalog.
+
 Build the searchable LinkML reference and the provenance inspector together:
 
 ```bash
@@ -95,10 +116,28 @@ The reference includes class inheritance diagrams, inherited slots, enums,
 ontology mappings, and full-text search. Reference pages come directly from
 `schema/dapper.yaml`; the landing page and theme live in `docs/`.
 
+The inspector orders inputs before outputs in both arrow views. **Stored predicates**
+points each arrow from its statement's subject to its object; `prov:wasGeneratedBy`
+therefore points from a result back to the producing activity. **Forward flow** keeps
+arrows flowing toward outputs and uses inverse labels, such as `prov:generated`
+and the reading aid “was used by.” Graph connections always shows the original
+subject → predicate → object statement. Switching views changes neither the layout
+nor upstream tracing, and does not rewrite the document or its identifiers.
+The selected result's files and DRS access records stay visible as context during
+tracing; unrelated downstream analyses remain dimmed. File nodes use their
+filename as the display label when available.
+
 Generated Markdown (`.build/model-docs/`) and HTML (`site/`) are ignored by Git.
 CI builds the documentation in strict mode to catch broken links. The existing
 Pages workflow publishes the combined site after changes reach `main`, with model
 documentation under `/dapper/model/` and the inspector at its existing URL.
+
+The schema declares `dapper_class:`, `dapper_slot:`, `dapper_enum:`, and `dapper_type:` prefixes
+for links to definitions in the model reference. Existing vocabulary CURIEs
+such as `dapper:Edge` resolve through `/dapper/ns/#Edge` to those pages.
+External semantic mappings and `dapper:{ClassName}.{digest}` record IDs retain
+their existing meanings. The build checks that every namespace redirect has a
+generated destination page.
 
 ## Contribution workflow
 
