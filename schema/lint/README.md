@@ -34,7 +34,7 @@ many gene sets sharing a single provenance subgraph.
    list of every class and every field. If a field is not in there, it does not
    exist.
 2. **The canonical example** for your modality — copy its shape:
-   - `bottom-line-result` → [`example_bottom_line_result.yaml`](../examples/example_bottom_line_result.yaml)
+   - `bottom-line-result` → [`example_bottom_line_af_aa.yaml`](../examples/example_bottom_line_af_aa.yaml)
    - `geneset` → [`example_geneset_graph.yaml`](../examples/example_geneset_graph.yaml)
 3. **The linter** — this directory. Run it before you hand anything back.
 

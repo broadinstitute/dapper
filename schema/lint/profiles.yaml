@@ -116,7 +116,7 @@ profiles:
       its bytes may be exposed through ordinary Files or registered DrsObjects.
       Multi-file Spark outputs are datasets whose file membership should be
       captured by an actual manifest, rather than by variant-level nodes.
-    canonical_example: schema/examples/example_bottom_line_result.yaml
+    canonical_example: schema/examples/example_bottom_line_af_aa.yaml
     terminal:
       class: Dataset
       # Exactly one final Dataset. Other Datasets may appear as inputs or

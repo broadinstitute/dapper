@@ -4,10 +4,7 @@ Two jobs here, and the second matters more than the first.
 
   1. The canonical examples lint clean. They are what counterparts are told to
      copy, so a defect in one of them propagates into every document produced
-     from it. This is how the invalid `generated_at_time` in
-     example_bottom_line_result.yaml was found: it had never been validated,
-     because until this linter existed nothing could validate a whole graph
-     document.
+     from it.
 
   2. EVERY CHECK ACTUALLY FIRES. A linter that reports nothing looks identical
      to a clean corpus, and both make CI green. Each check below gets a document
@@ -51,7 +48,7 @@ def validator():
 @pytest.fixture
 def bottom_line() -> dict:
     """The canonical bottom-line document, as a mutable copy to plant defects in."""
-    return yaml.safe_load((EXAMPLES / "example_bottom_line_result.yaml").read_text())
+    return yaml.safe_load((EXAMPLES / "example_bottom_line_af_aa.yaml").read_text())
 
 
 def lint_doc(doc: dict, tmp_path, vocab, sv, validator, profile=None) -> lp.Report:
@@ -158,7 +155,7 @@ def test_inline_dangling_reference_is_rejected(bottom_line, tmp_path, vocab, sv,
 
 
 def test_inline_endpoint_types_are_checked(bottom_line, tmp_path, vocab, sv, validator):
-    bottom_line["datasets"][0]["was_generated_by"] = bottom_line["drs_objects"][0]["id"]
+    bottom_line["datasets"][0]["was_generated_by"] = bottom_line["files"][0]["id"]
     assign_ids(bottom_line, sv)
     report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
     assert "endpoints" in checks_firing(report, "error")
@@ -392,7 +389,7 @@ def test_made_up_predicate_is_reported(bottom_line, tmp_path, vocab, sv, validat
     fabricated predicate without complaint — this is the only thing between a
     hallucinated relationship type and a document that looks entirely valid.
     """
-    bottom_line["has_drs_object_edges"][0]["predicate"] = "dapper:totallyMadeUpRelation"
+    bottom_line["used_edges"][0]["predicate"] = "dapper:totallyMadeUpRelation"
     report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
     assert "predicates" in checks_firing(report, "warning")
 
@@ -513,6 +510,8 @@ def test_missing_required_provenance_edge_is_rejected(bottom_line, tmp_path,
     at all validates perfectly. That is exactly the gap a profile closes.
     """
     bottom_line["was_generated_by_edges"] = []
+    # The terminal Dataset also states the edge inline, which counts the same.
+    bottom_line["datasets"][0].pop("was_generated_by")
     report = lint_doc(bottom_line, tmp_path, vocab, sv, validator)
     assert "required-edges" in checks_firing(report, "error")
 
