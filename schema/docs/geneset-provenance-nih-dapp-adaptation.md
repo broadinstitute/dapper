@@ -1,6 +1,14 @@
 # Adapting `dig.geneset` gene-set provenance to DAPPER
 
-**Status:** proposal / discussion draft · **Date:** 2026-07-24
+**Status:** original adaptation report · **Date:** 2026-07-24
+
+**Model update (2026-09-24):** the library described here is now a
+`GeneSetCollection`, containing individual `GeneSet` records when known.
+`has_gmt_file` identifies the physical file; a row uses `in_gmt_file` and
+`gmt_entry`. Collection `n_sets` counts named sets and `n_genes` counts the
+distinct union of genes. The historical crosswalk below records the earlier
+mapping; follow the [current authoring guide](geneset-authoring.md) and
+[converter behavior](../converter/README.md) for new exports.
 
 ## TL;DR
 
@@ -14,7 +22,7 @@ addition DAPPER needed was a **`Set`** node — *a collection of members* — se
 DAPPER data model.
 
 Everything below is backed by files in this repo:
-`../dapper.yaml` (the extended model), `../examples/example_geneset.yaml`
+`../dapper.yaml` (the extended model), `../examples/example_geneset_collection.yaml`
 + `example_geneset_graph.yaml` (the HZ2 gene set as DAPPER), and the source fixtures under
 `../../tests/fixtures/geneset-hubmap-hz2/`.
 
@@ -38,8 +46,8 @@ CURIE only if it dereferences.
 
 > **Nuance surfaced by the real data:** a dig.geneset "gene set" is usually a **library** of many
 > named term→genes sets (HZ2 = **487** sets over **1747** unique genes, materialized as a `.gmt`).
-> DAPPER models this with `n_genes` (unique members) and `n_sets` (named subsets). See the open
-> question on inline members vs. `.gmt` reference below.
+> DAPPER now models this as `GeneSetCollection`, with `n_genes` (distinct union)
+> and `n_sets` (named sets). Individual rows use GeneSet.
 
 ## Crosswalk 1 — `geneset.provenance.json` (CFDE Provenance Graph)
 
@@ -164,13 +172,13 @@ edge semantics.
 `C2M2File.sha256`, `description`), and the `ProvenancedResource` mixin refactor (non-breaking —
 `Dataset` still validates).
 
-**Open questions for the group:**
-1. **Members inline vs. `.gmt` reference.** A library gene set has 487 named subsets. Do we want
-   `Set.members` (`prov:hadMember`) enumerated in the graph, or keep referencing the `.gmt`
-   `C2M2File` and expand on demand? (Current example references the `.gmt`.)
-2. **One `GeneSet` node per library, or per named set?** HZ2 is one library node today; the KG
-   work may want per-term set nodes for enrichment queries.
-3. **Drop the sidecar `lineage`** in favor of the standalone provenance graph (recommended above)?
+**Resolved modeling questions:** libraries use `GeneSetCollection`; named
+sets use `GeneSet`. A collection can omit members when only library metadata
+is available, or enumerate them completely when row data is available. The
+HZ2 example retains its GMT reference without inventing row records.
+
+**Open question:** drop sidecar `lineage` in favor of the standalone provenance
+graph (recommended above)?
 
 *(Resolved: `input.files[].sha256` now maps to a real `C2M2File.sha256` slot.)*
 

@@ -57,8 +57,11 @@ from dapper_identity import (  # noqa: E402
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
 GRAPH_DOCS = [
+    "example_scientific_account.yaml",
     "example_pigean_claims.yaml",
     "example_geneset_graph.yaml",
+    "example_geneset_collection_rows.yaml",
+    "example_geneset_hubmap.yaml",
     "example_claim_provenance_trace.yaml",
     "example_cell_graph.yaml",
     "example_bottom_line_af_aa.yaml",
@@ -165,7 +168,7 @@ def main() -> int:
     # --- 7. no legacy (non-content-addressed) identifier schemes in examples ---
     stale_pat = re.compile(
         r"^(nih:(np|hypothesis|causalstep|mechanism|evidence|activity|geneset|"
-        r"citation|workspace|award)/|file:|analysis:|geneset:)"
+        r"citation|workspace|award)/|file:(?!//)|analysis:|geneset:)"
     )
     stale_total = 0
     for path in sorted(EXAMPLES.glob("example_*.yaml")):
@@ -175,6 +178,8 @@ def main() -> int:
         def scan(obj, where):
             if isinstance(obj, dict):
                 for k, v in obj.items():
+                    if not where and k == "prefixes":
+                        continue  # Namespace declarations are not record references.
                     scan(v, f"{where}.{k}" if where else k)
             elif isinstance(obj, list):
                 for i, v in enumerate(obj):

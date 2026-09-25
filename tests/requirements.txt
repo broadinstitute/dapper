@@ -11,5 +11,5 @@ rdflib
 linkml-runtime
 # The full linkml package validates graph nodes and builds schema documentation.
 linkml==1.11.1
-jsonschema
+jsonschema[format]>=4.18,<5
 ruamel.yaml
