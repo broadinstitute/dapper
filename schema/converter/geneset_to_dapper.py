@@ -10,7 +10,8 @@ Reads the lab's `geneset.provenance.json` (+ sibling `geneset.meta.json`) emitte
 
   <geneset_id>.dapper.yaml   the full provenance graph (File / C2M2File / Activity / GeneSet
                              nodes + Used / WasGeneratedBy edges)
-  <geneset_id>.geneset.yaml  the standalone focus GeneSet node
+  <geneset_id>.geneset.yaml  a standalone single GeneSet
+  <geneset_id>.geneset_collection.yaml  a standalone GeneSetCollection for a library
 
 The mapping is the crosswalk documented in
 `reports/geneset-provenance-nih-dapp-adaptation.md`. dig.geneset carries no NIH
@@ -43,7 +44,7 @@ _OUTPUT_LABEL = "data output"
 _EDGE_ROLE = {"data input": "data_input", "metadata input": "metadata_input"}
 
 # DAPPER classes emitted, keyed by the output-doc list name.
-_NODE_BUCKETS = ("files", "c2m2_files", "activities", "gene_sets")
+_NODE_BUCKETS = ("files", "c2m2_files", "activities", "gene_sets", "gene_set_collections")
 _EDGE_BUCKETS = ("used_edges", "was_generated_by_edges")
 
 
@@ -108,6 +109,12 @@ def _activity(node: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _is_collection(node: dict[str, Any], meta: dict[str, Any]) -> bool:
+    return (node.get("type") == "GeneSetCollection"
+            or (meta.get("summary") or {}).get("n_sets_emitted") is not None
+            or node.get("n_sets") is not None)
+
+
 def _gene_set(node: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
     gs = meta.get("gene_set", {}) or {}
     summary = meta.get("summary", {}) or {}
@@ -117,13 +124,13 @@ def _gene_set(node: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
             "id": node.get("id"),
             "name": node.get("name"),
             "description": node.get("description") or gs.get("description"),
-            "member_type": "gene",
+            "member_type": "gene_set" if _is_collection(node, meta) else "gene",
             "assay": gs.get("assay"),
             "data_type": gs.get("data_type"),
             "organism": gs.get("organism"),
             "genome_build": gs.get("genome_build"),
-            "n_genes": gs.get("n_genes") or summary.get("n_genes"),
-            "n_sets": summary.get("n_sets_emitted"),
+            "n_genes": gs.get("n_genes") if gs.get("n_genes") is not None else summary.get("n_genes"),
+            "n_sets": summary.get("n_sets_emitted", node.get("n_sets")),
             "term_prefix": params.get("term_prefix"),
             "dcc_url": node.get("dcc_url"),
             "drc_url": node.get("drc_url"),
@@ -150,8 +157,9 @@ def convert_graph(graph: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]
                 doc["files"].append(_file(node, sha_by_localid))
         elif ntype == "AnalysisType":
             doc["activities"].append(_activity(node))
-        elif ntype == "GeneSet":
-            doc["gene_sets"].append(_gene_set(node, meta))
+        elif ntype in {"GeneSet", "GeneSetCollection"}:
+            bucket = "gene_set_collections" if _is_collection(node, meta) else "gene_sets"
+            doc[bucket].append(_gene_set(node, meta))
         else:
             print(f"  ! skipping unknown node type: {ntype!r}", file=sys.stderr)
 
@@ -178,6 +186,17 @@ def convert_graph(graph: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]
         else:
             print(f"  ! skipping unknown edge label: {label!r}", file=sys.stderr)
 
+    # Link a library to a unique GMT emitted by its own producing activity.
+    # Multiple candidates require an explicit mapping, not a guessed filename.
+    generated = doc["was_generated_by_edges"]
+    gmt_ids = {n["id"] for group in ("files", "c2m2_files") for n in doc[group]
+               if str(n.get("filename", "")).lower().endswith(".gmt")}
+    for collection in doc["gene_set_collections"]:
+        producers = {e["object"] for e in generated if e["subject"] == collection["id"]}
+        candidates = {e["subject"] for e in generated
+                      if e["object"] in producers and e["subject"] in gmt_ids}
+        if len(candidates) == 1:
+            collection["has_gmt_file"] = next(iter(candidates))
     return {k: v for k, v in doc.items() if v}
 
 
@@ -247,7 +266,8 @@ def convert_one(prov_path: Path, meta_path: Path | None, out_dir: Path,
         # standalone focus GeneSet node (enriched with overlay attribution)
         # ids were just re-minted, so the dig.geneset focus_node_id no longer
         # matches; the focus is simply the gene set this payload is keyed by.
-        focus = (doc.get("gene_sets") or [None])[0]
+        collection = bool(doc.get("gene_set_collections"))
+        focus = (doc.get("gene_set_collections") or doc.get("gene_sets") or [None])[0]
         safe = geneset_id.replace(":", "_").replace("/", "_")
         graph_out = out_dir / f"{safe}.dapper.yaml"
         graph_out.write_text(_dump(doc))
@@ -259,7 +279,8 @@ def convert_one(prov_path: Path, meta_path: Path | None, out_dir: Path,
             if missing:
                 print(f"  · {geneset_id}: no NIH attribution for {missing} "
                       f"(supply via --overlay)", file=sys.stderr)
-            node_out = out_dir / f"{safe}.geneset.yaml"
+            suffix = "geneset_collection" if collection else "geneset"
+            node_out = out_dir / f"{safe}.{suffix}.yaml"
             node_out.write_text(_dump(focus_node))
             written.append(node_out)
     return written
@@ -275,6 +296,7 @@ _BUCKET_CLASS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",
+    "gene_set_collections": "GeneSetCollection",
     "used_edges": "Used",
     "was_generated_by_edges": "WasGeneratedBy",
 }

@@ -19,11 +19,18 @@ They also check that arrow views preserve input-to-output order, that stored
 predicate arrows point from subject to object, and that both views trace the
 same upstream provenance without including unrelated outputs.
 
+`test_citations.py` checks gap entity context, inline citation shapes and Unicode
+spans, pinned registry revisions, attribution/date constraints, and identity
+isolation between scientific objects, paragraphs, and citation metadata.
+
 | File | Covers |
 |---|---|
 | `test_converter.py` | the dig.geneset → DAPPER crosswalk: node mapping, the sha256 join across the metadata sidecar, edge direction, overlay precedence, and an end-to-end `convert_one` |
 | `test_identity.py` | the minting algorithm: the GA4GH digest primitive, `digest_of` parsing, what constitutes identity, `assign_ids`/`verify`, the frozen vectors, and `DOC_GROUPS` coverage |
+| `test_document_prefixes.py` | document namespace declarations, unresolved CURIE failures, mixed URI/CURIE graphs, GMT file references, and validated URI export with rewritten content IDs |
+| `test_gene_set_collections.py` | collection membership, GMT row selectors, distinct gene counts, location expansion, and converter library detection |
 | `test_examples.py` | every `schema/examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
+| `test_claims.py` | scientific accounts, hypothesis roles, Question/KnowledgeGap inheritance, evidence targets, paragraph rendering, and content identity |
 | `test_files.py` | generic intermediate files, stable IDs across relocation and DRS registration, converter provenance, and portal inheritance |
 | `test_ancestry.py` | ancestry validation and identity, qualified ontology mappings, example scope, and optional DIG folder consistency checks |
 | `test_traits.py` | catalog trait references, AF's stable KPN identifier, trait identity, and portal inheritance |

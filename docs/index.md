@@ -11,10 +11,12 @@ ontology mappings. Search by a class or field name to jump straight to its defin
 - **[DrsObject](reference/classes/DrsObject.md)** — a DRS description of accessible content.
 - **[Dataset](reference/classes/Dataset.md)** — a citable data resource with attribution and provenance.
 - **[Activity](reference/classes/Activity.md)** — the computation or process that uses and generates resources.
-- **[GeneSet](reference/classes/GeneSet.md)** and **[GeneProgram](reference/classes/GeneProgram.md)** — biological collections and coordinated gene activity.
+- **[GeneSet](reference/classes/GeneSet.md)**, **[GeneSetCollection](reference/classes/GeneSetCollection.md)**, and **[GeneProgram](reference/classes/GeneProgram.md)** — individual sets, libraries of sets, and coordinated gene activity.
 - **[Claim](reference/classes/Claim.md)** — an attributed assessment of a proposition, with scores and provenance.
-- **[CompositeClaim](reference/classes/CompositeClaim.md)** — component claims assembled into an explicit explanation or conjunction.
-- **[Hypothesis](reference/classes/Hypothesis.md)** — the existing DISMECH-oriented mechanistic hypothesis.
+- **[ScientificAccount](reference/classes/ScientificAccount.md)** — question, hypothesis, context, claims, and optional conclusions.
+- **[Question](reference/classes/Question.md)** and **[KnowledgeGap](reference/classes/KnowledgeGap.md)** — reusable inquiries; KnowledgeGap inherits from Question.
+- **[Proposition](reference/classes/Proposition.md)** — reusable content that may play the hypothesis role in an account.
+- **[MechanisticModel](reference/classes/MechanisticModel.md)** — optional biological structure, assessed through Claims.
 
 ## Browse the reference
 
@@ -44,6 +46,10 @@ records and are not documentation links.
 
 ## Follow the provenance
 
+The [gene-set authoring guide](guides/geneset-authoring.md) includes a corrected
+HuBMAP example with a GMT file reference, document-local prefixes, and an
+exporter for fully expanded identifier URIs.
+
 Read the [bottom-line mapping](guides/bottom-line-results.md) for a complete
 AF / AA example using datasets, stages, and an ordinary file distribution.
 The [genetic ancestry guide](guides/ancestry.md) explains the
@@ -56,12 +62,15 @@ Read [files and DRS](guides/files-and-drs.md) to understand how intermediate
 files fit into a provenance graph, or [computed identifiers](guides/identity.md)
 to see what makes a DAPPER record's identity change.
 
-The [Scientific Claims design](guides/claims.md) proposes a minimal representation
-of questions, hypotheses, findings, and interpretation grounded in a results
+The [Scientific Claims design](guides/claims.md) describes a minimal representation
+of questions, hypotheses, claims, and interpretation grounded in a results
 paragraph.
 
 <a href="../">Open the provenance inspector →</a> to explore worked graphs or
 load your own DAPPER YAML.
+
+The [citation guide](guides/citations.md) covers exact object references,
+paragraph spans, and the separate versioned citation metadata contract.
 
 These reference pages are generated from [the schema](schema/dapper.yaml).
 Class pages include direct and inherited slots; shared slot pages show how a

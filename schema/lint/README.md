@@ -12,21 +12,33 @@ files they consumed and produced, and the edges connecting them. All reified
 edge endpoints and inline DAPPER identifiers must resolve inside the file.
 Inline relationships may also reference external identifiers such as ORCIDs.
 
-An *end modality* is a terminal product of a pipeline. Two are currently
-supported:
+An *end modality* is a terminal product of a pipeline. The supported profiles are:
 
 | Profile | End result | How many per file |
 |---|---|---|
 | `bottom-line-result` | A `Dataset` — variant-level summary statistics from a meta-analysis | exactly 1 |
-| `geneset` | A `GeneSet` | 1 or more |
+| `geneset` | A `GeneSet` or `GeneSetCollection` | 1 or more |
+| `scientific-account` | A `ScientificAccount` | exactly 1 |
 
 A bottom-line document has exactly one final Dataset, but may contain other
 Datasets as upstream inputs or derivation sources. Terminal selection excludes
-resources consumed by `prov:used` or named as `prov:wasDerivedFrom` sources,
+resources consumed by `prov:used`, named as `prov:wasDerivedFrom` sources,
+or contained through `prov:hadMember`,
 whether represented inline or as edges. Profile detection and required
 provenance checks apply to the remaining end results. Multiple final Datasets
 are still rejected. Gene sets have no cap because a converter run may emit
-many gene sets sharing a single provenance subgraph.
+many gene sets sharing a single provenance subgraph. A collection's member
+sets are not separate terminal results. GMT selectors must pair `in_gmt_file`
+with `gmt_entry`. Counts must agree with complete membership lists when
+supplied; collection `n_genes` is a union, not a sum. See the
+[gene-set guide](../docs/geneset-authoring.md) and
+[row-level example](../examples/example_geneset_collection_rows.yaml).
+
+Direct membership uses `GeneSetCollection.members` and the optional inverse
+`GeneSet.in_gene_set_collection` list. Either direction is accepted; when both
+are supplied they must agree. Inverse links also connect contained sets when
+the collection's full membership has not been enumerated. These links are
+independent of GMT file and row references.
 
 ## The three things you need
 
@@ -68,6 +80,23 @@ See the [ancestry guide](../docs/ancestry.md) for its exact scope. These storage
 conventions are not part of generic DAPPER validation.
 
 ## Document shape
+
+Documents may also declare a top-level `prefixes` mapping of namespace names
+to absolute URI bases. These supplement the selected model's prefixes without
+overriding them. Undeclared prefixes and relative values in identifier/URI
+slots are errors; CURIEs and full URIs resolve to the same graph endpoints.
+Names, commands, and opaque alternate identifiers are not parsed as CURIEs.
+See [gene-set authoring](../docs/geneset-authoring.md) and its corrected HuBMAP
+example for the complete rules and `has_gmt_file` references.
+
+To export identifier/URI fields as absolute URIs, with updated content-derived
+IDs and references, run:
+
+```bash
+uv run schema/expand_prefixes.py result.yaml --output result.expanded.yaml
+```
+
+The exporter validates before writing and fails on any unresolved prefix.
 
 Nodes go in lists keyed by type, edges in lists keyed by relationship. The key
 names are fixed — a typo like `dataset:` for `datasets:` is an error, because
@@ -171,6 +200,12 @@ activity's other outputs, including outputs linked by inline generation
 relationships. Only schema-declared relationship slots are traversed: literal
 fields such as `description` never create a connection or a dangling-reference
 error merely because their text happens to look like an identifier.
+
+Paragraph citation targets are also followed through `citations[].target_id`.
+They are reference links, not evidence edges. Scientific-content checks validate
+the target class, Unicode code-point spans, and optional exact-text anchors.
+External citation metadata is checked separately by `schema/citation_metadata.py`;
+the graph linter cannot establish that a pinned registry revision is available.
 
 ## Adding a modality
 

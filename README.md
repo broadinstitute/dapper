@@ -3,6 +3,14 @@
 LinkML models for dataset attribution, provenance, evidence retrieval, and
 related biomedical knowledge products.
 
+## Alpha release
+
+Use [0.2.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.2.0-a1)
+to pin the gene-set/GMT and scientific provenance model described here. The
+release includes a matched HuBMAP YAML/GMT bundle and migration notes. Pull
+that tag when generating or validating its identifiers; earlier alphas use
+different gene-set and claims models.
+
 ## Repository layout
 
 The root `schema/` directory is the model boundary. Keep schema modules,
@@ -13,7 +21,7 @@ repository tooling.
 ```text
 schema/
   dapper.yaml               # current root model
-  claims.yaml               # propositions, claims, scores, and composition
+  claims.yaml               # propositions, claims, scores, and scientific accounts
   trusty-identifiers.md     # Trusty URI and nanopublication design notes
   identity/                 # computed content identifiers (DAPPER-ID-1)
   examples/                 # LinkML instance and graph examples
@@ -48,18 +56,40 @@ once there is a concrete second consumer.
 `schema/dapper.yaml` is DAPPER, migrated from the NIH Dataset Attribution and
 Provenance Profile it's named after. It covers citation, funding, PROV
 lineage, file identity, controlled-access terms, workflow provenance,
-nanopublications, hypotheses, and agentic replay.
+nanopublications, scientific accounts, and agentic replay.
 
-Scientific assessments use `Claim` and `CompositeClaim`, with reusable
-`Proposition` records and typed `ClaimScore` values. See the
-[Scientific Claims design](schema/docs/claims.md) for the proposed paragraph-based
-organization and distinctions between questions, hypotheses, and claims.
-The existing `Hypothesis` remains the DISMECH-oriented mechanistic model.
+Scientific assessments use `Claim`, reusable `Proposition` records, and typed
+`ClaimScore` values. `ScientificAccount` organizes a question, hypothesis role,
+context, claims, and optional conclusions. Its question references `Question`
+or the `KnowledgeGap` subclass. `EvidenceItem` records how source
+claims bear on a target proposition; `MechanisticModel` supplies optional
+biological structure. `Paragraph` saves a textual expression of an account.
+See the [Scientific Claims design](schema/docs/claims.md) and the
+[fictional account example](schema/examples/example_scientific_account.yaml).
+Questions and gaps can carry entity context; gaps can specify `gap_kind`.
+Paragraph citations pin exact scientific objects and citation metadata revisions.
+The separate [citation metadata contract](schema/docs/citations.md) records ordered
+credit, dates, repository metadata, and publication state without changing the
+scientific object's digest.
+
+```bash
+uv run schema/lint/lint_provenance.py schema/examples/example_scientific_account.yaml
+uv run schema/scientific_claims.py schema/examples/example_scientific_account.yaml
+```
 
 Use `File` for generic inputs, intermediates, and outputs, and `C2M2File` for
 files carrying C2M2 metadata. Optional DRS representations are separate nodes.
 See [files and DRS](schema/docs/files-and-drs.md) and the
 [intermediate-file example](schema/examples/example_file_graph.yaml).
+
+`GeneSetCollection` represents a library of named `GeneSet` records and links
+its GMT serialization through `has_gmt_file`. A single set selects its row
+with `in_gmt_file` plus `gmt_entry`. Direct membership uses collection `members`
+and the set's inverse `in_gene_set_collection` list. Collection `n_sets` counts sets and
+`n_genes` counts their distinct gene union. Locations and checksums belong on
+the referenced `File` or `C2M2File`. See the
+[gene-set authoring guide](schema/docs/geneset-authoring.md) and
+[two-row example](schema/examples/example_geneset_collection_rows.yaml).
 
 Validate a single instance from the repository root with:
 
@@ -89,6 +119,12 @@ result. Modalities are declared as data in
 [`schema/lint/profiles.yaml`](schema/lint/profiles.yaml) Please see [schema/lint/README.md](schema/lint/README.md) for additional documentation.
 
 ## Model documentation
+
+The [gene-set authoring guide](schema/docs/geneset-authoring.md) shows document-local
+`prefixes`, digest-based GMT file references, and a corrected HuBMAP export.
+Use `uv run schema/expand_prefixes.py input.yaml --output expanded.yaml` to
+resolve identifier/URI fields and re-mint affected records. The provenance
+linter rejects undeclared prefixes in these fields.
 
 The [AF / AA bottom-line mapping](schema/docs/bottom-line-results.md) shows how
 to represent S3 prefix collections, pipeline activities, and a published File

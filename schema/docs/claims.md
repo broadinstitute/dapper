@@ -1,8 +1,8 @@
 # Scientific Claims design
 
-**Status:** Working proposal for discussion. This document replaces the earlier
-claim modeling guide. It describes a proposed design, not the current schema
-contract; implementation differences are noted below.
+**Status:** Implemented experimental profile. The schema and examples support
+the minimal workflow below. Definitions and interoperability mappings remain
+open to revision through community use; this is not a completed claims standard.
 
 ## Purpose and scope
 
@@ -13,7 +13,7 @@ most important distinctions with a small representation that can evolve through
 community use.
 
 The organizing unit is a **ScientificAccount**: a structured account of what was
-asked, how it was addressed, what was found, and what those findings may imply.
+asked, how it was addressed, which claims were made, and what those claims may imply.
 A **Paragraph** is a natural-language expression of that account, with its own
 textual and publication metadata.
 
@@ -22,17 +22,31 @@ multiple ways and published in multiple places. The initial workflow can use
 one ScientificAccount and one Paragraph without implementing a general document
 model.
 
+```mermaid
+flowchart LR
+    A[ScientificAccount] -->|question| Q[Question]
+    K[KnowledgeGap] -. inherits .-> Q
+    A -->|hypothesis role| P[Proposition]
+    A -->|component claims| C[Claim]
+    C -->|assesses| P
+    C -->|evidence| E[EvidenceItem]
+    E -->|source assessments| S[Other Claims]
+    E -->|target| P
+    P -->|optional structure| M[MechanisticModel]
+    T[Paragraph] -->|expresses| A
+```
+
 ## The paragraph as a design constraint
 
 A results paragraph provides four organizing roles:
 
 1. **Framing:** the question, knowledge gap, or hypothesis motivating the work.
 2. **Context:** the approach, relevant scope, models, and assumptions.
-3. **Findings:** the claims produced or assessed through that work.
+3. **Claims:** the attributed assertions or assessments produced through that work.
 4. **Closing:** an optional conclusion, synthesis, limitation, or implication.
 
 This is a rendering order, not a fixed sentence count. A role may occupy several
-sentences, and a sentence may express several claims. Findings can concern
+sentences, and a sentence may express several claims. Claims can concern
 results or biology; their position does not determine their scientific meaning.
 
 The structured account must contain enough information to express these roles
@@ -72,34 +86,57 @@ Use **Claim** as the DAPPER object name. “Assertion” describes putting conte
 forward and remains useful in ontology mappings and publication terminology;
 it does not require a second parallel DAPPER class.
 
-### BiologicalQuestion
+### Question
 
-A **BiologicalQuestion** expresses an inquiry that the work aims to address.
-It identifies what is unknown and the relevant biological scope. It is not
-itself an assertion with a truth value or an evidence score.
+A **Question** expresses an inquiry that the work aims to address. It identifies
+what is unknown and the relevant scope. It has no truth assessment or confidence
+score. The minimum content is `text`, with optional `scope`, `about_entities`
+(URI/CURIE references supplying entity context), and provenance.
 
-Its minimum content is question text and necessary scope. A Hypothesis can be
-proposed as an answer, and Claims can contribute to answering it. Neither link
-means that the question has been resolved. Questions about analytical results
-can use the same lightweight structure without requiring a new question taxonomy.
+`ScientificAccount.question` references a Question. Accounts can share it while
+proposing different hypotheses. Claims can contribute to answering it, but the
+existence of a linked Claim does not mean that the inquiry has been resolved.
 
-### Hypothesis
+### KnowledgeGap
+
+A **KnowledgeGap** inherits from **Question**. It identifies a specific absence
+of knowledge motivating an inquiry. Inherited `text` expresses the question;
+required `gap_description` describes what is missing. It inherits scope and
+provenance from Question and is accepted wherever a Question is referenced.
+Optional `gap_kind` distinguishes `KNOWLEDGE_GAP` and `HUMAN_MODEL_MISMATCH`;
+omission means unclassified. Neither value is a resolution status.
+
+An account uses the same `question` field for a Question or a KnowledgeGap.
+There is no parallel free-text gap field, and the gap is distinct from any
+proposition proposed as its answer.
+
+### Hypothesis (role)
 
 A **Hypothesis** is a candidate answer or explanation proposed for investigation.
-Its content can be a Proposition or a biological model containing several
-Propositions. It may address a BiologicalQuestion.
+Its content is a Proposition, optionally elaborated by a MechanisticModel.
+It may address the account's question.
 
 Hypothesis describes the role of content in an investigation; Claim describes
 an attributed assertion or assessment of content. They are not successive stages
-on a confidence scale. Claims can assess the propositions making up a Hypothesis,
+on a confidence scale. Claims can assess the proposition used as a hypothesis,
 and a proposed hypothesis can itself be put forward through a Claim.
 
-For the initial design, question and hypothesis framing may be embedded in the
-ScientificAccount or reference existing records. Naming these concepts does not
-require new standalone, globally identified classes for every occurrence.
-DAPPER's existing `Hypothesis` is a mechanistic representation and can supply
-hypothesis content; it should not become the required shape of every candidate
-answer.
+`ScientificAccount.hypothesis` references the Proposition proposed for
+investigation. A Claim can assess that exact same Proposition. The role belongs
+to the account; it is not a global flag on Proposition and does not depend on
+confidence. There is no standalone generic Hypothesis class.
+
+### MechanisticModel (optional)
+
+A **MechanisticModel** provides biological structure when a proposition needs
+more than text and entity references. It carries a description, optional scope,
+and optional CausalSteps connecting entities through Mechanisms. A Proposition
+can reference it through `mechanistic_model`.
+
+The model holds content. Scores, review status, and evidence of support belong
+to Claims assessing that content. An account can also reference a model as shared
+context without asserting it. A simple proposed explanation needs only a
+Proposition; a mechanistic model is optional.
 
 ### ScientificAccount
 
@@ -112,10 +149,10 @@ logical conjunction, causal chain, or support relation. Because framing can
 include questions and the conclusion is optional, the whole account need not
 have a single truth value or a single assessed Proposition.
 
-**Design recommendation:** model ScientificAccount as an organizing object, rather
-than requiring it to be a subclass of Claim. If the account makes an overall
+`ScientificAccount` is an organizing object and does not inherit from Claim.
+If the account makes an overall
 scientific conclusion, represent that conclusion as an explicit Claim within
-it. A ScientificAccount needs at least one finding; requiring two claims would add
+it. A ScientificAccount needs at least one claim; requiring two claims would add
 an arbitrary restriction to the paragraph workflow.
 
 ### Paragraph
@@ -124,6 +161,11 @@ A **Paragraph** is a particular textual expression of a ScientificAccount. Its
 minimum content is the text and a reference to the account it expresses.
 Optional metadata identifies its author or generating activity, version,
 language, publication, and location within that publication.
+
+Optional `citations` anchor exact Claim, Question, or KnowledgeGap identifiers
+and citation metadata revisions to spans in the saved text. Citation metadata
+lives in a separate registry; citation is distinct from scientific support.
+See the [citation contract](citations.md) for fields and validation rules.
 
 A ScientificAccount can have several Paragraph expressions. Editing wording or
 publication metadata need not change the underlying scientific account.
@@ -149,19 +191,20 @@ not necessarily speculative. Both may refer to the same biological entities,
 so subject and object identifiers alone cannot determine the distinction.
 
 Paragraph role, proposition scope, method of production, and confidence remain
-independent. A hypothesis is not defined by being about biology, and a finding
+independent. A hypothesis is not defined by being about biology, and a claim
 is not defined by being about data. If one statement combines independently
 assessed result and biological content, separate the propositions where practical.
 
 ## Context and the connection from results to biology
 
 **Context** records what is needed to understand the work and its interpretation.
-For the demo, use a small embedded record with prose and references covering:
+For the demo, use `context` text, an optional `assumptions` list, and an optional
+`mechanistic_model` reference on the account. These cover:
 
 - The inquiry's scope and relevant study or data setting.
 - The analytical approach and statistical or computational model.
 - The biological model being assumed or evaluated, when applicable.
-- The assumptions and limitations relevant to interpreting the findings.
+- The assumptions and limitations relevant to interpreting the claims.
 
 The analytical model and biological model need distinct descriptions even when
 they are closely connected. The analytical model specifies how data become
@@ -171,34 +214,43 @@ itself, specify the biological interpretation.
 
 An assumption is content being taken as given for an analysis or interpretation.
 Recording it does not assert that the study established it. It can be text or a
-reference to a Proposition or Hypothesis; assessing it requires a Claim.
+reference to content in the context text; assessing it requires a Claim.
 
 Context may be shared within a ScientificAccount. However, scope that changes a
 Proposition's meaning must remain explicit on, or explicitly referenced by,
 that Proposition. Moving a Claim between accounts must not silently change
 what it says.
 
-An **Interpretation** records how specified findings bear on the Proposition
-assessed by a target Claim under a stated context. Its minimal content is:
+An **interpretation** records how claims bear on a target Proposition under
+a stated context. It uses the existing **EvidenceItem** class, rather than a
+new parallel Interpretation class:
 
-- References to one or more source Claims and one target Claim.
-- The direction of the evidential contribution to the target Proposition:
-  supports, disputes, or neutral.
-- The applicable context, including the model and assumptions used.
-- A short rationale explaining the connection.
+- `source_claims` identifies the assessments being used as evidence.
+- `target_proposition` identifies the content being evaluated.
+- `direction` records SUPPORTS, DISPUTES, NEUTRAL, MIXED, or UNKNOWN.
+- `explanation` supplies the rationale, and `context` states the applicable model
+  or setting. `assumptions` and `mechanistic_model` add detail where applicable.
+- Attribution and generation fields identify who made the interpretation and how.
 
-This can initially be an embedded record owned and attributed through the
-ScientificAccount, with separate attribution when the interpreter differs. Multiple
-interpretations may address the same target. The relation records an evidential
-argument, not guaranteed logical entailment or an automatic probability update.
+A target Claim references this evidence use through `has_evidence`. Its
+Proposition must match the evidence's target. Targeting the Proposition avoids
+a reference cycle back to the Claim that owns the evidence. Evidence can also
+retain a publication, snippet, or source nanopublication. When `source_claims`
+is supplied, target, direction, explanation, and context are required.
+
+Multiple evidence uses can assess the same proposition, including in opposing
+directions. An EvidenceItem reused by several Claims retains the same target
+and interpretation. The relation records an evidential argument, not guaranteed
+logical entailment or an automatic probability update. Circular support between
+Claims is rejected.
 
 When an account uses results to justify a biological Claim, this connection must
-be explicit. A biological Hypothesis mentioned only as framing need not have
-supporting findings. An interpretation may remain unassessed; missing reasoning
+be explicit. A biological proposition used only as hypothesis framing need not have
+supporting claims. An interpretation may remain unassessed; missing reasoning
 must remain visible rather than being inferred from paragraph order.
 
 **Provenance and evidence answer different questions.** Provenance records how
-an artifact or assertion was produced. Interpretation records why information
+an artifact or assertion was produced. An evidence interpretation records why information
 bears on a proposition. Both are needed to trace a biological conclusion back
 through result claims, outputs, activities, and inputs. Reuse DAPPER's existing
 provenance graph for files, commands, software, and intermediate artifacts;
@@ -206,20 +258,21 @@ do not copy that graph into paragraph context.
 
 ## Minimum ScientificAccount structure and linkages
 
-The proposed record has six parts:
+The record has six conceptual parts, represented by the following fields:
 
-- **Framing — required:** at least one question, gap description, or proposed
-  hypothesis. These may coexist.
-- **Context — required:** a concise account of the approach and the relevant
+- **Framing — required:** `question` references a Question or KnowledgeGap,
+  and/or `hypothesis` references a Proposition. Both may coexist.
+- **Context — required:** `context` provides a concise account of the approach and the relevant
   scope, with model and assumption information where applicable.
-- **Component claims — required:** ordered references containing at least one
-  finding. Claims can be reused across accounts.
-- **Interpretations — optional:** explicit evidential connections between Claims;
-  required wherever the account presents one claim as justification for another.
-- **Closing — optional:** references to component Claims used as conclusions,
-  together with any contextual remarks.
-- **Attribution and provenance — required:** who assembled the account and the
-  activity that produced or recorded it.
+- **Component claims — required:** `component_claims` is an ordered list containing at least one
+  claim before the optional closing. Claims can be reused across accounts.
+- **Evidence interpretations — optional:** `Claim.has_evidence` links claims
+  through EvidenceItems. Use explicit evidence records wherever one Claim is
+  presented as justification for another; membership alone supplies no argument.
+- **Closing — optional:** `conclusion_claims` selects component Claims for the
+  closing, and `closing_remarks` holds editorial context.
+- **Attribution and provenance — required:** `was_attributed_to` and
+  `was_generated_by` identify the assembler and assembly/recording activity.
 
 Closing claim references select from the component claims rather than duplicating
 their content. A substantive scientific assertion introduced in the closing
@@ -227,25 +280,25 @@ must be represented as a Claim. A restatement or editorial remark need not
 create a new Claim. Framing and context can reference Claims for scientific
 assertions being assessed; assumptions remain explicitly marked as assumed.
 
-Question-to-hypothesis links express proposed answers. Claim-to-proposition
+The account associates its question with a proposition proposed as its hypothesis. Claim-to-proposition
 links identify assessed content. Account-to-claim links express membership.
-Interpretations express evidential use. Paragraph-to-account links express
+EvidenceItems express evidential use. Paragraph-to-account links express
 textual realization. These relations must not be treated as interchangeable.
 
 ## Translating the account into a results paragraph
 
-Rendering follows framing, context, findings, and optional closing. Component
-Claims selected for the closing are expressed there; the remaining findings
+Rendering follows framing, context, claims, and optional closing. Component
+Claims selected for the closing are expressed there; the remaining claims
 follow their declared order. Ordering alone conveys no evidential dependency.
 
 The rendering must preserve scope, attribution where relevant, uncertainty,
 assessment direction, and the stated distinction between results and biological
 interpretation. Transitions that explain evidential support must come from
-recorded Interpretations. Rendering must not introduce stronger causal language,
+recorded EvidenceItems. Rendering must not introduce stronger causal language,
 new conclusions, or an aggregate confidence score.
 
-A lightweight mapping from paragraph spans to framing, context, and Claim
-references should make the text reviewable. Exact sentence objects and a full
+The authored-text renderer returns ordered segments with roles and source
+references for review; `--segments` exposes this mapping. Exact sentence objects and a full
 rhetorical annotation ontology are unnecessary for the first demo. The initial
 commitment is reliable rendering of authored structured accounts; automatic
 recovery of this structure from arbitrary published prose is outside scope.
@@ -259,11 +312,11 @@ equivalence or guarantee lossless export.
   [SEPIO Proposition](https://sepio-framework.github.io/sepio-linkml/Proposition/),
   and Claim with
   [SEPIO Statement](https://sepio-framework.github.io/sepio-linkml/Statement/).
-  The embedded Interpretation follows the purpose of
+  The extended EvidenceItem follows the purpose of
   [SEPIO EvidenceLine](https://sepio-framework.github.io/sepio-linkml/EvidenceLine/):
   interpreting evidence with respect to a target proposition. A future export
-  would resolve the target Claim to its Proposition and preserve the argument's
-  attribution. ScientificAccount is a DAPPER organizing layer, with no asserted
+  can use `target_proposition` and preserve the argument's attribution.
+  ScientificAccount is a DAPPER organizing layer, with no asserted
   one-to-one SEPIO equivalent.
 - **HYCL:** the
   [Hypotheses and Claims Ontology](https://github.com/peta-pico/ontologies/blob/master/hycl.ttl)
@@ -274,7 +327,7 @@ equivalence or guarantee lossless export.
 - **PROV-O:** reuse DAPPER's existing
   [PROV-O](https://www.w3.org/TR/prov-o/) relationships for entities, activities,
   attribution, usage, and derivation. Derivation tracks production and dependence;
-  it does not replace the evidential relation captured by Interpretation.
+  it does not replace the evidential relation captured by EvidenceItem.
 - **DISMECH:** its
   [MechanisticHypothesis](https://github.com/monarch-initiative/dismech/blob/main/src/dismech/schema/dismech.yaml)
   organizes disease-level causal explanations and is a specialized source of
@@ -298,14 +351,14 @@ them prerequisites for authoring a scientific account.
 ## Demo boundary and later decisions
 
 The first demo should allow a researcher to author and review one structured
-account, distinguish its question or hypothesis from its findings, inspect the
+account, distinguish its question or hypothesis from its claims, inspect the
 reasoning behind a biological interpretation, follow available provenance, and
 render a faithful results paragraph. Missing provenance or interpretation details
 should be visible; a polished paragraph must not imply that the record is complete.
 
 Reuse existing Proposition, Claim, score, provenance, and mechanistic records.
-Keep framing, context, and interpretation records embedded until independent
-reuse justifies promoting them to separately identified objects. A saved Paragraph
+Keep question and hypothesis references, context, and assumptions on the account.
+Reuse EvidenceItem for interpretations and MechanisticModel only when biological structure is useful. A saved Paragraph
 is needed only when its wording or publication metadata needs to be retained.
 
 Defer comprehensive argumentation, automatic evidence aggregation, semantic
@@ -320,16 +373,66 @@ represented adequately by the core. Version the profile and record unresolved
 choices rather than presenting the initial design as a completed scientific
 claims standard.
 
-## Relationship to the current implementation
+## Using and reviewing the implementation
 
-The current claims module calls its organizing object `CompositeClaim`, makes
-it a subclass of `Claim`, requires at least two components, and requires a
-combined Proposition and composition semantics. This proposal replaces that
-concept with `ScientificAccount`: a paragraph-level account that can contain
-nonassertive framing and does not require a single overall assertion. The rename
-and structural changes are proposed here, not implemented by this document.
+The root `schema/dapper.yaml` imports `schema/claims.yaml`. Scientific records
+use the document groups `propositions`, `claims`, `claim_scores`,
+`scientific_accounts`, `questions`, `knowledge_gaps`, `paragraphs`, `evidence_items`,
+and optional
+`mechanistic_models`, `causal_steps`, and `mechanisms`.
 
-The existing `Hypothesis` class also combines mechanistic content with assessment
-metadata. Its eventual alignment with the distinctions above needs a separate
-migration decision. The immediate design can reference existing records without
-requiring that migration or claiming that their semantics are already identical.
+The [fictional study](../examples/example_scientific_account.yaml) demonstrates
+a KnowledgeGap used as the account's Question, and one Proposition serving as
+hypothesis and assessment target. The
+[PIGEAN account](../examples/example_pigean_claims.yaml) preserves three separate
+scores and both input-provenance branches. The
+[provenance trace](../examples/example_claim_provenance_trace.yaml) connects a
+biological assessment to a result Claim and its upstream data through evidence.
+All scientific claims in these illustrations are explicitly labelled as
+illustrative; they are not newly executed experiments or validated results.
+
+Validate a complete account with
+`uv run schema/lint/lint_provenance.py schema/examples/example_scientific_account.yaml`.
+The linter checks schema shape, identifiers, local reference types, evidence
+targets, conclusion membership, circular support, and provenance reachability.
+It does not establish scientific validity or discover unstated assumptions.
+
+Render with
+`uv run schema/scientific_claims.py schema/examples/example_scientific_account.yaml`.
+Add `--segments` to inspect each segment's role and references. This assembles
+authored text and explicit assessment metadata, without synthesizing new
+conclusions. Paragraphs are separately saved expressions; a scientific revision
+requires reviewing or regenerating their wording as well as updating references.
+The inspector shows account roles and the saved results paragraph together.
+
+## Migration from the earlier schema
+
+This is a breaking revision of the experimental claims model. The repository's
+examples and tooling are migrated; arbitrary external records are not silently
+converted. Class names contribute to identifiers, so migrated records must be
+re-minted, retaining old published versions as historical records.
+
+- `Hypothesis` is removed. Put its evaluated content in a Proposition and its
+  attributed assessment, status, and evidence in a Claim. Put any biological
+  structure in an optional MechanisticModel. `ScientificAccount.hypothesis`
+  selects the Proposition's role in a particular investigation.
+- `Hypothesis.confidence` moves to a typed ClaimScore. Preserve its reported
+  meaning and scale; do not invent a probability interpretation for an unknown
+  score. Existing review-status values are retained in `ClaimStatusEnum`.
+- `CompositeClaim` is removed. Its organizing role moves to ScientificAccount.
+  If it asserted a substantive overall conclusion, preserve that Proposition
+  and Claim explicitly and reference it through `conclusion_claims`.
+- `supported_by_nanopub` and `refuted_by_nanopub` become EvidenceItems with
+  `from_nanopub`, a target Proposition, and the appropriate direction. The
+  separate SupportedByNanopub edge class is removed. `Claim.asserted_in`
+  continues to identify where the Claim itself was published.
+- `CausalStep` holds structural content. An assessment of a particular step can
+  target a Proposition referring to that step; evidence belongs to the Claim.
+- Evidence directions share one enum: SUPPORTS, DISPUTES, NEUTRAL, MIXED, UNKNOWN.
+  The former lower-case `refutes` maps to DISPUTES; missing evidence does not
+  become NEUTRAL.
+
+Content identity is distinct from assessment identity: changing a Claim's score,
+status, or evidence changes that Claim and dependent accounts, while preserving
+its Proposition and MechanisticModel. Editing only a Paragraph changes its own
+identity, leaving the account intact.

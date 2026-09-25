@@ -209,7 +209,7 @@ def test_inline_and_reified_forms_do_not_double_count(tmp_path, vocab, sv, valid
 # ---------------------------------------------------------------------------
 # 1. the canonical examples are clean
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize("profile_name", ["bottom-line-result", "geneset"])
+@pytest.mark.parametrize("profile_name", ["bottom-line-result", "geneset", "scientific-account"])
 def test_canonical_example_lints_clean(profile_name, vocab, sv, validator):
     """Each profile's canonical example passes its own linter.
 
@@ -552,26 +552,20 @@ def test_terminal_classes_are_real_node_classes(vocab, sv):
     have a reachable end result.
     """
     for name, profile in vocab.profiles.items():
-        class_name = profile["terminal"]["class"]
-        assert class_name in sv.all_classes(), f"{name}: unknown class {class_name}"
-        assert "Node" in sv.class_ancestors(class_name), (
-            f"{name}: {class_name} is not a Node, so it cannot carry an id"
-        )
+        classes = profile["terminal"]["class"]
+        for class_name in [classes] if isinstance(classes, str) else classes:
+            assert class_name in sv.all_classes(), f"{name}: unknown class {class_name}"
+            assert "Node" in sv.class_ancestors(class_name)
 
 
 def test_terminal_classes_are_unique_across_profiles(vocab):
-    """No two profiles share a terminal class.
-
-    The terminal class IS the auto-detection key, so a collision makes both
-    modalities undetectable rather than raising anywhere obvious.
-    """
-    seen: dict[str, str] = {}
+    seen = {}
     for name, profile in vocab.profiles.items():
-        class_name = profile["terminal"]["class"]
-        assert class_name not in seen, (
-            f"{name} and {seen[class_name]} both claim terminal class {class_name}"
-        )
-        seen[class_name] = name
+        classes = profile["terminal"]["class"]
+        for class_name in [classes] if isinstance(classes, str) else classes:
+            assert class_name not in seen
+            seen[class_name] = name
+
 
 
 def test_edge_endpoint_classes_all_exist(vocab, sv):
@@ -622,6 +616,28 @@ def test_file_distribution_satisfies_access_requirement(inline, file_class, file
     report = lint_doc(doc, tmp_path, vocab, sv, validator)
     assert not report.findings, report.findings
     assert file["id"].startswith(f"dapper:{file_class}.")
+
+
+@pytest.mark.parametrize("file_group", ["files", "c2m2_files"])
+def test_geneset_gmt_reference_accepts_file_and_subclass(file_group, vocab, sv, validator, tmp_path):
+    doc = yaml.safe_load((EXAMPLES / "example_pigean_claims.yaml").read_text())
+    gmt = next(n for n in doc["files"] if n["filename"] == "gene-set-b.gmt")
+    if file_group != "files":
+        doc["files"].remove(gmt)
+        doc.setdefault(file_group, []).append(gmt)
+    doc["gene_sets"][0]["has_gmt_file"] = gmt["id"]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert not report.findings, report.findings
+
+
+def test_geneset_gmt_reference_rejects_an_activity(vocab, sv, validator, tmp_path):
+    doc = yaml.safe_load((EXAMPLES / "example_pigean_claims.yaml").read_text())
+    doc["gene_sets"][0]["has_gmt_file"] = doc["activities"][0]["id"]
+    assign_ids(doc, sv)
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert any(f.check == "endpoints" and "has_gmt_file" in f.where
+               and "File or a subclass" in f.message for f in report.findings)
 
 
 def test_file_distribution_must_target_a_file(vocab, sv, validator, tmp_path):

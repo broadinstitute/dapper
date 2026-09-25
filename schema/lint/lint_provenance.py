@@ -92,11 +92,14 @@ from dapper_identity import (  # noqa: E402
     digest_of,
     load_schema,
 )
+sys.path.insert(0, str(REPO_ROOT / "schema"))
+from scientific_claims import check_scientific_content  # noqa: E402
+from document_prefixes import transform_identifiers  # noqa: E402
 
 # Top-level keys that are neither nodes nor edges. `_illustrative` marks nodes
 # drawn for shape rather than transcribed from a real run — the honesty
 # distinction the examples exist to make, read by the portal.
-META_KEYS = {"_illustrative"}
+META_KEYS = {"_illustrative", "prefixes"}
 
 SEVERITIES = ("error", "warning")
 
@@ -159,6 +162,7 @@ class Vocabulary:
     profiles: dict[str, dict]
     relationship_slots: dict[str, dict[str, str]] # class -> slot -> predicate URI
     predicate_uris: dict[str, str]               # schema CURIE -> expanded URI
+    schema: Any = field(repr=False)
 
     def predicate_uri(self, value: Any) -> str | None:
         return self.predicate_uris.get(value, value) if isinstance(value, str) else None
@@ -210,6 +214,7 @@ class Vocabulary:
             profiles=profiles_doc.get("profiles") or {},
             relationship_slots=relationship_slots,
             predicate_uris=predicate_uris,
+            schema=sv,
         )
 
 
@@ -233,6 +238,8 @@ class Document:
     unknown_keys: list[str]
     node_records: list[tuple[str, str, dict]]     # includes missing/duplicate ids
     shape_errors: list[tuple[str, str]]
+    prefix_errors: list[tuple[str, str]]
+    identity_records: list[tuple[str, str, dict]] # original spellings for hashing
 
     @classmethod
     def load(cls, path: Path, vocab: Vocabulary) -> "Document":
@@ -242,12 +249,16 @@ class Document:
             shape_errors.append((path.name, f"top level is {type(raw).__name__}, expected a mapping"))
             raw = {}
 
+        resolved, prefix_errors = transform_identifiers(
+            raw, vocab.schema, {**vocab.node_groups, **vocab.edge_groups}, compact_dapper=True)
+
         nodes: dict[str, tuple[str, str, dict]] = {}
         edges: list[tuple[str, str, dict]] = []
         unknown: list[str] = []
         node_records = []
+        identity_records = []
 
-        for key, value in raw.items():
+        for key, value in resolved.items():
             if key in META_KEYS:
                 continue
             if key not in vocab.node_groups and key not in vocab.edge_groups:
@@ -264,6 +275,7 @@ class Document:
                 if key in vocab.node_groups:
                     class_name = vocab.node_groups[key]
                     node_records.append((where, class_name, record))
+                    identity_records.append((where, class_name, raw[key][index]))
                     node_id = record.get("id")
                     if not isinstance(node_id, str) or not node_id.strip():
                         shape_errors.append((where, "node needs a nonempty string id; mint ids before linting"))
@@ -274,7 +286,8 @@ class Document:
                     edges.append((key, vocab.edge_groups[key], record))
 
         return cls(path=path, raw=raw, nodes=nodes, edges=edges, unknown_keys=unknown,
-                   node_records=node_records, shape_errors=shape_errors)
+                   node_records=node_records, shape_errors=shape_errors,
+                   prefix_errors=prefix_errors, identity_records=identity_records)
 
     def relationships(self, vocab: Vocabulary) -> list[Relationship]:
         """Normalize reified edges and schema-declared inline relationships."""
@@ -291,6 +304,16 @@ class Document:
                     if isinstance(obj, str):
                         links.append(Relationship(node_id, predicate, obj,
                                                   f"{group}[{node_id}].{slot}", False))
+            # A citation target is a relationship inside an inline value object.
+            # Follow it for reference checks and reachability, never as evidence.
+            if class_name == "Paragraph":
+                slot = vocab.schema.induced_slot("target_id", "CitationOccurrence")
+                predicate = vocab.schema.expand_curie(str(slot.slot_uri or vocab.schema.get_uri(slot)))
+                for i, citation in enumerate(node.get("citations") or []):
+                    target = citation.get("target_id") if isinstance(citation, dict) else None
+                    if isinstance(target, str):
+                        links.append(Relationship(node_id, predicate, target,
+                            f"{group}[{node_id}].citations[{i}].target_id", False))
         return links
 
     def class_of(self, node_id: str) -> str | None:
@@ -420,7 +443,7 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
             allowed = spec.get(end)
             if not allowed:
                 continue
-            if actual not in allowed:
+            if not any(c in vocab.schema.class_ancestors(actual) for c in allowed):
                 rep.add("error", "endpoints", f"{group}[{end}={node_id}]",
                         f"{class_name}.{end} is a {actual}, but must be one of "
                         f"{', '.join(allowed)}")
@@ -437,10 +460,110 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
         for end in ("subject", "object"):
             actual = doc.class_of(getattr(link, end))
             allowed = spec.get(end)
-            if actual is not None and allowed and actual not in allowed:
+            if actual is not None and allowed and not any(
+                    c in vocab.schema.class_ancestors(actual) for c in allowed):
                 rep.add("error", "endpoints", link.where,
                         f"inline relationship {end} is a {actual}, but must be one of "
                         f"{', '.join(allowed)}")
+
+
+def check_relationship_ranges(doc: Document, sv, rep: Report) -> None:
+    """Resolve class-valued references locally, accepting subclasses of the range.
+
+    JSON Schema checks the identifier string, not the class of its target.
+    External identifiers remain allowed; check_refs handles missing DAPPER nodes.
+    """
+    classes = sv.all_classes()
+    for _, class_name, node in doc.node_records:
+        for slot in sv.class_induced_slots(class_name):
+            if slot.is_a != "relationship" or slot.range not in classes:
+                continue
+            value = node.get(slot.name)
+            for ref in value if isinstance(value, list) else [value]:
+                actual = doc.class_of(ref) if isinstance(ref, str) else None
+                if actual is not None and slot.range not in sv.class_ancestors(actual):
+                    rep.add("error", "endpoints", f"{node.get('id')}.{slot.name}",
+                            f"reference is a {actual}, but must be {slot.range} or a subclass")
+
+
+def check_gmt_files(doc: Document, rep: Report) -> None:
+    """A supplied GMT link names a local content-addressed File, not a checksum."""
+    for node_id, (_, class_name, node) in doc.nodes.items():
+        if class_name not in {"GeneSet", "GeneSetCollection"}:
+            continue
+        for field in ("has_gmt_file", "in_gmt_file"):
+            ref = node.get(field)
+            if ref is None:
+                continue
+            if not isinstance(ref, str) or digest_of(ref) is None or doc.class_of(ref) is None:
+                rep.add("error", "gmt-file", f"{node_id}.{field}",
+                        "must reference a File or C2M2File record's DAPPER identifier in this document",
+                        "Use dapper:File.<digest> (or a subclass/full URI), not a bare checksum or file URL.")
+
+
+def check_gene_set_counts(doc: Document, rep: Report) -> None:
+    """Check reported counts only where a complete membership list is supplied."""
+    for node_id, (_, class_name, node) in doc.nodes.items():
+        if class_name not in {"GeneSet", "GeneSetCollection"}:
+            continue
+        count_field = "n_sets" if class_name == "GeneSetCollection" else "n_genes"
+
+        def compare(field, actual):
+            if isinstance(node.get(field), int) and node[field] != actual:
+                rep.add("error", "gene-set-counts", f"{node_id}.{field}",
+                        f"reports {node[field]}, but supplied membership gives {actual}")
+
+        if isinstance(node.get(count_field), int):
+            compare("n_members", node[count_field])
+        members = node.get("members")
+        if not isinstance(members, list) or not all(isinstance(m, str) for m in members):
+            continue
+        if len(set(members)) != len(members):
+            rep.add("error", "gene-set-counts", f"{node_id}.members", "members must be distinct")
+        compare(count_field, len(set(members)))
+        compare("n_members", len(set(members)))
+        if class_name == "GeneSetCollection":
+            genes = set()
+            for ref in members:
+                entry = doc.nodes.get(ref)
+                gene_members = entry[2].get("members") if entry and entry[1] == "GeneSet" else None
+                if not isinstance(gene_members, list) or not all(isinstance(g, str) for g in gene_members):
+                    break  # Unknown membership cannot establish a union size.
+                genes.update(gene_members)
+            else:
+                compare("n_genes", len(genes))
+
+
+def check_gene_set_membership(doc: Document, rep: Report) -> None:
+    """Optional inverse links must agree with explicitly supplied forward lists."""
+    for gene_id, gene in doc.nodes_of_class("GeneSet"):
+        parents = gene.get("in_gene_set_collection")
+        if not isinstance(parents, list) or not all(isinstance(p, str) for p in parents):
+            continue  # Schema validation handles malformed values; omission is allowed.
+        if len(set(parents)) != len(parents):
+            rep.add("error", "gene-set-membership", f"{gene_id}.in_gene_set_collection",
+                    "collection references must be distinct")
+        for collection_id in parents:
+            entry = doc.nodes.get(collection_id)
+            if not entry or entry[1] != "GeneSetCollection":
+                continue  # Reference and range checks report missing/mistyped targets.
+            members = entry[2].get("members")
+            if isinstance(members, list) and gene_id not in members:
+                rep.add("error", "gene-set-membership", f"{gene_id}.in_gene_set_collection",
+                        f"names {collection_id}, whose complete members list omits this GeneSet")
+
+    for collection_id, collection in doc.nodes_of_class("GeneSetCollection"):
+        members = collection.get("members")
+        if not isinstance(members, list):
+            continue
+        for gene_id in members:
+            entry = doc.nodes.get(gene_id) if isinstance(gene_id, str) else None
+            if not entry or entry[1] != "GeneSet":
+                continue
+            parents = entry[2].get("in_gene_set_collection")
+            if isinstance(parents, list) and collection_id not in parents:
+                rep.add("error", "gene-set-membership", f"{collection_id}.members",
+                        f"names {gene_id}, whose supplied in_gene_set_collection list omits this collection")
 
 
 def check_refs(doc: Document, vocab: Vocabulary, rep: Report) -> None:
@@ -524,19 +647,22 @@ def check_ids_match_content(doc: Document, sv, rep: Report) -> None:
     else notices. Only meaningful once ids are minted, so documents still
     carrying source keys are skipped rather than failed.
     """
-    minted = [i for i in doc.nodes if i.startswith("dapper:")]
+    minted = [n for _, _, n in doc.node_records
+              if isinstance(n.get("id"), str) and n["id"].startswith("dapper:")]
     if not minted:
         rep.add("warning", "identity", str(doc.path.name),
                 "no minted `dapper:` ids — skipping the content-digest check",
                 "Mint with `uv run schema/identity/dapper_identity.py assign <file>`.")
         return
-    for node_id, (group, class_name, node) in doc.nodes.items():
-        if not node_id.startswith("dapper:"):
+    for (where, class_name, node), (_, _, resolved) in zip(doc.identity_records, doc.node_records):
+        node_id = node.get("id")
+        canonical_id = resolved.get("id")
+        if not isinstance(canonical_id, str) or not canonical_id.startswith("dapper:"):
             continue
         expected = compute_id({k: v for k, v in node.items() if k != "id"},
                               class_name, sv, self_id=node_id)
-        if node_id != expected:
-            rep.add("error", "identity", f"{group}[{node_id}]",
+        if canonical_id != expected:
+            rep.add("error", "identity", where,
                     f"content hashes to {expected} — the id addresses different content",
                     "Re-mint with `uv run schema/identity/dapper_identity.py assign <file>`.")
 
@@ -546,10 +672,19 @@ def check_ids_match_content(doc: Document, sv, rep: Report) -> None:
 # ---------------------------------------------------------------------------
 def _terminal_ids(doc: Document, profile: dict, vocab: Vocabulary) -> list[str]:
     """End results exclude resources consumed or derived from in this graph."""
-    upstream_predicates = {vocab.predicate_uri(p) for p in ("prov:used", "prov:wasDerivedFrom")}
+    upstream_predicates = {vocab.predicate_uri(p) for p in (
+        "prov:used", "prov:wasDerivedFrom", "prov:hadMember")}
     upstream = {link.object for link in doc.relationships(vocab)
                 if link.predicate in upstream_predicates}
-    return [i for i, _ in doc.nodes_of_class(profile["terminal"]["class"]) if i not in upstream]
+    # Inverse membership also identifies contained sets, even when the
+    # collection's complete members list has not been enumerated.
+    upstream.update(link.subject for link in doc.relationships(vocab)
+                    if link.predicate == vocab.predicate_uri("dapper:inGeneSetCollection")
+                    and doc.class_of(link.object) == "GeneSetCollection")
+    classes = profile["terminal"]["class"]
+    if isinstance(classes, str):
+        classes = [classes]
+    return [i for cls in classes for i, _ in doc.nodes_of_class(cls) if i not in upstream]
 
 
 def check_terminal(doc: Document, profile: dict, vocab: Vocabulary, rep: Report) -> list[str]:
@@ -670,8 +805,12 @@ def check_reachability(doc: Document, profile: dict, terminals: list[str],
     outgoing: dict[str, list[str]] = {}
     outputs_of: dict[str, list[str]] = {}
     generated = set()
+    reverse_context = {vocab.predicate_uri(p) for p in profile.get("reverse_context_predicates", [])}
+    reverse_context.add(vocab.predicate_uri("dapper:inGeneSetCollection"))
     for link in doc.relationships(vocab):
         outgoing.setdefault(link.subject, []).append(link.object)
+        if link.predicate in reverse_context:
+            outgoing.setdefault(link.object, []).append(link.subject)
         if link.predicate == vocab.predicate_uri("prov:wasGeneratedBy"):
             outputs_of.setdefault(link.object, []).append(link.subject)
             generated.add(link.subject)
@@ -725,11 +864,20 @@ def lint(path: Path, vocab: Vocabulary, sv, validator,
     # matches — a document with hallucinated fields should report them rather
     # than bail out because its end result is unrecognised.
     check_shape(doc, vocab, rep)
+    for where, message in doc.prefix_errors:
+        rep.add("error", "prefixes", where, message)
     check_nodes(doc, validator, rep)
     check_edges(doc, validator, rep)
     check_predicates(doc, vocab, rep)
     check_endpoints(doc, vocab, rep)
+    check_relationship_ranges(doc, sv, rep)
+    check_gmt_files(doc, rep)
+    check_gene_set_counts(doc, rep)
+    check_gene_set_membership(doc, rep)
     check_refs(doc, vocab, rep)
+    for where, problem in check_scientific_content(
+            {nid: (cls, node) for nid, (_, cls, node) in doc.nodes.items()}):
+        rep.add("error", "scientific-content", where, problem)
     check_duplicate_ids(doc, vocab, rep)
     check_id_class(doc, rep)
     check_ids_match_content(doc, sv, rep)
@@ -814,7 +962,8 @@ def main() -> int:
             print(f"  {name}\n    {profile['title']} — terminal {spec['class']} ({bound})")
             print(f"    canonical example: {profile.get('canonical_example', '—')}")
             for req in profile.get("required_edges") or []:
-                print(f"    requires {req['group']} ({req.get('severity', 'error')})")
+                groups = " or ".join(option["group"] for option in req.get("any_of", [req]))
+                print(f"    requires {groups} ({req.get('severity', 'error')})")
             print()
         return 0
 
