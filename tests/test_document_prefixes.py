@@ -223,7 +223,7 @@ def test_corrected_hubmap_example_and_export_are_clean(sv, tmp_path, context):
     assert all(n["location"].startswith("file:///humgen/")
                for n in expanded["files"] + expanded["c2m2_files"] if n["filename"] != "genesets.dapper-ids.gmt")
     expanded_gmt = next(n for n in expanded["files"] if n["filename"] == "genesets.dapper-ids.gmt")
-    assert expanded_gmt["location"] == original["prefixes"]["export"] + "genesets.dapper-ids.gmt"
+    assert expanded_gmt["location"] == original["prefixes"]["export"] + "hubmap_hz1.dapper-ids.gmt"
     # A selector is the literal name in the physical file, even when URI expansion
     # changes the owning node's content-derived ID.
     for row, compact in zip(expanded["gene_sets"], original["gene_sets"]):

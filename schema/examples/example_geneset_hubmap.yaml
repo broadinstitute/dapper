@@ -7,7 +7,7 @@
 prefixes:
   humgen: file:///humgen/
   HGNC.SYMBOL: 'https://identifiers.org/hgnc.symbol:'
-  export: https://github.com/broadinstitute/dapper/releases/download/0.2.0-a1/
+  export: https://raw.githubusercontent.com/broadinstitute/dapper/0.2.0-a1/schema/examples/data/
 gene_set_collections:
   - id: dapper:GeneSetCollection.KKJ80S8fUhUnzTSI-_OQWIK5WpaLQ-tB
     name: HuBMAP ASCT+B gene-set library (HZ1)
@@ -8805,7 +8805,7 @@ files:
     name: HuBMAP ASCT+B gene-set library with DAPPER row identifiers (GMT)
     description: GMT export whose first-column row names are the GeneSet identifiers in the compact corrected provenance document.
     filename: genesets.dapper-ids.gmt
-    location: export:genesets.dapper-ids.gmt
+    location: export:hubmap_hz1.dapper-ids.gmt
     md5: 1kOIS6qGItIUQcaAPQackQ==
     sha256: 498996ebd67791c0a296d03f718b613c52876669176a1405b124778375983bda
     size_in_bytes: 36807

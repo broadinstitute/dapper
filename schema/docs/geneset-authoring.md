@@ -102,8 +102,8 @@ GMT from the final expanded IDs if that serialization also needs ID-named rows.
   `c2m2_uuid`. Other files use File, with C2M2-only identifiers removed.
 - Filesystem paths moved from `local_id` into `location`, using the declared
   `humgen:` prefix. A location is mutable and excluded from file identity.
-  The renamed GMT uses an `export:` prefix for the `0.2.0-a1` GitHub release
-  assets. To use a local copy instead, set that prefix to its directory's file URI.
+  The renamed GMT uses an `export:` prefix for the repository fixture at tag
+  `0.2.0-a1`. To use a local copy instead, set `location` to that file's path or URI.
 - `has_gmt_file` references the GMT record through its DAPPER content-derived
   ID. The GMT has **358 named sets and 964 distinct gene symbols**, with
   3,232 gene occurrences across rows. The original export reported 1,533 genes;

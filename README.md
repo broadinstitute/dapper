@@ -6,8 +6,8 @@ related biomedical knowledge products.
 ## Alpha release
 
 Use [0.2.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.2.0-a1)
-to pin the gene-set/GMT and scientific provenance model described here. The
-release includes a matched HuBMAP YAML/GMT bundle and migration notes. Pull
+to pin the gene-set/GMT and scientific provenance model described here. See
+the [release and migration notes](docs/releases/0.2.0-a1.md). Pull
 that tag when generating or validating its identifiers; earlier alphas use
 different gene-set and claims models.
 

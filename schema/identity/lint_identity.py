@@ -64,7 +64,6 @@ GRAPH_DOCS = [
     "example_geneset_hubmap.yaml",
     "example_claim_provenance_trace.yaml",
     "example_cell_graph.yaml",
-    "example_bottom_line_result.yaml",
     "example_bottom_line_af_aa.yaml",
     "example_file_graph.yaml",
 ]
