@@ -72,6 +72,7 @@ def build_site() -> None:
     shutil.copy2(ROOT / "schema" / "docs" / "bottom-line-results.md", guides / "bottom-line-results.md")
     shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
     shutil.copy2(ROOT / "schema" / "docs" / "geneset-authoring.md", guides / "geneset-authoring.md")
+    shutil.copy2(ROOT / "schema" / "docs" / "embeddings.md", guides / "embeddings.md")
     identity_guide = (ROOT / "schema" / "identity" / "README.md").read_text()
     (guides / "identity.md").write_text(
         identity_guide.replace("../docs/geneset-authoring.md", "geneset-authoring.md"))
@@ -98,6 +99,7 @@ def build_site() -> None:
     navigation.extend([
         {"Guides": [{"Files and DRS": "guides/files-and-drs.md"},
                     {"Gene-set authoring and prefixes": "guides/geneset-authoring.md"},
+                    {"Embeddings": "guides/embeddings.md"},
                     {"Bottom-line results": "guides/bottom-line-results.md"},
                     {"Genetic ancestry": "guides/ancestry.md"},
                     {"Scientific claims and accounts": "guides/claims.md"},

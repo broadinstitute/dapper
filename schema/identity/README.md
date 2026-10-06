@@ -193,7 +193,8 @@ it.
 | Signature | `Nanopublication.has_signature_element` | A signature attests to content; it cannot be part of what it attests to |
 | Mirror-observed | `ProvenancedResource.has_mirror_provenance` | A mirror's observation must not change the artifact's identity (the mirroring invariant) |
 | Location | `AgenticWorkspace.workspace_url`, `platform` | Where work can be re-run is not what the work is |
-| Back-reference | `Claim.asserted_in`, `NanopubPublicationInfo.pubinfo_of`, `NanopubProvenance.provenance_of`, `NanopubSignature.has_signature_target` | Carries nothing the forward edge doesn't — **and breaks the reference cycles** |
+| Back-reference | `Claim.asserted_in`, `NanopubPublicationInfo.pubinfo_of`, `NanopubProvenance.provenance_of`, `NanopubSignature.has_signature_target`, `Node.has_embedding` | Carries nothing the forward edge doesn't — **and breaks the reference cycles** |
+| Representation locator | `GeneSet.in_gmt_file`, `GeneSet.gmt_entry`, `Embedding.has_vector_file`, `Embedding.vector_row` | Where a serialized row lives is not what the record is; the content (members, `vector_sha256`) stays hashable |
 
 Those back-references are load-bearing. The nanopublication structure is genuinely cyclic
 (`Claim → Nanopublication → NanopubAssertion → Claim`), so bottom-up digest computation is

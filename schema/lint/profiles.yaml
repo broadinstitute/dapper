@@ -42,7 +42,7 @@ edge_endpoints:
     subject: [Activity]
     object: [File, C2M2File, Dataset, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
   WasGeneratedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Embedding, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
     object: [Activity]
   WasDerivedFrom:
     subject: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
@@ -92,6 +92,11 @@ edge_endpoints:
   HasWorkflowProvenance:
     subject: [Dataset, Activity]
     object: [BioComputeObject]
+  # Any node may be embedded; Node is the common ancestor, and endpoint
+  # constraints accept descendants.
+  HasEmbedding:
+    subject: [Node]
+    object: [Embedding]
 
 # ---------------------------------------------------------------------------
 # End-modality profiles

@@ -3,13 +3,13 @@
 LinkML models for dataset attribution, provenance, evidence retrieval, and
 related biomedical knowledge products.
 
-## Alpha release
+## Release
 
-Use [0.2.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.2.0-a1)
-to pin the gene-set/GMT and scientific provenance model described here. See
-the [release and migration notes](docs/releases/0.2.0-a1.md). Pull
-that tag when generating or validating its identifiers; earlier alphas use
-different gene-set and claims models.
+Use [0.2.0](https://github.com/broadinstitute/dapper/releases/tag/0.2.0)
+to pin the gene-set/GMT, scientific provenance, and embedding model described
+here. See the [release and migration notes](docs/releases/0.2.0.md). Pull
+that tag when generating or validating its identifiers; the 0.2.0 alphas and
+0.1.0 use different gene-set and claims models.
 
 ## Repository layout
 
@@ -90,6 +90,15 @@ and the set's inverse `in_gene_set_collection` list. Collection `n_sets` counts 
 the referenced `File` or `C2M2File`. See the
 [gene-set authoring guide](schema/docs/geneset-authoring.md) and
 [two-row example](schema/examples/example_geneset_collection_rows.yaml).
+
+`Embedding` records a vector that a model computed from text derived from
+any node (`embedding_of`; the node's inverse `has_embedding` list is
+unhashable, so embedding a node never changes its identifier). The vector
+bytes live as one row of a shared matrix `File`, located by `has_vector_file`
+plus `vector_row`; model, provider, dimensions, dtype, normalization, the
+embedded text, its template and `vector_sha256` make up the identity. See the
+[embeddings guide](schema/docs/embeddings.md) and
+[example](schema/examples/example_embedding_graph.yaml).
 
 Validate a single instance from the repository root with:
 

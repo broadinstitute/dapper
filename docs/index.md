@@ -12,6 +12,7 @@ ontology mappings. Search by a class or field name to jump straight to its defin
 - **[Dataset](reference/classes/Dataset.md)** — a citable data resource with attribution and provenance.
 - **[Activity](reference/classes/Activity.md)** — the computation or process that uses and generates resources.
 - **[GeneSet](reference/classes/GeneSet.md)**, **[GeneSetCollection](reference/classes/GeneSetCollection.md)**, and **[GeneProgram](reference/classes/GeneProgram.md)** — individual sets, libraries of sets, and coordinated gene activity.
+- **[Embedding](reference/classes/Embedding.md)** — a model-computed vector representing any node, stored as a row of a shared matrix file.
 - **[Claim](reference/classes/Claim.md)** — an attributed assessment of a proposition, with scores and provenance.
 - **[ScientificAccount](reference/classes/ScientificAccount.md)** — question, hypothesis, context, claims, and optional conclusions.
 - **[Question](reference/classes/Question.md)** and **[KnowledgeGap](reference/classes/KnowledgeGap.md)** — reusable inquiries; KnowledgeGap inherits from Question.
