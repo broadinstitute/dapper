@@ -56,7 +56,7 @@ description: >-
   awards, publications, scientific accounts, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://opensource.org/license/mit
-version: 0.2.0-a1
+version: 0.2.0-a2
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (NIH/OD — the profile's hard rule)
@@ -293,6 +293,27 @@ enums:
       controlled:
       mixed:
 
+  EmbeddingDtypeEnum:
+    description: >-
+      Element type of the stored embedding vector. Names follow NumPy dtype
+      spelling; the bytes hashed into `Embedding.vector_sha256` are the row in
+      this type, little-endian, C order.
+    permissible_values:
+      float16:
+      float32:
+      float64:
+      bfloat16:
+      int8:
+
+  EmbeddingNormalizationEnum:
+    description: >-
+      Normalization applied to the stored vector after the model produced it.
+      `none` stores the model output as returned; `l2` stores the unit-length
+      vector, so a dot product is a cosine similarity.
+    permissible_values:
+      none:
+      l2:
+
   FunderIdentifierTypeEnum:
     description: Type of the funder identifier.
     permissible_values:
@@ -518,6 +539,20 @@ slots:
       whole-file export of a single GeneSet. Use its content-derived DAPPER
       identifier, not a bare checksum or retrieval URL. A row in a shared GMT
       is selected with GeneSet.in_gmt_file and gmt_entry instead.
+  has_embedding:
+    is_a: relationship
+    mixins: [unhashable]  # inverse of Embedding.embedding_of; a derived representation never changes what a node is
+    range: Embedding
+    multivalued: true
+    inlined: false
+    slot_uri: dapper:hasEmbedding
+    inverse: embedding_of
+    description: >-
+      Embedding records computed from this node (one per embedding model or
+      text template). Available on every Node. Unhashable: attaching, replacing,
+      or removing an embedding leaves the node's identifier unchanged. The
+      forward, hashable direction is Embedding.embedding_of; if both are
+      supplied they must agree.
   relationship:
     slot_uri: rdf:type
     range: uriorcurie
@@ -579,6 +614,7 @@ classes:
     slots:
       - id
       - name
+      - has_embedding
 
   HashableNode:
     is_a: Node
@@ -1205,6 +1241,134 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Source naming convention for the GMT row names, not a CURIE declaration.
+
+  # ======================================================================
+  # BLOCK — EMBEDDINGS. An Embedding is a fixed-length numeric vector that a
+  # model computed from text derived from another node (a GeneSet's name and
+  # metadata, a collection's description, ...). The vector bytes are not
+  # inlined: they live as one row of a shared matrix File (typically one
+  # `.npy` across many collections) that the record locates with
+  # has_vector_file + vector_row, the same unhashable locator pattern as
+  # GeneSet.in_gmt_file + gmt_entry. Identity covers what was embedded, how
+  # (model, provider, dimensions, dtype, normalization, text, template,
+  # activity) and the resulting bytes (vector_sha256), so two runs that
+  # produce different floats are different embeddings, while moving the
+  # matrix or re-packing rows changes nothing.
+  # ======================================================================
+  Embedding:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource   # was_generated_by / was_derived_from / attribution, like Set and Dataset
+    aliases:
+      - vector embedding
+      - text embedding
+    description: >-
+      A fixed-length numeric vector representing another DAPPER node, computed
+      by an embedding model from text derived from that node. `embedding_of`
+      names the represented node; the target's inverse `has_embedding` list is
+      unhashable, so embedding a node never changes the node's own identifier.
+      The vector itself is stored as a row of a shared matrix File and located
+      by `has_vector_file` plus `vector_row`; those locators are unhashable and
+      must be supplied together. `vector_sha256` binds the identifier to the
+      stored bytes; `was_generated_by` (ProvenancedResource) names the Activity
+      that ran the model.
+    attributes:
+      embedding_of:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        inlined: false
+        slot_uri: dapper:embeddingOf
+        inverse: has_embedding
+        description: >-
+          Identifier of the node this vector represents (a GeneSet,
+          GeneSetCollection, Dataset, Claim, ...). Contributes to identity: the
+          same text embedded on behalf of a different node is a different
+          embedding.
+      embedding_model:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Model identifier as published by its provider, e.g. a Hugging Face
+          repository id such as
+          `pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb`.
+      embedding_model_version:
+        is_a: literal
+        mixins: [hashable]
+        description: Model revision, tag, or commit, if known.
+      embedding_provider:
+        is_a: literal
+        mixins: [hashable]
+        description: Provider or runtime that served the model, e.g. huggingface, openai.
+      dimensions:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 1
+        description: Number of elements in the vector.
+      dtype:
+        is_a: literal
+        mixins: [hashable]
+        range: EmbeddingDtypeEnum
+        description: Element type of the stored vector; the type `vector_sha256` was computed over.
+      normalization:
+        is_a: literal
+        mixins: [hashable]
+        range: EmbeddingNormalizationEnum
+        description: Normalization applied before storage.
+      embedded_text:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          The exact text given to the model. Recording it makes the embedding
+          reproducible and lets a reader judge what the vector represents.
+      text_template:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Versioned name of the rule that built `embedded_text` from the
+          target node, e.g. `cfde-geneset-v1`.
+      vector_sha256:
+        is_a: literal
+        mixins: [hashable]
+        pattern: '^[0-9a-f]{64}$'
+        description: >-
+          Hex SHA-256 of the vector's bytes in `dtype`, little-endian, C order.
+          Two embeddings with different values are different records even when
+          model and text agree.
+      has_vector_file:
+        is_a: relationship
+        mixins: [unhashable]  # representation locator, independent of the vector's content
+        range: File
+        inlined: false
+        slot_uri: dapper:hasVectorFile
+        description: >-
+          File holding the matrix this vector is a row of. Reference the local
+          File record by its DAPPER identifier; the File's description should
+          state the array layout (e.g. NumPy `.npy`, rows x dimensions, dtype).
+      vector_row:
+        is_a: literal
+        mixins: [unhashable]  # row selector within a representation
+        range: integer
+        minimum_value: 0
+        description: Zero-based row index of this vector within `has_vector_file`.
+    rules:
+      - preconditions:
+          slot_conditions:
+            has_vector_file:
+              required: true
+        postconditions:
+          slot_conditions:
+            vector_row:
+              required: true
+      - preconditions:
+          slot_conditions:
+            vector_row:
+              required: true
+        postconditions:
+          slot_conditions:
+            has_vector_file:
+              required: true
 
   # ======================================================================
   # BLOCK — SINGLE-CELL: GENE PROGRAM / CELL STATE. A
@@ -2738,6 +2902,17 @@ classes:
     slot_usage:
       predicate:
         ifabsent: string(dapper:hasMirrorProvenance)
+
+  HasEmbedding:
+    is_a: Edge
+    description: >-
+      Any Node → an Embedding computed from it. Reifies the node's
+      `has_embedding` list (the inverse of Embedding.embedding_of). This is a
+      representation relationship, not a derivation: the embedded node is not
+      upstream of anything by virtue of having been embedded.
+    slot_usage:
+      predicate:
+        ifabsent: string(dapper:hasEmbedding)
 
   HasDataUseTerm:
     is_a: Edge

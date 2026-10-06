@@ -96,6 +96,7 @@ DOC_GROUPS = {
     "activities": "Activity",
     "gene_sets": "GeneSet",
     "gene_set_collections": "GeneSetCollection",
+    "embeddings": "Embedding",
     "gene_programs": "GeneProgram",
     "cell_states": "CellState",
     "datasets": "Dataset",

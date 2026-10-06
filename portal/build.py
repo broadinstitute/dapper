@@ -72,6 +72,8 @@ EDGE_GROUPS = {
     "has_drs_object_edges": ("HasDrsObject", "forward"),
     "has_file_edges": ("HasFile", "forward"),
     "drs_representation_edges": ("DrsRepresentation", "forward"),
+    # node -> its vector representation; predicate reads the way the story does
+    "has_embedding_edges": ("HasEmbedding", "forward"),
 }
 
 # Several links live as INLINE FIELDS rather than reified edges. They carry the
@@ -110,6 +112,11 @@ INLINE_LINKS = {
     # constitutes, same "in" direction as generated_by_activity.
     "has_program": ("dapper:hasProgram", "in"),
     "drs_representation": ("dapper:drsRepresentation", "out"),
+    # Embedding <-> embedded node: the node flows into its embedding; the
+    # matrix file is the representation the vector lives in.
+    "embedding_of": ("dapper:embeddingOf", "in"),
+    "has_embedding": ("dapper:hasEmbedding", "out"),
+    "has_vector_file": ("dapper:hasVectorFile", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
@@ -122,6 +129,7 @@ FAMILY = {
     "GeneProgram": "data",
     "CellState": "data",
     "Dataset": "data",
+    "Embedding": "data",
     "Activity": "process",
     "MechanisticModel": "claim",
     "Claim": "claim",

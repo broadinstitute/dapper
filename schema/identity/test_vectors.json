@@ -94,7 +94,9 @@
         "assay": "scRNA-seq",
         "organism": "human",
         "inference_method": "cNMF",
-        "biological_process": ["obo:GO_0001666"],
+        "biological_process": [
+          "obo:GO_0001666"
+        ],
         "n_genes": 42
       },
       "expected_id": "dapper:GeneProgram.TcCFYMbd8N6Usvp16eQAgQhWw0WPr4w0"
@@ -108,7 +110,9 @@
         "assay": "scRNA-seq",
         "organism": "human",
         "inference_method": "cNMF",
-        "biological_process": ["obo:GO_0001666"],
+        "biological_process": [
+          "obo:GO_0001666"
+        ],
         "n_genes": 43
       },
       "expected_id": "dapper:GeneProgram.RkjL2cpmspK5ZuK6_fzESv-Sts0gHGKc"
@@ -120,9 +124,74 @@
       "instance": {
         "name": "hypoxic tumor cell state",
         "cell_type": "obo:CL_0001063",
-        "has_program": ["dapper:GeneProgram.TcCFYMbd8N6Usvp16eQAgQhWw0WPr4w0"]
+        "has_program": [
+          "dapper:GeneProgram.TcCFYMbd8N6Usvp16eQAgQhWw0WPr4w0"
+        ]
       },
       "expected_id": "dapper:CellState.Odfn6Ab5WmbeI0CFX5gMLAaW1GpQHfD8"
+    },
+    {
+      "name": "minimal-embedding",
+      "class": "Embedding",
+      "note": "Baseline for 0.2.0-a2. embedding_of and was_generated_by are nested references (bare digests); the vector bytes enter via vector_sha256.",
+      "instance": {
+        "name": "Embedding of a gene set",
+        "embedding_of": "dapper:GeneSet.sKbhzueXIbO9Xms62_nyJxlZ13en1fRO",
+        "embedding_model": "toy-4d",
+        "embedding_provider": "example",
+        "dimensions": 4,
+        "dtype": "float16",
+        "normalization": "none",
+        "embedded_text": "First illustrative gene set",
+        "text_template": "example-v1",
+        "vector_sha256": "6566c469ce79b2bc95f3ffcff7ab1167e1e894aeb4f05aea78c2a95ff074e131",
+        "was_generated_by": "dapper:Activity.f3NvLfo3qeBImT1Iqolj0z3sdOc_mAnX",
+        "has_vector_file": "dapper:File.aYgsG7KuOqG7gJ_yC9i9zCmvjMsTCMQ3",
+        "vector_row": 0
+      },
+      "expected_id": "dapper:Embedding.YqmiaFk6ncTlhHuHfauwDiWb_4MvPvex"
+    },
+    {
+      "name": "embedding-relocated",
+      "class": "Embedding",
+      "note": "SAME expected_id as minimal-embedding. has_vector_file and vector_row are unhashable representation locators: moving the matrix or re-packing rows must not change what the embedding IS.",
+      "instance": {
+        "name": "Embedding of a gene set",
+        "embedding_of": "dapper:GeneSet.sKbhzueXIbO9Xms62_nyJxlZ13en1fRO",
+        "embedding_model": "toy-4d",
+        "embedding_provider": "example",
+        "dimensions": 4,
+        "dtype": "float16",
+        "normalization": "none",
+        "embedded_text": "First illustrative gene set",
+        "text_template": "example-v1",
+        "vector_sha256": "6566c469ce79b2bc95f3ffcff7ab1167e1e894aeb4f05aea78c2a95ff074e131",
+        "was_generated_by": "dapper:Activity.f3NvLfo3qeBImT1Iqolj0z3sdOc_mAnX",
+        "has_vector_file": "dapper:File.71tWGS-PbGUXPR1jD_ZsXMJDbsnWtr3N",
+        "vector_row": 17
+      },
+      "expected_id": "dapper:Embedding.YqmiaFk6ncTlhHuHfauwDiWb_4MvPvex"
+    },
+    {
+      "name": "embedding-vector-bytes-changed",
+      "class": "Embedding",
+      "note": "DIFFERENT id from minimal-embedding. vector_sha256 is hashable: different floats are a different embedding even for the same model and text.",
+      "instance": {
+        "name": "Embedding of a gene set",
+        "embedding_of": "dapper:GeneSet.sKbhzueXIbO9Xms62_nyJxlZ13en1fRO",
+        "embedding_model": "toy-4d",
+        "embedding_provider": "example",
+        "dimensions": 4,
+        "dtype": "float16",
+        "normalization": "none",
+        "embedded_text": "First illustrative gene set",
+        "text_template": "example-v1",
+        "vector_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "was_generated_by": "dapper:Activity.f3NvLfo3qeBImT1Iqolj0z3sdOc_mAnX",
+        "has_vector_file": "dapper:File.aYgsG7KuOqG7gJ_yC9i9zCmvjMsTCMQ3",
+        "vector_row": 0
+      },
+      "expected_id": "dapper:Embedding.zNIkkVxHH_wK5PNSxJdduJhcX6jaF7NY"
     }
   ]
 }

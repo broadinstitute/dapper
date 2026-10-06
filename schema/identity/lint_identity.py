@@ -66,6 +66,7 @@ GRAPH_DOCS = [
     "example_cell_graph.yaml",
     "example_bottom_line_af_aa.yaml",
     "example_file_graph.yaml",
+    "example_embedding_graph.yaml",
 ]
 
 
