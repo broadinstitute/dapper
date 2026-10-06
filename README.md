@@ -3,13 +3,13 @@
 LinkML models for dataset attribution, provenance, evidence retrieval, and
 related biomedical knowledge products.
 
-## Alpha release
+## Release
 
-Use [0.2.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.2.0-a1)
-to pin the gene-set/GMT and scientific provenance model described here. See
-the [release and migration notes](docs/releases/0.2.0-a1.md). Pull
-that tag when generating or validating its identifiers; earlier alphas use
-different gene-set and claims models.
+Use [0.2.0](https://github.com/broadinstitute/dapper/releases/tag/0.2.0)
+to pin the gene-set/GMT, scientific provenance, and embedding model described
+here. See the [release and migration notes](docs/releases/0.2.0.md). Pull
+that tag when generating or validating its identifiers; the 0.2.0 alphas and
+0.1.0 use different gene-set and claims models.
 
 ## Repository layout
 

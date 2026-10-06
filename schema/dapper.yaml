@@ -56,7 +56,7 @@ description: >-
   awards, publications, scientific accounts, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://opensource.org/license/mit
-version: 0.2.0-a2
+version: 0.2.0
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (NIH/OD — the profile's hard rule)

@@ -1,6 +1,6 @@
 id: https://broadinstitute.github.io/dapper/model/schema/claims.yaml
 name: dapper_claims
-version: 0.2.0-a1
+version: 0.2.0
 title: DAPPER scientific claims
 description: >-
   Propositions, attributed assessments, and paragraph-oriented scientific accounts.
