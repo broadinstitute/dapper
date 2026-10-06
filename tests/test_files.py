@@ -46,6 +46,13 @@ def test_file_graph_mints_access_refs_without_changing_file_id(sv):
     assert doc == first
 
 
+def test_geneset_gmt_reference_participates_in_identity(sv):
+    gene_set = {"name": "Gene set", "has_gmt_file": "urn:file:first"}
+    original = compute_id(gene_set, "GeneSet", sv)
+    gene_set["has_gmt_file"] = "urn:file:revised"
+    assert compute_id(gene_set, "GeneSet", sv) != original
+
+
 def test_converter_accepts_generic_intermediate_and_preserves_provenance(sv):
     graph = {
         "nodes": [

@@ -33,21 +33,20 @@ edge_group_overrides:
 # an Award — it validates clean. These lists transcribe that prose into
 # something checkable.
 #
-# Where a description says "Dataset/Set/File", every concrete class in the union
-# is listed, because the check compares against the node's actual class. An edge
+# Endpoint constraints also accept descendants of each listed class. An edge
 # class omitted here still requires both endpoints to resolve to local nodes;
 # only the additional class constraints are omitted. The same type constraints
 # apply to equivalent inline relationships whose targets are present locally.
 edge_endpoints:
   Used:
     subject: [Activity]
-    object: [File, C2M2File, Dataset, Set, GeneSet, GeneProgram]
+    object: [File, C2M2File, Dataset, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
   WasGeneratedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, File, C2M2File]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
     object: [Activity]
   WasDerivedFrom:
-    subject: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File]
-    object: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject]
+    subject: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    object: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
   HasDrsObject:
     subject: [Dataset]
     object: [DrsObject]
@@ -61,22 +60,22 @@ edge_endpoints:
     subject: [Activity]
     object: [AgenticWorkspace]
   HasCreator:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Person, Organization]
   HasContributor:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Person, Organization]
   WasAttributedTo:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
     object: [Person, Organization]
   FundedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Award]
   IsDescribedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Publication]
   HasRecommendedCitation:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [RecommendedCitation]
   HasDataUseTerm:
     subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
@@ -85,7 +84,7 @@ edge_endpoints:
     subject: [Activity]
     object: [LineageStep]
   HasMirrorProvenance:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
+    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [MirrorProvenance]
   PackagedAs:
     subject: [Dataset]
@@ -102,7 +101,8 @@ edge_endpoints:
 # provenance it must carry.
 #
 # `terminal.class` is matched against end results after excluding resources
-# consumed by prov:used or named as prov:wasDerivedFrom sources. This includes
+# consumed by prov:used, named as prov:wasDerivedFrom sources, or included as
+# prov:hadMember members. A class may be a string or list of alternatives. This includes
 # both reified edges and schema-declared inline relationships. Two profiles
 # must still never share a terminal class.
 profiles:
@@ -145,14 +145,14 @@ profiles:
     activities_require_inputs: warning
 
   geneset:
-    title: Gene set
+    title: Gene set or collection
     description: >-
-      A gene set produced by a pipeline over C2M2 source files, as emitted by
-      the dig.geneset converter. Extends Set, so it takes the same reified
+      A named gene set or a collection produced by a pipeline over files,
+      as emitted by the dig.geneset converter. Both extend Set and take reified
       Used / WasGeneratedBy edges as any other collection.
     canonical_example: schema/examples/example_geneset_graph.yaml
     terminal:
-      class: GeneSet
+      class: [GeneSet, GeneSetCollection]
       min: 1
       # No max: one converter run legitimately emits many gene sets sharing a
       # single provenance subgraph, unlike a bottom-line result.
@@ -169,3 +169,23 @@ profiles:
     # or a step whose inputs were dropped on the way in. The second is the
     # common case and is invisible without this check.
     activities_require_inputs: warning
+
+  scientific-account:
+    title: Scientific account
+    description: >-
+      A structured account with framing, context, claims, optional conclusions,
+      and explicit evidence uses. Textual Paragraph expressions may accompany it.
+    canonical_example: schema/examples/example_scientific_account.yaml
+    terminal:
+      class: ScientificAccount
+      min: 1
+      max: 1
+    required_edges:
+      - group: was_generated_by_edges
+        object_class: Activity
+        min: 1
+        severity: error
+        why: The account must identify its assembly or recording activity.
+    activities_require_inputs: warning
+    # Saved textual expressions point to their account, not the other way round.
+    reverse_context_predicates: [dapper:scientific_account]

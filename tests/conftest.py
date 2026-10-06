@@ -26,6 +26,7 @@ HZ2 = FIXTURES / "geneset-hubmap-hz2"
 sys.path.insert(0, str(REPO_ROOT / "schema" / "identity"))
 sys.path.insert(0, str(REPO_ROOT / "schema" / "converter"))
 sys.path.insert(0, str(REPO_ROOT / "schema" / "lint"))
+sys.path.insert(0, str(REPO_ROOT / "schema"))
 
 from dapper_identity import load_schema
 

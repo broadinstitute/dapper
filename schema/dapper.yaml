@@ -14,8 +14,8 @@ description: >-
   On top of that core, the profile adds the following blocks:
 
     CLAIMS. `Claim` assesses a reusable Proposition with typed scores and
-      execution provenance. `CompositeClaim` combines component assessments
-      with explicit composition semantics. Defined in claims.yaml and
+      execution provenance. `ScientificAccount` organizes framing, context, claims and an optional
+      conclusion; `Paragraph` records a textual expression. Defined in claims.yaml and
       conceptually aligned with SEPIO's Proposition and Statement model.
 
     DISMECH HARMONIZATION. Cross-walk mappings onto the Monarch Initiative
@@ -39,13 +39,9 @@ description: >-
       than instead of it. A prompt is NOT a deterministic replay mechanism,
       so the two are deliberately not interchangeable.
 
-    HYPOTHESIS. A FAIR-digital-object mechanistic hypothesis expressed as
-      a gene -> mechanism -> disease causal chain. Structurally compatible
-      with dismech.monarchinitiative.org (it reuses DISMECH's hypothesis
-      grouping, causal-edge, and evidence shapes and its CausalLinkTypeEnum
-      values verbatim) and carries full attribution/provenance by mixing in
-      `ProvenancedResource`, so a hypothesis is citable exactly like a
-      dataset.
+    MECHANISTIC MODELS. Optional biological structure in MechanisticModel,
+      CausalStep and Mechanism. A hypothesis is a Proposition's role within
+      ScientificAccount. Confidence, review status and evidence live on Claim.
 
     SINGLE-CELL. `GeneProgram` — a coordinated pattern of gene activity
       representing a biological process, e.g. a factor from cNMF/NMF/
@@ -57,10 +53,10 @@ description: >-
       than what functional state it is in.
 
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
-  awards, publications, hypotheses, and nanopublications are Node entities;
+  awards, publications, scientific accounts, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://opensource.org/license/mit
-version: 0.1.0
+version: 0.2.0-a1
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (NIH/OD — the profile's hard rule)
@@ -419,40 +415,6 @@ enums:
       UNKNOWN:
         description: Directness has not been determined.
 
-  HypothesisStatusEnum:
-    description: >-
-      Lifecycle state of a hypothesis. `canonical` / `alternative` mirror the
-      role DISMECH's `MechanisticHypothesis.status` plays when organising
-      causal edges into competing explanatory models.
-    permissible_values:
-      proposed:
-        description: Generated but not yet reviewed.
-      canonical:
-        description: The accepted/consensus explanatory model for this disease.
-      alternative:
-        description: A credible competing explanatory model.
-      contested:
-        description: Actively disputed; see linked evidence on both sides.
-      refuted:
-        description: Evidence is judged to refute this hypothesis.
-      retracted:
-        description: >-
-          Withdrawn by its creator. When published as a nanopublication this
-          SHOULD be accompanied by an npx:RetractionNanopub.
-
-  EvidenceDirectionEnum:
-    description: >-
-      Whether an evidence item supports or opposes the claim it is attached to.
-      Matches the boolean sense of DISMECH's `EvidenceItem.supports` while
-      allowing an explicit "mixed"/"unknown" rather than overloading a boolean.
-    close_mappings:
-      - dismech:EvidenceItem
-    permissible_values:
-      supports:
-      refutes:
-      mixed:
-      unknown:
-
   NanopubTypeEnum:
     description: >-
       Nanopublication subtypes from Nanopub-X (npx), used as the object of
@@ -545,6 +507,17 @@ slots:
       Prefer a stable catalog CURIE, such as KPN.TRAIT:0000096 for atrial
       fibrillation, over a source abbreviation such as AF. External trait
       definitions remain in their catalog; no local trait node is required.
+  has_gmt_file:
+    is_a: relationship
+    mixins: [hashable]
+    range: File
+    inlined: false
+    slot_uri: dapper:hasGmtFile
+    description: >-
+      Local File or C2M2File record serializing a gene-set collection, or a
+      whole-file export of a single GeneSet. Use its content-derived DAPPER
+      identifier, not a bare checksum or retrieval URL. A row in a shared GMT
+      is selected with GeneSet.in_gmt_file and gmt_entry instead.
   relationship:
     slot_uri: rdf:type
     range: uriorcurie
@@ -847,7 +820,7 @@ classes:
       - prov:Entity
       # Cross-walk. Complementary halves of one idea: DISMECH's Dataset
       # describes the SCIENCE (organism, data_type, sample_types, platform,
-      # findings); this one describes the ATTRIBUTION (creators, funding,
+      # and reported scientific content); this one describes the ATTRIBUTION (creators, funding,
       # licence, DUO terms, DRS identity). Neither duplicates the other, and
       # DISMECH's `accession` is already a CURIE, so it maps onto `id`.
       - dismech:Dataset
@@ -923,6 +896,8 @@ classes:
       location:
         is_a: literal
         mixins: [unhashable]
+        annotations:
+          dapper:uri_or_path: true
         description: >-
           Current retrieval URI or storage prefix for this dataset, such as
           an S3 prefix containing partitioned output. This mutable location
@@ -1040,18 +1015,64 @@ classes:
     is_a: Set
     aliases:
       - gene set
-      - gene set library
       - signature
     description: >-
       A Set whose members are genes (the dig.geneset standard from
       flannick/dig-gene-set-extractors). No ontology term is asserted as
       class_uri — none resolves to "gene set" (verified against EBI OLS4) — so
-      GeneSet grounds via `is_a: Set` (prov:Collection). NB: a dig.geneset
-      "gene set" is frequently a *library* of many named term→genes sets (the
-      .gmt); `n_genes` counts unique genes, `n_sets` the named subsets.
+      GeneSet grounds via `is_a: Set` (prov:Collection). Represents ONE named
+      set of genes. A library of named sets belongs in GeneSetCollection;
+      a GMT file is its separate physical serialization.
     annotations:
       dapper:source_standard: dig.geneset 0.1.0 (flannick/dig-gene-set-extractors)
+    slots:
+      - has_gmt_file
+    slot_usage:
+      has_gmt_file:
+        description: >-
+          Reference to a GMT file exporting this single gene set. For a row
+          within a shared GMT use in_gmt_file and gmt_entry instead. Accepts File and
+          any subclass, including C2M2File. Retrieval locations and checksums
+          belong on the referenced file record. In a provenance document, use
+          the local file record's content-derived DAPPER identifier (CURIE or
+          full URI), not a bare checksum or retrieval URL.
     attributes:
+      in_gene_set_collection:
+        is_a: relationship
+        mixins: [unhashable]  # inverse membership; avoids a collection/member hash cycle
+        range: GeneSetCollection
+        multivalued: true
+        inlined: false
+        slot_uri: dapper:inGeneSetCollection
+        inverse: members
+        description: >-
+          Collections containing this GeneSet, independent of its GMT representation.
+          A set may belong to several collections. Inverse of GeneSetCollection.members;
+          when both directions are supplied in a document they must agree. Optional
+          so existing forward-only membership remains valid. Excluded from identity:
+          adding a collection backlink does not create a new gene set or a hash cycle.
+      in_gmt_file:
+        is_a: relationship
+        mixins: [unhashable]  # representation locator, independent of the set's content
+        range: File
+        inlined: false
+        slot_uri: dapper:inGmtFile
+        description: >-
+          File containing the row for this gene set. Reference a local File or
+          C2M2File by its DAPPER identifier, paired with gmt_entry. This relation
+          locates a representation; it does not assert collection membership or
+          contribute to identity. A GMT may therefore contain this set's own ID
+          without making that ID depend on the file's checksum.
+      gmt_entry:
+        is_a: literal
+        mixins: [unhashable]  # row selector within a representation
+        pattern: '^\S[^\t\r\n]*$'
+        description: >-
+          Exact first-column name identifying this gene set's row in in_gmt_file.
+          This is a row key, not a line number or the human-readable node name.
+          Row names must be unique within that GMT representation. May equal this
+          GeneSet's id when the GMT uses DAPPER identifiers as row names. Excluded
+          from identity so renaming a serialized row does not rename the set.
       assay:
         is_a: literal
         mixins: [hashable]
@@ -1078,14 +1099,18 @@ classes:
         range: integer
         aliases:
           - n_members
-        description: Count of unique genes in the set/library.
+        minimum_value: 0
+        description: Number of distinct genes in this single set, not across a library.
       n_sets:
         is_a: literal
         mixins: [hashable]
         range: integer
         aliases:
           - n_sets_emitted
-        description: Number of named gene sets when this is a library.
+        minimum_value: 1
+        maximum_value: 1
+        deprecated: Use GeneSetCollection.n_sets for a library; a GeneSet is one set.
+        description: Legacy single-set count, if supplied must be 1. Libraries use GeneSetCollection.
       term:
         is_a: literal
         mixins: [hashable]
@@ -1094,6 +1119,92 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Namespace prefix applied to term-derived set names (e.g. HuBMAP).
+    rules:
+      - preconditions:
+          slot_conditions:
+            in_gmt_file:
+              required: true
+        postconditions:
+          slot_conditions:
+            gmt_entry:
+              required: true
+      - preconditions:
+          slot_conditions:
+            gmt_entry:
+              required: true
+        postconditions:
+          slot_conditions:
+            in_gmt_file:
+              required: true
+
+  GeneSetCollection:
+    is_a: Set
+    aliases:
+      - gene set library
+    description: >-
+      A collection of named GeneSet objects, commonly serialized as rows of a
+      GMT file. Distinct from an individual gene set and from the physical file.
+      Members may be omitted when only a library-level manifest is available;
+      when supplied, members enumerates the complete collection.
+    slots:
+      - has_gmt_file
+    slot_usage:
+      has_gmt_file:
+        description: >-
+          File serializing this collection as GMT rows. Use the local File or
+          C2M2File record's DAPPER identifier; file location and checksums belong
+          on that record. No C2M2 registration is required by this class.
+      members:
+        range: GeneSet
+        inlined: false
+        inverse: in_gene_set_collection
+        description: >-
+          Complete list of GeneSet identifiers, not gene identifiers. The inverse
+          link is GeneSet.in_gene_set_collection. Membership contributes to the
+          collection's identity; the inverse backlink does not change member IDs.
+      member_type:
+        ifabsent: string(gene_set)
+        equals_string: gene_set
+      n_members:
+        minimum_value: 0
+        description: Number of member GeneSets; when supplied agrees with n_sets.
+    attributes:
+      n_sets:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+        aliases:
+          - n_sets_emitted
+        description: Number of distinct named GeneSets in the complete collection.
+      n_genes:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+        description: >-
+          Number of distinct gene identifiers in the union of all member sets.
+          A gene in several sets counts once; this is not the sum of row sizes.
+      assay:
+        is_a: literal
+        mixins: [hashable]
+        description: Assay context shared by the member gene sets, if applicable.
+      data_type:
+        is_a: literal
+        mixins: [hashable]
+        description: Molecular data type shared by the member gene sets.
+      organism:
+        is_a: literal
+        mixins: [hashable]
+        description: Organism shared by the member gene sets, if applicable.
+      genome_build:
+        is_a: literal
+        mixins: [hashable]
+        description: Genome build shared by the member gene sets, if applicable.
+      term_prefix:
+        is_a: literal
+        mixins: [hashable]
+        description: Source naming convention for the GMT row names, not a CURIE declaration.
 
   # ======================================================================
   # BLOCK — SINGLE-CELL: GENE PROGRAM / CELL STATE. A
@@ -1721,8 +1832,8 @@ classes:
     close_mappings:
       - schema:CreativeWork
       # Cross-walk. DISMECH's PublicationReference is richer on USE
-      # (found_in, findings — which deep-research output cited it, and what it
-      # showed) and thinner on IDENTITY (a bare PMID). This class is the
+      # (which deep-research output cited it, and which claims it supports)
+      # and thinner on IDENTITY (a bare PMID). This class is the
       # identity side; the use side belongs on the edge to the publication.
       - dismech:PublicationReference
       - dctypes:Text
@@ -2270,9 +2381,12 @@ classes:
       location:
         is_a: literal
         mixins: [unhashable]  # hosting/workspace location
+        annotations:
+          dapper:uri_or_path: true
         description: >-
-          Current filesystem path or retrieval URI (e.g. /work/intermediate.tsv
-          or s3://bucket/intermediate.tsv). Moving the file does not change its
+          Current filesystem path, retrieval URI, or document-declared CURIE
+          (e.g. /work/intermediate.tsv or s3://bucket/intermediate.tsv).
+          Moving the file does not change its
           DAPPER identity. This is distinct from C2M2File.local_id, which is
           the source system's identifier and retains its hashable semantics.
       drs_representation:
@@ -2333,11 +2447,14 @@ classes:
         is_a: literal
         mixins: [hashable]
         range: uriorcurie
-        close_mappings:
-          - dcat:accessURL
         annotations:
           dapper:source_standard: C2M2 local_id
-        description: DCC-local identifier, typically a bucket path (gs://, s3://) or URL.
+        description: >-
+          Source-assigned identifier retained from a C2M2 record, represented
+          here as a URI or CURIE. Put current storage paths in inherited
+          location instead. Native C2M2 local_id suffixes require their source
+          namespace to form this reference; this profile does not model that
+          two-column key separately.
       c2m2_uuid:
         is_a: literal
         mixins: [hashable]
@@ -2684,7 +2801,7 @@ classes:
 #   dapper:Publication         <-> dismech:PublicationReference
 #   dapper:Activity            <-> dismech:CurationEvent      (DISMECH's homegrown
 #                                mini-PROV; DAPPER's PROV-O subsumes it)
-#   dapper:Hypothesis          <-> dismech:MechanisticHypothesis
+#   dapper:MechanisticModel    ~   dismech:MechanisticHypothesis
 #   dapper:CausalStep          <-> dismech:CausalEdge
 #   dapper:Mechanism           <-> dismech:Mechanism
 #   dapper:EvidenceItem        <-> dismech:EvidenceItem
@@ -2758,7 +2875,7 @@ classes:
 #
 # WHY THIS FITS DAPPER. The nanopub split is almost exactly the DAPPER
 # split, which is why the two compose instead of competing:
-#   assertion   <- the scientific claim        (Hypothesis, block C)
+#   assertion   <- the scientific claim        (Claim, claims.yaml)
 #   provenance  <- prov:wasAttributedTo, Activity, LineageStep
 #   pubinfo     <- creator / license / created / RecommendedCitation
 # So `ProvenancedResource` already carries most of what the provenance and
@@ -2932,8 +3049,7 @@ classes:
     class_uri: np:Assertion
     description: >-
       The assertion graph — the claim being made, and the only part a reader is
-      asked to believe. `asserts` points at a Claim, CompositeClaim, or the
-      existing mechanistic Hypothesis. The assertion graph is distinct from
+      asked to believe. `asserts` points at a Claim or ScientificAccount. The assertion graph is distinct from
       the scientific object it carries.
     annotations:
       dapper:np_graph: assertion
@@ -2944,8 +3060,7 @@ classes:
         range: uriorcurie
         slot_uri: hycl:claims
         description: >-
-          The scientific object carried by this graph: a Claim, CompositeClaim,
-          or mechanistic Hypothesis id.
+          The scientific object carried by this graph: a Claim or ScientificAccount id.
       as_sentence:
         is_a: literal
         mixins: [hashable]
@@ -3089,231 +3204,61 @@ classes:
 # ===========================================================================
 # BLOCK — HYPOTHESIS (the REVEAL output)
 #
-# REVEAL emits a mechanistic hypothesis relating a GENE to a DISEASE through a
-# MECHANISM. The milestone is "define hypothesis schema", and the requirement
-# is that it be (i) a FAIR digital object with full metadata and provenance,
-# (ii) in a format compatible with dismech.monarchinitiative.org, and
-# (iii) recognizably compatible with the portal-wide provenance/FAIRness work
-# (the KPN and gene-set work elsewhere in this schema).
-#
-# HOW EACH REQUIREMENT IS MET
-#   FAIR digital object   -> Hypothesis is_a Node (globally unique resolvable
-#                            `id`) + mixin ProvenancedResource, so it carries
-#                            creators, funding, licence, access level, derived-
-#                            from, and a recommended citation exactly like a
-#                            Dataset. Findable/Accessible/Interoperable/
-#                            Reusable falls out of reusing the core rather
-#                            than inventing a parallel metadata block.
-#   DISMECH compatibility -> The chain shape is DISMECH's. A Hypothesis maps to
-#                            dismech:MechanisticHypothesis (the grouping object:
-#                            hypothesis_group_id / hypothesis_label / status)
-#                            and each CausalStep maps to dismech:CausalEdge
-#                            (target / causal_link_type / intermediate_
-#                            mechanisms / evidence), REUSING its
-#                            CausalLinkTypeEnum values verbatim. In DISMECH the
-#                            grouping and the edges are linked by string
-#                            `hypothesis_groups`; here they are linked by node
-#                            id, and `dismech_entry_key` preserves the string
-#                            so the join survives a round trip.
-#   Portal compatibility  -> A Hypothesis is publishable as a signed
-#                            nanopublication via block (B): the Hypothesis is
-#                            the assertion, its ProvenancedResource slots
-#                            populate the provenance and pubinfo graphs.
-#
-# HYPOTHESIS vs NANOPUBLICATION — why both, and how they relate.
-#
-# The intuition that "everything is a hypothesis, and a nanopub is a hypothesis
-# with support" is very close to right, and the precise version is worth
-# stating because it decides the shape of this block.
-#
-#   A HYPOTHESIS is CONTENT — a claim. It may be atomic ("PCSK9 binds the
-#   LDLR EGF-A domain") or composite (a multi-step causal chain). It is
-#   mutable: its status moves proposed -> canonical -> contested as the field
-#   argues, and support accrues to it over time.
-#
-#   A NANOPUBLICATION is a PUBLICATION ACT — one assertion, plus who asserted
-#   it, plus where that assertion came from, signed and content-addressed. It
-#   is immutable by construction.
-#
-# So the two are not rivals and neither contains the other in general:
-#   * Publishing a hypothesis MINTS a nanopub whose assertion is that
-#     hypothesis                                    -> `asserted_in`
-#   * Support for a hypothesis ARRIVES AS OTHER NANOPUBS, each asserting its
-#     own atomic claim with its own provenance       -> `supported_by_nanopub`
-#
-# The deciding argument is immutability. A published nanopub's id is a trusty
-# URI — a hash of its content. Nest the evidence inside the hypothesis's own
-# nanopub and every new supporting study rewrites the hash, so the identity of
-# the hypothesis changes each time someone supports it; the citation you
-# published last month no longer resolves to the same object. Keeping support
-# as links FROM a mutable Hypothesis node TO immutable nanopubs is what lets
-# each claim keep a stable identity while the body of evidence grows.
-#
-# This also means the recursion the intuition points at is real and is
-# expressible: a supporting nanopub's assertion may itself be a Hypothesis (an
-# atomic one). "Everything is a hypothesis" holds; a nanopub is the signed,
-# dated, attributed act of putting one on the record.
-#
-# GENERALISATION. The advisor notes hypothesis types may broaden beyond
-# gene -> mechanism -> disease. `Hypothesis` therefore does NOT hard-code
-# gene/disease slots as required: the chain is an ordered list of CausalSteps
-# over `uriorcurie` endpoints, and `subject_entity` / `object_entity` are the
-# generic ends. `subject_gene` / `object_disease` are convenience accessors
-# for the gene -> disease case REVEAL starts with.
-# ===========================================================================
+# Mechanistic structure is optional content. Hypothesis is a Proposition's
+# role in a ScientificAccount; attribution and assessment live on Claim.
+# DISMECH alignments here are conceptual, not assertions of complete equivalence.
 
-  Hypothesis:
+  MechanisticModel:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
       - DismechLinked
-    class_uri: hycl:Statement
     description: >-
-      A mechanistic hypothesis: a claim that a subject entity (initially a
-      gene) contributes to an object entity (initially a disease) through an
-      ordered chain of mechanisms. A FAIR digital object — citable, attributed,
-      funded, licensed — and publishable as a nanopublication.
-    exact_mappings:
-      - dismech:MechanisticHypothesis
+      Optional biological model elaborating one or more causal relationships.
+      Contains structure and scope, not an assessment, confidence, or review
+      status. A Proposition may reference this model and Claims assess that
+      proposition. Its use as a hypothesis belongs to a ScientificAccount.
     close_mappings:
-      - hycl:Statement
-    annotations:
-      dapper:source_standard: DISMECH MechanisticHypothesis
+      - dismech:MechanisticHypothesis
     attributes:
-      hypothesis_label:
-        is_a: literal
-        mixins: [hashable]
-        description: Short human-readable label, e.g. "PCSK9 GOF -> LDLR degradation -> FH".
-        exact_mappings:
-          - dismech:hypothesis_label
-      statement:
-        is_a: literal
-        mixins: [hashable]
-        slot_uri: npx:asSentence
-        description: >-
-          The hypothesis as one self-contained English sentence with an
-          unambiguous subject (an AIDA sentence). This is what a reader is
-          asked to evaluate, and what becomes `npx:asSentence` when the
-          hypothesis is published as a nanopublication.
-        close_mappings:
-          - hycl:AIDA-Sentence
-      status:
-        is_a: literal
-        mixins: [hashable]
-        range: HypothesisStatusEnum
-        close_mappings:
-          - dismech:status
-        description: Review status of the hypothesis (e.g. canonical, candidate).
       description:
         is_a: literal
         mixins: [hashable]
-        description: Longer prose statement of the hypothesis and its rationale.
+        required: true
+        description: Description of the proposed biological structure.
       subject_entity:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
-        description: >-
-          The upstream end of the chain. Generic form; for REVEAL's initial
-          scope this is a gene (see `subject_gene`).
-      subject_gene:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: >-
-          Convenience accessor for the gene at the upstream end, as an HGNC
-          CURIE (e.g. `HGNC:20001` for PCSK9). When set, SHOULD equal `subject_entity`.
+        description: Optional upstream entity in the mechanistic model.
       object_entity:
         is_a: relationship
         mixins: [hashable]
         range: uriorcurie
-        description: The downstream end of the chain. Generic form.
-      object_disease:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: >-
-          Convenience accessor for the disease at the downstream end, as a
-          MONDO CURIE (e.g. `MONDO:0005439`). When set, SHOULD equal
-          `object_entity`. This is also the join key into DISMECH
-          (`Disease.disease_term`).
+        description: Optional downstream entity in the mechanistic model.
       has_causal_step:
         is_a: relationship
         mixins: [hashable]
-        range: uriorcurie
+        range: CausalStep
+        inlined: false
         multivalued: true
-        description: >-
-          The ordered gene -> mechanism -> disease chain, as CausalStep ids.
-          Order is carried by each step's `step_index`, not by list position,
-          so the chain survives set-valued RDF round trips.
+        description: Causal steps, ordered by each step's step_index.
+      scope:
+        is_a: literal
+        mixins: [hashable]
+        description: Biological conditions under which the model is proposed to apply.
       applies_to_subtypes:
         is_a: literal
         mixins: [hashable]
         multivalued: true
-        description: >-
-          Disease subtypes this hypothesis is scoped to. Mirrors DISMECH
-          `MechanisticHypothesis.applies_to_subtypes`.
-        exact_mappings:
-          - dismech:applies_to_subtypes
-      confidence:
-        is_a: literal
-        mixins: [hashable]
-        range: float
-        minimum_value: 0.0
-        maximum_value: 1.0
-        description: >-
-          Optional calibrated confidence in [0,1] as reported by the generating
-          system. NOT a substitute for evidence — a hypothesis with high
-          confidence and no `has_evidence` is not publishable.
-      has_evidence:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        multivalued: true
-        description: EvidenceItem ids supporting or refuting this hypothesis.
-      asserted_in:
-        is_a: relationship
-        mixins: [unhashable]  # back-reference
-        range: uriorcurie
-        multivalued: true
-        description: >-
-          Nanopublication id(s) in which THIS hypothesis is the assertion —
-          i.e. publishing this claim. See `supported_by_nanopub` for the other
-          direction (nanopubs that support it).
-      supported_by_nanopub:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        multivalued: true
-        description: >-
-          Nanopublication id(s) whose assertions SUPPORT this hypothesis. Each
-          such nanopub is a separate, independently-signed atomic claim with
-          its own provenance chain back to the analysis and dataset that
-          produced it — which is what makes a claim traceable end to end.
-
-          Support lives HERE, outside the nanopub, deliberately. A published
-          nanopub is addressed by a trusty URI, i.e. a hash of its own content:
-          it is immutable. If evidence were nested inside the hypothesis's own
-          nanopub, every newly-accrued supporting study would change the hash
-          and therefore change the hypothesis's identity — the thing you cite
-          would move under you. Accumulating support as links from a mutable
-          Hypothesis node to immutable nanopubs keeps the identity of each
-          claim stable while the body of support grows.
-      refuted_by_nanopub:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        multivalued: true
-        description: >-
-          Nanopublication id(s) whose assertions ARGUE AGAINST this hypothesis.
-          Same rationale as `supported_by_nanopub`; kept separate so a
-          hypothesis can carry both and be judged on the balance.
+        description: Disease subtypes to which this model applies.
 
   CausalStep:
     is_a: HashableNode
     mixins:
       - DismechLinked
     description: >-
-      One ordered link in a hypothesis's causal chain: subject -> object, with
+      One ordered link in a mechanistic model's causal chain: subject -> object, with
       a directness classification and optional intermediates. Deliberately
       shaped as DISMECH's `CausalEdge` so a chain can be written into a DISMECH
       entry, or read out of one, without translation.
@@ -3369,13 +3314,6 @@ classes:
       description:
         is_a: literal
         mixins: [hashable]
-      has_evidence:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        multivalued: true
-        description: EvidenceItem ids for this specific step.
-
   Mechanism:
     is_a: HashableNode
     mixins:
@@ -3403,16 +3341,50 @@ classes:
 
   EvidenceItem:
     is_a: HashableNode
+    mixins:
+      - ProvenancedResource
     description: >-
-      A single piece of evidence for or against a claim. Shaped as DISMECH's
-      `EvidenceItem` so evidence transfers between the two models intact.
-      DISMECH carries direction as a boolean `supports`; this uses an explicit
-      enum so "mixed" and "unknown" are sayable.
-    exact_mappings:
+      Evidence used in an attributed assessment of a target proposition.
+      Can retain a publication passage or use source Claims, with a direction,
+      rationale, and assumptions. The target is a Proposition rather than the
+      owning Claim, so Claim -> EvidenceItem -> Proposition has no back-reference
+      cycle. Reuse across Claims requires the same target and interpretation.
+    close_mappings:
       - dismech:EvidenceItem
+    see_also:
+      - https://sepio-framework.github.io/sepio-linkml/EvidenceLine/
     annotations:
-      dapper:source_standard: DISMECH EvidenceItem
+      dapper:source_standard: DISMECH EvidenceItem and SEPIO EvidenceLine (conceptual alignment)
     attributes:
+      source_claims:
+        is_a: relationship
+        mixins: [hashable]
+        range: Claim
+        inlined: false
+        multivalued: true
+        minimum_cardinality: 1
+        description: Source assessments used as evidence; not automatically accepted as true.
+      target_proposition:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        description: Proposition to which direction and explanation apply.
+      context:
+        is_a: literal
+        mixins: [hashable]
+        description: Analytical or biological model context needed to interpret this evidence use.
+      assumptions:
+        is_a: literal
+        mixins: [hashable]
+        multivalued: true
+        description: Assumptions licensing this interpretation; not claims assessed by this work.
+      mechanistic_model:
+        is_a: relationship
+        mixins: [hashable]
+        range: MechanisticModel
+        inlined: false
+        description: Optional biological structure used in the interpretation.
       reference:
         is_a: relationship
         mixins: [hashable]
@@ -3432,7 +3404,7 @@ classes:
         is_a: literal
         mixins: [hashable]
         range: EvidenceDirectionEnum
-        description: Whether this evidence supports or refutes the claim.
+        description: Direction of this evidence use relative to target_proposition.
         close_mappings:
           - dismech:supports
       evidence_source:
@@ -3450,7 +3422,7 @@ classes:
       explanation:
         is_a: literal
         mixins: [hashable]
-        description: Curator/agent explanation of how the snippet bears on the claim.
+        description: Curator/agent rationale for how the passage or source claims bear on the target proposition.
         exact_mappings:
           - dismech:explanation
       from_nanopub:
@@ -3463,18 +3435,34 @@ classes:
           Following it reaches that claim's own provenance graph, and from
           there the analysis and dataset it rests on.
 
-  # ---- hypothesis edges ----------------------------------------------------
+    rules:
+      - preconditions:
+          slot_conditions:
+            source_claims:
+              required: true
+        postconditions:
+          slot_conditions:
+            target_proposition:
+              required: true
+            direction:
+              required: true
+            explanation:
+              required: true
+            context:
+              required: true
+
+  # ---- scientific-content edges ----------------------------------------------------
 
   HasCausalStep:
     is_a: Edge
-    description: Hypothesis → CausalStep.
+    description: MechanisticModel → CausalStep.
     slot_usage:
       predicate:
         ifabsent: string(dapper:hasCausalStep)
 
   HasEvidence:
     is_a: Edge
-    description: Hypothesis/CausalStep → EvidenceItem.
+    description: Claim → EvidenceItem.
     slot_usage:
       predicate:
         ifabsent: string(dapper:hasEvidence)
@@ -3482,23 +3470,11 @@ classes:
   AssertedIn:
     is_a: Edge
     description: >-
-      Hypothesis → Nanopublication. The bridge between block (C) and block (B):
-      it records that this hypothesis was published as the assertion of a
+      Claim → Nanopublication. Records that this claim was published in a
       signed, content-addressed nanopublication.
     slot_usage:
       predicate:
         ifabsent: string(hycl:claims)
-
-  SupportedByNanopub:
-    is_a: Edge
-    description: >-
-      Hypothesis → Nanopublication that supports it. The reified form of
-      `Hypothesis.supported_by_nanopub`; traversing it and then that nanopub's
-      `np:hasProvenance` is the path from a hypothesis to the datasets its
-      support rests on.
-    slot_usage:
-      predicate:
-        ifabsent: string(dapper:supportedByNanopub)
 
   HasAgenticWorkspace:
     is_a: Edge

@@ -22,6 +22,14 @@ uv run schema/identity/lint_identity.py
 
 Importable too: `from dapper_identity import compute_id, compute_digest, assign_ids, verify`.
 
+For a graph using document-local prefixes, `schema/expand_prefixes.py` exports
+absolute URI references and re-mints affected DAPPER IDs. The full
+`https://broadinstitute.github.io/dapper/ns#Class.digest` form is recognized
+alongside `dapper:Class.digest`; existing compact-form test vectors are unchanged.
+External CURIE expansion can change hashable literal values, so it must update
+IDs and dependent references together. See the
+[gene-set authoring guide](../docs/geneset-authoring.md#validate-and-export).
+
 ---
 
 # Start here: you have a pile of gene sets and want IDs
@@ -103,7 +111,7 @@ content integrity for a *published nanopublication package*; a `dapper:` id name
 | **Profile name** | `DAPPER-ID-1` (recorded on `HashableNode` as `dapper:id_profile`) |
 | **Identifier form** | `dapper:{ClassName}.{digest}` — the full LinkML class name |
 | **Semantic scope** | one DAPPER Node instance — not a publication package, graph, or file's bytes |
-| **Input model** | `schema/dapper.yaml` (pre-release, unversioned) |
+| **Input model** | `schema/dapper.yaml` and its imports; pin the schema release (currently `0.2.0-a1`) |
 | **Included** | slots marked `mixins: [hashable]`, plus the class name |
 | **Excluded** | slots marked `mixins: [unhashable]`, `id`, and nulls |
 | **Canonicalization** | RDF → `rdflib.compare.to_canonical_graph` → N-Triples → **sorted lines** → `\n`-joined → UTF-8 |
@@ -185,15 +193,36 @@ it.
 | Signature | `Nanopublication.has_signature_element` | A signature attests to content; it cannot be part of what it attests to |
 | Mirror-observed | `ProvenancedResource.has_mirror_provenance` | A mirror's observation must not change the artifact's identity (the mirroring invariant) |
 | Location | `AgenticWorkspace.workspace_url`, `platform` | Where work can be re-run is not what the work is |
-| Back-reference | `Hypothesis.asserted_in`, `NanopubPublicationInfo.pubinfo_of`, `NanopubProvenance.provenance_of`, `NanopubSignature.has_signature_target` | Carries nothing the forward edge doesn't — **and breaks the reference cycles** |
+| Back-reference | `Claim.asserted_in`, `NanopubPublicationInfo.pubinfo_of`, `NanopubProvenance.provenance_of`, `NanopubSignature.has_signature_target` | Carries nothing the forward edge doesn't — **and breaks the reference cycles** |
 
 Those back-references are load-bearing. The nanopublication structure is genuinely cyclic
-(`Hypothesis → Nanopublication → NanopubAssertion → Hypothesis`), so bottom-up digest computation is
+(`Claim → Nanopublication → NanopubAssertion → Claim`), so bottom-up digest computation is
 impossible until one direction is excluded. Lint check 4 re-verifies the graph is a DAG so a future
 back-reference cannot silently reintroduce the problem.
 
-Everything else is hashable, including `Hypothesis.status` and `confidence` — a contested hypothesis
-is a different object from a canonical one.
+Gene-set collections use the same pattern: `GeneSetCollection.members` is
+hashable, while the inverse `GeneSet.in_gene_set_collection` is unhashable.
+Adding a collection backlink leaves the set ID unchanged. Editing a member's
+content remints the set and dependent collection, and the minter rewrites both
+directions to the new IDs. Membership consistency is checked by the provenance
+linter separately from digest verification.
+
+`GeneSet.in_gmt_file` and `GeneSet.gmt_entry` are also unhashable: they locate
+a serialized row without changing the set's content. This allows a GMT to use
+the GeneSet's own ID as its row name. Mint the sets, serialize the GMT, compute
+the file's checksums, then mint its File and the collection; rewriting the sets'
+file pointers leaves their IDs stable. `has_gmt_file` remains hashable. These
+two locator exclusions revise the development schema's earlier hash policy,
+so records minted under that policy need to be re-minted once.
+
+`gmt_entry` is a literal selector, not a graph reference. URI expansion leaves
+it unchanged so it still matches the physical GMT, even if expansion of gene
+identifiers changes the GeneSet ID.
+
+Assessment status and score references are hashable on Claim. Reassessment changes
+the Claim and any dependent ScientificAccount; it leaves the assessed Proposition
+and optional MechanisticModel unchanged. Paragraph points to its account, so edits
+to wording change only the expression, not the scientific content.
 
 ## Test vectors are permanent
 

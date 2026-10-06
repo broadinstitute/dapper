@@ -95,14 +95,18 @@ DOC_GROUPS = {
     "c2m2_files": "C2M2File",
     "activities": "Activity",
     "gene_sets": "GeneSet",
+    "gene_set_collections": "GeneSetCollection",
     "gene_programs": "GeneProgram",
     "cell_states": "CellState",
     "datasets": "Dataset",
     "sets": "Set",
-    "hypotheses": "Hypothesis",
+    "mechanistic_models": "MechanisticModel",
     "propositions": "Proposition",
     "claims": "Claim",
-    "composite_claims": "CompositeClaim",
+    "scientific_accounts": "ScientificAccount",
+    "questions": "Question",
+    "knowledge_gaps": "KnowledgeGap",
+    "paragraphs": "Paragraph",
     "claim_scores": "ClaimScore",
     "causal_steps": "CausalStep",
     "mechanisms": "Mechanism",
@@ -142,8 +146,19 @@ def sha512t24u(blob: bytes) -> str:
     return base64.urlsafe_b64encode(hashlib.sha512(blob).digest()[:24]).decode("ascii")
 
 
+DAPPER_NAMESPACE = "https://broadinstitute.github.io/dapper/ns#"
+
+
+def compact_identifier(identifier: str) -> str:
+    """Recognize the full URI spelling of DAPPER identifiers and vocabulary."""
+    if isinstance(identifier, str) and identifier.startswith(DAPPER_NAMESPACE):
+        return f"{CURIE_PREFIX}:" + identifier[len(DAPPER_NAMESPACE):]
+    return identifier
+
+
 def digest_of(identifier: str) -> str | None:
-    """Extract the bare digest from a `dapper:Class.digest` identifier."""
+    """Extract a bare digest from either the CURIE or full DAPPER URI."""
+    identifier = compact_identifier(identifier)
     if not isinstance(identifier, str) or not identifier.startswith(f"{CURIE_PREFIX}:"):
         return None
     _, _, rest = identifier.partition(":")
@@ -483,11 +498,15 @@ def _referenced_ids(value: Any, candidates: set[str]) -> set[str]:
     return found
 
 
-def assign_ids(document: dict, sv) -> dict[str, str]:
+def assign_ids(document: dict, sv, *, expanded: bool = False,
+               preserve_external: bool = False) -> dict[str, str]:
     """Mint ids for every node in a graph document, in dependency order.
 
     Returns {old_id: new_id}. Mutates `document` in place: node ids are replaced
     and every reference to them anywhere in the document is rewritten.
+
+    URI export uses expanded=True so nested references are hashed in their
+    final serialization, and preserve_external=True to retain external IDs.
 
     Nodes are processed leaf-first over HASHABLE references only. That the graph
     is acyclic under that restriction is not luck — back-references
@@ -538,10 +557,15 @@ def assign_ids(document: dict, sv) -> dict[str, str]:
 
     mapping: dict[str, str] = {}
     for nid in order:
+        if preserve_external and digest_of(nid) is None:
+            mapping[nid] = nid
+            continue
         class_name, node = nodes[nid]
         resolved = _rewrite_node(node, class_name, sv, mapping)
         resolved.pop("id", None)
         mapping[nid] = compute_id(resolved, class_name, sv, self_id=nid)
+        if expanded:
+            mapping[nid] = DAPPER_NAMESPACE + mapping[nid].partition(":")[2]
 
     # rewrite ids and every reference to them, document-wide
     for _, _, node in _iter_nodes(document):
@@ -577,7 +601,7 @@ def verify(document: dict, sv) -> list[str]:
         actual = node.get("id")
         expected = compute_id({k: v for k, v in node.items() if k != "id"},
                               class_name, sv, self_id=actual)
-        if actual != expected:
+        if compact_identifier(actual) != expected:
             problems.append(f"{class_name}: id is {actual!r}, content hashes to {expected!r}")
     return problems
 

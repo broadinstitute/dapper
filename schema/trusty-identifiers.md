@@ -122,7 +122,8 @@ identifier and an explicit relationship to the original.
 The current model already has the right conceptual boundary:
 
 - `Nanopublication` is the immutable publication act.
-- `Hypothesis` is evolving scientific content.
+- `Proposition` and optional `MechanisticModel` describe scientific content.
+- `Claim` records an attributed assessment; `ScientificAccount` organizes an account.
 - successor/support/retraction relationships connect immutable publications.
 - the four nanopublication graph classes provide the RDF dataset to hash.
 

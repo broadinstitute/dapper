@@ -66,7 +66,6 @@ EDGE_GROUPS = {
     # has_assertion_edges / has_provenance_edges are deliberately NOT drawn as
     # edges — they are containment, rendered by nesting the graphs inside the
     # nanopublication instead.
-    "supported_by_nanopub_edges": ("SupportedByNanopub", "reverse"),
     # workspace -> activity in flow terms: the plan comes before the run
     "has_agentic_workspace_edges": ("HasAgenticWorkspace", "reverse"),
     # dataset -> its retrievable payload; predicate already points the way the story reads
@@ -80,11 +79,27 @@ EDGE_GROUPS = {
 # float unconnected. "in" = the field's target flows into this node.
 INLINE_LINKS = {
     "has_file": ("dapper:hasFile", "out"),
+    "has_gmt_file": ("dapper:hasGmtFile", "in"),
+    "in_gmt_file": ("dapper:inGmtFile", "in"),
+    "in_gene_set_collection": ("dapper:inGeneSetCollection", "out"),
+    "members": ("prov:hadMember", "in"),
     "was_generated_by": ("prov:wasGeneratedBy", "in"),
     "was_derived_from": ("prov:wasDerivedFrom", "in"),
-    "proposition": ("dapper:proposition", "out"),
-    "has_score": ("dapper:has_score", "out"),
+    "proposition": ("dapper:proposition", "in"),
+    "has_score": ("dapper:has_score", "in"),
     "component_claims": ("dapper:component_claims", "in"),
+    "conclusion_claims": ("dapper:conclusion_claims", "in"),
+    "hypothesis": ("dapper:hypothesis", "in"),
+    "question": ("dapper:question", "in"),
+    "about_entities": ("dapper:about_entities", "in"),
+    "mechanistic_model": ("dapper:mechanistic_model", "in"),
+    "has_causal_step": ("dapper:has_causal_step", "in"),
+    "via_mechanism": ("dapper:via_mechanism", "in"),
+    "has_evidence": ("dapper:has_evidence", "in"),
+    "source_claims": ("dapper:source_claims", "in"),
+    "target_proposition": ("dapper:target_proposition", "in"),
+    "from_nanopub": ("dapper:from_nanopub", "in"),
+    "scientific_account": ("dapper:scientific_account", "in"),
     "subject_entity": ("dapper:subject_entity", "in"),
     "object_entity": ("dapper:object_entity", "out"),
     "generated_by_activity": ("prov:wasGeneratedBy", "in"),
@@ -103,13 +118,19 @@ FAMILY = {
     "C2M2File": "data",
     "DrsObject": "data",
     "GeneSet": "data",
+    "GeneSetCollection": "data",
     "GeneProgram": "data",
     "CellState": "data",
     "Dataset": "data",
     "Activity": "process",
-    "Hypothesis": "claim",
+    "MechanisticModel": "claim",
     "Claim": "claim",
-    "CompositeClaim": "claim",
+    "ScientificAccount": "claim",
+    "Question": "claim",
+    "KnowledgeGap": "claim",
+    "Paragraph": "publication",
+    "EvidenceItem": "claim",
+    "Mechanism": "claim",
     "Proposition": "claim",
     "ClaimScore": "data",
     "CausalStep": "claim",
@@ -130,16 +151,27 @@ FAMILY = {
 
 GRAPH_DOCS = [
     {
+        "file": "example_scientific_account.yaml",
+        "key": "scientific_account",
+        "title": "Question, hypothesis, and claims",
+        "blurb": (
+            "A fictional study of Gene X and insulin secretion. One Proposition plays "
+            "the hypothesis role; separate Claims report a result and assess its biological "
+            "meaning. Inspect the evidence use, assumptions, and saved results paragraph."
+        ),
+        "start": "dapper:ScientificAccount.4EdFhOCSYboZhnZiHbT3qnyYeqyyvbIs",
+    },
+    {
         "file": "example_pigean_claims.yaml",
         "key": "pigean_claims",
-        "title": "PIGEAN: claims and composition",
+        "title": "PIGEAN: scientific account",
         "blurb": (
-            "Entirely illustrative: three individually assessed claims form one "
+            "Entirely illustrative: one scientific account organizes three assessments as an "
             "annotation-based explanation. P1/P2/P3 are hypothetical probabilities, "
             "not real PIGEAN/EAGGL outputs. Follow both the GWAS and gene-set "
             "generation branches to their input files."
         ),
-        "start": "dapper:CompositeClaim.vpV4R3QB_WlIpam8CtNV-5A0I6vseSmn",
+        "start": "dapper:ScientificAccount.Ddyw_8CFbVpwdBfXogo2GlOHDJzZpdUw",
     },
     {
         "file": "example_file_graph.yaml",
@@ -160,18 +192,25 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:Hypothesis.6dwuSUM4kkq9mpthBu2Mh6BmCV0P-m8x",
+        "start": "dapper:ScientificAccount.nq-PjWsCbchEhDTX3ni0VqQ08mS8IRn7",
     },
     {
         "file": "example_geneset_graph.yaml",
         "key": "geneset",
         "title": "Gene-set provenance",
         "blurb": (
-            "The real two-activity DAG behind HuBMAP gene set 402cf4a1, transcribed from "
+            "The two-activity DAG behind HuBMAP gene-set library 402cf4a1, transcribed from "
             "geneset.provenance.json. Every file, activity and edge is real; the one dashed "
             "node is an illustrative agentic workspace that could re-run both steps."
         ),
-        "start": "dapper:GeneSet.0dj0poPIUTC8EFQxG5p52jO554zJB6gZ",
+        "start": "dapper:GeneSetCollection.DLyinzh-eee_daEShnIt7vnUbDoGmK91",
+    },
+    {
+        "file": "example_geneset_collection_rows.yaml",
+        "key": "gmt_rows",
+        "title": "GMT collection and individual sets",
+        "blurb": "An illustrative two-row GMT: two sets of two genes share one gene, giving three distinct genes across the collection.",
+        "start": "dapper:GeneSetCollection.1FoLv1ndB0HjzITZhThnn3w0TfQgGCOb",
     },
     {
         "file": "example_cell_graph.yaml",
@@ -754,6 +793,7 @@ function edgeAppearance(edge, mode) {
     "prov:wasGeneratedBy": "prov:generated",
     "prov:used": "was used by",
     "prov:wasDerivedFrom": "source for",
+    "prov:hadMember": "member of",
     "dapper:supportedByNanopub": "supports",
     "dapper:hasAgenticWorkspace": "workspace for",
     "dapper:has_agentic_workspace": "workspace for",
@@ -1090,6 +1130,63 @@ function modelDetailsHtml(cls, fields) {
   return html + `</dl></details>`;
 }
 
+function paragraphCitationsHtml(paragraph, graph) {
+  const citations = paragraph.fields.citations || [];
+  if (!citations.length) return "";
+  const localIds = new Set(graph.nodes.map(n => n.id));
+  const text = Array.from(paragraph.fields.text || "");
+  return `<p><strong>Cited objects</strong></p><ul>` + citations.map(citation => {
+    const quote = text.slice(citation.start, citation.end).join("");
+    return `<li>${valueHtml(citation.target_id, localIds)} · metadata revision ${esc(citation.citation_metadata_revision)}<br>“${esc(quote)}”</li>`;
+  }).join("") + `</ul>`;
+}
+
+function accountOverviewHtml(node, graph) {
+  if (node.cls !== "ScientificAccount") return "";
+  const byId = new Map(graph.nodes.map(n => [n.id, n]));
+  const fields = node.fields;
+  let html = `<section class="scientific-account"><h3>Scientific account</h3>`;
+  const prose = (label, text) => text ? `<p><strong>${esc(label)}</strong><br>${esc(text)}</p>` : "";
+  if (fields.question) {
+    const question = byId.get(fields.question);
+    html += prose("Question", question?.fields.text || fields.question);
+    if (question?.cls === "KnowledgeGap") html += prose("Knowledge gap", question.fields.gap_description);
+    html += prose("Gap kind", question?.fields.gap_kind);
+    if (question?.fields.about_entities?.length) html += `<p><strong>Entity context</strong><br>${valueHtml(question.fields.about_entities, new Set(byId.keys()))}</p>`;
+  }
+  if (fields.hypothesis) {
+    const proposition = byId.get(fields.hypothesis);
+    html += prose("Hypothesis under investigation", proposition?.fields.statement || fields.hypothesis);
+  }
+  html += prose("Context", fields.context);
+  for (const assumption of fields.assumptions || []) html += prose("Assumption", assumption);
+  const conclusions = new Set(fields.conclusion_claims || []);
+  for (const id of [...(fields.component_claims || []).filter(id => !conclusions.has(id)), ...conclusions]) {
+    const claim = byId.get(id);
+    if (!claim) continue;
+    const proposition = byId.get(claim.fields.proposition);
+    const label = conclusions.has(id) ? "Conclusion claim" : "Claim";
+    const assessmentText = claim.fields.statement || `Assessment of the proposition: ${proposition?.fields.statement || claim.label}`;
+    html += `<p><strong>${label}</strong> <button class="ref inline" data-goto="${esc(id)}">Inspect claim</button><br>${esc(assessmentText)}</p>`;
+    html += prose("Assessment direction", claim.fields.direction);
+    for (const evidenceId of claim.fields.has_evidence || []) {
+      const evidence = byId.get(evidenceId);
+      if (!evidence) continue;
+      html += `<details><summary>Evidence and interpretation</summary>`;
+      html += prose("Direction", evidence.fields.direction);
+      html += prose("Rationale", evidence.fields.explanation);
+      html += prose("Context", evidence.fields.context);
+      for (const assumption of evidence.fields.assumptions || []) html += prose("Assumption", assumption);
+      html += `<button class="ref inline" data-goto="${esc(evidenceId)}">Inspect evidence and sources</button></details>`;
+    }
+  }
+  html += prose("Closing remarks", fields.closing_remarks);
+  for (const paragraph of graph.nodes.filter(n => n.cls === "Paragraph" && n.fields.scientific_account === node.id)) {
+    html += `<details><summary>Results paragraph</summary><p>${esc(paragraph.fields.text)}</p>${paragraphCitationsHtml(paragraph, graph)}<button class="ref inline" data-goto="${esc(paragraph.id)}">Inspect this expression</button></details>`;
+  }
+  return html + `</section>`;
+}
+
 function renderInspector() {
   if (!state.selected) {
     inspector.innerHTML = `<span class="eyebrow">Inspector</span>
@@ -1121,11 +1218,13 @@ function renderInspector() {
     <details><summary>Identifier</summary><p class="insp-id">${idHtml}</p></details>`;
   if (node.fields.description)
     html += `<details><summary>Description</summary><p class="insp-desc">${valueHtml(node.fields.description, ids)}</p></details>`;
+  html += accountOverviewHtml(node, graph);
   // Name is already the heading; long narrative and model explanations are
   // optional so that the record's actual values are easy to scan.
   const fields = Object.fromEntries(Object.entries(node.fields)
     .filter(([key]) => key !== titleField && key !== "description"));
-  html += fieldsHtml(fields, cls, ids);
+  const recordFields = fieldsHtml(fields, cls, ids);
+  html += node.cls === "ScientificAccount" ? `<details><summary>All record fields</summary>${recordFields}</details>` : recordFields;
   const connections = graph.edges.filter(e => e.subject === node.id || e.object === node.id);
   if (connections.length) {
     html += `<details class="connections"><summary>Graph connections (${connections.length})</summary>
@@ -1296,7 +1395,8 @@ function graphFromDoc(raw, filename) {
   // other starting point. Compound contents are reached through their group.
   const validEdges = edges.filter(e => ids.has(e.source) && ids.has(e.target));
   const outgoing = new Set(validEdges.map(e => e.source));
-  const startNode = nodes.find(n => !n.parent && !outgoing.has(n.id)) || nodes[0];
+  const startNode = nodes.find(n => n.cls === "ScientificAccount") ||
+    nodes.find(n => !n.parent && !outgoing.has(n.id)) || nodes[0];
   return {
     key: "__upload__", title: filename, blurb: "", source: filename,
     start: startNode ? startNode.id : null,

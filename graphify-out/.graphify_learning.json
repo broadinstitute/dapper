@@ -1,5 +1,54 @@
 {
-  "generated_at": "2026-09-16T01:38:26.309479+00:00",
-  "nodes": {},
+  "generated_at": "2026-09-24T12:52:49.878067+00:00",
+  "nodes": {
+    "schema_dapper_class_c2m2file": {
+      "code_fingerprint": "cc80f06becbf5dfd505cf6f1502ed1522ed33075d899a0e0d616ad3853cbda6a",
+      "label": "C2M2File",
+      "last": "2026-09-16T01:39:27.105084+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-16T01:39:27.105084+00:00",
+          "outcome": "useful",
+          "q": "How do File, C2M2File, and DrsObject connect after this implementation?"
+        }
+      ],
+      "score": 0.822305192,
+      "source_file": "schema/dapper.yaml",
+      "status": "tentative",
+      "uses": 1
+    },
+    "schema_dapper_class_drsobject": {
+      "code_fingerprint": "cc80f06becbf5dfd505cf6f1502ed1522ed33075d899a0e0d616ad3853cbda6a",
+      "label": "DrsObject",
+      "last": "2026-09-16T01:39:27.105084+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-16T01:39:27.105084+00:00",
+          "outcome": "useful",
+          "q": "How do File, C2M2File, and DrsObject connect after this implementation?"
+        }
+      ],
+      "score": 0.822305192,
+      "source_file": "schema/dapper.yaml",
+      "status": "tentative",
+      "uses": 1
+    },
+    "schema_dapper_class_file": {
+      "code_fingerprint": "cc80f06becbf5dfd505cf6f1502ed1522ed33075d899a0e0d616ad3853cbda6a",
+      "label": "File",
+      "last": "2026-09-16T01:39:27.105084+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-16T01:39:27.105084+00:00",
+          "outcome": "useful",
+          "q": "How do File, C2M2File, and DrsObject connect after this implementation?"
+        }
+      ],
+      "score": 0.822305192,
+      "source_file": "schema/dapper.yaml",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
   "version": 1
 }

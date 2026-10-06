@@ -39,7 +39,7 @@ def test_clean_drops_empty_values_but_keeps_falsy_data():
     """_clean() tidies absent values out of emitted YAML without eating real ones.
 
     The distinction that matters is absence vs. a falsy measurement: `n_genes: 0`
-    and `emit_small_gene_sets: False` are findings the source data asserted, and
+    and `emit_small_gene_sets: False` are claims the source data asserted, and
     dropping them would silently turn a stated zero into an unstated field.
     """
     out = _clean({"a": None, "b": "", "c": [], "d": {}, "e": 0, "f": False, "g": "x"})
@@ -114,7 +114,7 @@ def test_gene_set_merges_the_three_metadata_sections(hz2_meta):
     """
     node = {"id": "gs1", "name": "unsigned_term_gene:402cf4a1"}
     out = _gene_set(node, hz2_meta)
-    assert out["member_type"] == "gene"
+    assert out["member_type"] == "gene_set"
     assert out["assay"] == "bulk"                 # meta.gene_set
     assert out["organism"] == "human"             # meta.gene_set
     assert out["n_genes"] == 1747                 # meta.gene_set
@@ -147,7 +147,7 @@ def test_convert_graph_routes_every_node_type_to_its_bucket(hz2_graph, hz2_meta)
     doc = convert_graph(hz2_graph, hz2_meta)
     assert len(doc["c2m2_files"]) == 9
     assert len(doc["activities"]) == 2
-    assert len(doc["gene_sets"]) == 1
+    assert len(doc["gene_set_collections"]) == 1
 
 
 def test_used_edges_reverse_direction_relative_to_dig_geneset(hz2_graph, hz2_meta):
@@ -313,12 +313,12 @@ def test_convert_one_writes_a_minted_graph_and_focus_node(tmp_path, sv):
                           tmp_path, overlay={})
     names = sorted(p.name for p in written)
     assert names == ["402cf4a1f3682a2e5bf1b002.dapper.yaml",
-                     "402cf4a1f3682a2e5bf1b002.geneset.yaml"]
+                     "402cf4a1f3682a2e5bf1b002.geneset_collection.yaml"]
 
     doc = yaml.safe_load((tmp_path / "402cf4a1f3682a2e5bf1b002.dapper.yaml").read_text())
 
     # dig.geneset's UUIDv5 / 24-hex ids are gone, replaced by content digests.
-    ids = [n["id"] for bucket in ("c2m2_files", "activities", "gene_sets") for n in doc[bucket]]
+    ids = [n["id"] for bucket in ("c2m2_files", "activities", "gene_set_collections") for n in doc[bucket]]
     assert ids and all(i.startswith("dapper:") for i in ids)
 
     # and the ids actually match the content they name
@@ -350,7 +350,7 @@ def test_edges_point_at_ids_that_exist_after_minting(tmp_path):
     convert_one(HZ2 / "geneset.provenance.json", HZ2 / "geneset.meta.json", tmp_path, overlay={})
     doc = yaml.safe_load((tmp_path / "402cf4a1f3682a2e5bf1b002.dapper.yaml").read_text())
 
-    known = {n["id"] for b in ("c2m2_files", "activities", "gene_sets") for n in doc[b]}
+    known = {n["id"] for b in ("c2m2_files", "activities", "gene_set_collections") for n in doc[b]}
     for bucket in ("used_edges", "was_generated_by_edges"):
         for e in doc.get(bucket, []):
             assert e["subject"] in known, f"dangling subject {e['subject']} in {bucket}"

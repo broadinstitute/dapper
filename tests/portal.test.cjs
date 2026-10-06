@@ -22,6 +22,57 @@ function runtime(cy = null) {
   return { context, run: source => vm.runInContext(source, context), note };
 }
 
+test('scientific accounts show roles, evidence, and a saved paragraph without asserting a disputed target', () => {
+  const { run } = runtime();
+  const rendered = run(`(() => {
+    const graph = JSON.parse(JSON.stringify(DATA.graphs.find(g => g.key === "scientific_account")));
+    const account = graph.nodes.find(n => n.cls === "ScientificAccount");
+    graph.nodes.find(n => n.id === account.fields.question).fields.text = '<img src=x onerror=alert(1)>';
+    const conclusion = graph.nodes.find(n => n.id === account.fields.conclusion_claims[0]);
+    delete conclusion.fields.statement;
+    conclusion.fields.direction = 'DISPUTES';
+    return accountOverviewHtml(account, graph);
+  })()`);
+  assert.match(rendered, /Hypothesis under investigation/);
+  assert.match(rendered, /Knowledge gap/);
+  assert.match(rendered, /<strong>Claim<\/strong>/);
+  assert.match(rendered, /<strong>Conclusion claim<\/strong>/);
+  assert.match(rendered, /Evidence and interpretation/);
+  assert.match(rendered, /Results paragraph/);
+  assert.match(rendered, /Cited objects/);
+  assert.match(rendered, /metadata revision 1/);
+  assert.match(rendered, /Entity context/);
+  assert.match(rendered, /Assessment of the proposition:/);
+  assert.match(rendered, /DISPUTES/);
+  assert.match(rendered, /&lt;img/);
+  assert.doesNotMatch(rendered, /<img/);
+});
+
+test('citation excerpts count Unicode code points and escape authored text', () => {
+  const { run } = runtime();
+  const rendered = run(`paragraphCitationsHtml({fields: {
+    text: '🧬 <img> claim', citations: [{target_id: 'claim', citation_metadata_revision: 2, start: 2, end: 7}]
+  }}, {nodes: [{id: 'claim'}]})`);
+  assert.match(rendered, /data-goto="claim"/);
+  assert.match(rendered, /metadata revision 2/);
+  assert.match(rendered, /“&lt;img&gt;”/);
+  assert.doesNotMatch(rendered, /<img>/);
+});
+
+test('uploaded scientific accounts open at the account even when a paragraph is its terminal expression', () => {
+  const { run } = runtime();
+  const graph = run(`graphFromDoc({
+    scientific_accounts: [{id: "account", question: "question", component_claims: ["claim"]}],
+    questions: [{id: "question", text: "What was found?"}],
+    claims: [{id: "claim", proposition: "proposition"}],
+    propositions: [{id: "proposition", statement: "An illustrative result."}],
+    paragraphs: [{id: "paragraph", scientific_account: "account", text: "A rendering."}]
+  }, "account.yaml")`);
+  assert.equal(graph.start, 'account');
+  assert.equal(graph.nodes.length, 5);
+  assert.equal(graph.edges.length, 4);
+});
+
 test('CURIEs resolve with slash-bearing DOI suffixes; only known DAPPER terms get pages', () => {
   const { run } = runtime();
   assert.equal(run('curieUrl("KPN.TRAIT:0000096")'),
@@ -38,6 +89,30 @@ test('local references navigate the graph before considering an external URL', (
   const rendered = run('valueHtml("doi:10.1000/example", new Set(["doi:10.1000/example"]))');
   assert.match(rendered, /data-goto="doi:10.1000\/example"/);
   assert.doesNotMatch(rendered, /href=/);
+});
+
+test('gene-set membership pointers navigate both ways with a consistent flow layout', () => {
+  const { run } = runtime();
+  const graph = run(`graphFromDoc({
+    gene_sets: [{id: "set", name: "A gene set", in_gene_set_collection: ["collection"]}],
+    gene_set_collections: [{id: "collection", name: "A library", members: ["set"]}]
+  }, "membership.yaml")`);
+  assert.equal(graph.start, 'collection');
+  assert.equal(graph.edges.length, 2);
+  const forward = graph.edges.find(e => e.predicate === 'prov:hadMember');
+  const inverse = graph.edges.find(e => e.predicate === 'dapper:inGeneSetCollection');
+  assert.equal(forward.subject, 'collection');
+  assert.equal(forward.object, 'set');
+  assert.equal(inverse.subject, 'set');
+  assert.equal(inverse.object, 'collection');
+  for (const edge of graph.edges) {
+    assert.equal(edge.source, 'set');
+    assert.equal(edge.target, 'collection');
+  }
+  assert.match(run('valueHtml(["collection"], new Set(["collection"]))'), /data-goto="collection"/);
+  assert.equal(run('curieUrl("dapper:inGeneSetCollection")'), 'model/reference/slots/in_gene_set_collection/');
+  const example = DATA.graphs.find(g => g.key === 'gmt_rows');
+  assert.equal(example.edges.filter(e => e.predicate === 'dapper:inGeneSetCollection').length, 2);
 });
 
 test('enum values link to definitions with explicitly qualified ontology mappings', () => {

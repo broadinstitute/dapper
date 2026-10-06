@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["pyyaml"]
+# dependencies = ["pyyaml", "rdflib", "linkml-runtime"]
 # ///
 """Check that example_claim_provenance_trace.yaml actually traces end to end.
 
@@ -12,7 +12,7 @@ example exists to demonstrate:
 
   1. Referential integrity — every internal id referenced anywhere resolves to a
      node defined in the document.
-  2. Reachability — starting from the composite hypothesis and following only
+  2. Reachability — starting from the scientific account and following only
      the documented edges, you arrive at every raw C2M2 source file.
   3. Nanopublication well-formedness — every nanopub has all three of
      hasAssertion / hasProvenance / hasPublicationInfo. The schema makes these
@@ -38,24 +38,15 @@ import yaml
 
 DEFAULT_FILE = Path(__file__).parent / "example_claim_provenance_trace.yaml"
 def find_start(doc: dict) -> str:
-    """The composite hypothesis at the top of the trace.
+    """Find the scientific account at the top of the migrated provenance trace."""
+    accounts = doc.get("scientific_accounts") or []
+    if len(accounts) != 1:
+        raise SystemExit("expected one scientific account to trace from")
+    return accounts[0]["id"]
 
-    Derived, not hardcoded: identifiers are content digests now, so pinning a
-    literal id here would break every time the example content changed. The
-    composite hypothesis is the one supported by a published nanopublication.
-    """
-    for h in doc.get("hypotheses") or []:
-        if h.get("supported_by_nanopub"):
-            return h["id"]
-    raise SystemExit("no hypothesis with supported_by_nanopub — nothing to trace from")
-
-NODE_GROUPS = [
-    "c2m2_files", "activities", "gene_sets", "hypotheses", "nanopublications",
-    "nanopub_assertions", "nanopub_provenances", "nanopub_publication_infos",
-    "nanopub_signatures", "agentic_workspaces",
-]
-# Every node identifier is a DAPPER content digest: dapper:{ClassName}.{digest}
-ID_PREFIXES = ("dapper:",)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "identity"))
+from dapper_identity import DOC_GROUPS, digest_of
+NODE_GROUPS = list(DOC_GROUPS)
 
 
 def main() -> int:
@@ -86,7 +77,7 @@ def main() -> int:
         elif isinstance(obj, list):
             for v in obj:
                 scan(v)
-        elif isinstance(obj, str) and obj.startswith(ID_PREFIXES):
+        elif isinstance(obj, str) and digest_of(obj):
             ref_count += 1
             if obj not in nodes:
                 dangling.add(obj)
@@ -111,8 +102,12 @@ def main() -> int:
             if not args.quiet:
                 print(f"{'  ' * (depth + 1)}^^ RAW SOURCE")
             return
-        for np_id in edges_out(nid, "supported_by_nanopub_edges"):
-            walk(np_id, depth + 1, "-supportedByNanopub-> ", seen)
+        for field in ("component_claims", "has_evidence", "source_claims", "from_nanopub",
+                      "has_provenance", "was_generated_by", "was_derived_from"):
+            values = node.get(field)
+            for ref in values if isinstance(values, list) else [values]:
+                if isinstance(ref, str) and ref in nodes:
+                    walk(ref, depth + 1, f"-{field}-> ", seen)
         for prov in edges_out(nid, "has_provenance_edges"):
             walk(prov, depth + 1, "-np:hasProvenance-> ", seen)
         if group == "nanopub_provenances":

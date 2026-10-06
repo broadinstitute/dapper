@@ -67,14 +67,20 @@ def build_site() -> None:
     guide = (ROOT / "schema" / "docs" / "files-and-drs.md").read_text()
     (guides / "files-and-drs.md").write_text(guide.replace("../identity/README.md", "identity.md"))
     shutil.copy2(ROOT / "schema" / "docs" / "claims.md", guides / "claims.md")
+    citation_guide = (ROOT / "schema" / "docs" / "citations.md").read_text()
+    (guides / "citations.md").write_text(citation_guide.replace("../citations/", "../schema/citations/"))
     shutil.copy2(ROOT / "schema" / "docs" / "bottom-line-results.md", guides / "bottom-line-results.md")
     shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
-    shutil.copy2(ROOT / "schema" / "identity" / "README.md", guides / "identity.md")
+    shutil.copy2(ROOT / "schema" / "docs" / "geneset-authoring.md", guides / "geneset-authoring.md")
+    identity_guide = (ROOT / "schema" / "identity" / "README.md").read_text()
+    (guides / "identity.md").write_text(
+        identity_guide.replace("../docs/geneset-authoring.md", "geneset-authoring.md"))
     shutil.copytree(ROOT / "schema" / "examples", GENERATED / "examples",
                     ignore=shutil.ignore_patterns("*.py", "__pycache__"))
     (GENERATED / "schema").mkdir()
     for module in (ROOT / "schema").glob("*.yaml"):
         shutil.copy2(module, GENERATED / "schema" / module.name)
+    shutil.copytree(ROOT / "schema" / "citations", GENERATED / "schema" / "citations")
 
     navigation = [{"Overview": "index.md"}]
     counts = {}
@@ -91,9 +97,11 @@ def build_site() -> None:
         ]})
     navigation.extend([
         {"Guides": [{"Files and DRS": "guides/files-and-drs.md"},
+                    {"Gene-set authoring and prefixes": "guides/geneset-authoring.md"},
                     {"Bottom-line results": "guides/bottom-line-results.md"},
                     {"Genetic ancestry": "guides/ancestry.md"},
-                    {"Claims and the PIGEAN example": "guides/claims.md"},
+                    {"Scientific claims and accounts": "guides/claims.md"},
+                    {"Scientific object citations": "guides/citations.md"},
                     {"Computed identifiers": "guides/identity.md"}]},
         {"Full schema": "reference/index.md"},
     ])

@@ -10,8 +10,17 @@ and the `PortalLinked` mixin. Existing C2M2 field names, checksum encodings,
 hashability, and identifiers are preserved. The shared fields are `name`,
 `description`, `filename`, `md5` (base64), `sha256` (hex), and `size_in_bytes`.
 `File` also supports `mime_type` and a `location` string, which can be a local
-filesystem path or a retrieval URI. File metadata is optional; supply a checksum
+filesystem path, a retrieval URI, or a declared document CURIE. File metadata is optional; supply a checksum
 when available to distinguish files with otherwise identical descriptions.
+
+Use `location` for `/humgen/...` or `humgen:...` paths; declare
+`humgen: file:///humgen/` in the document's `prefixes` map for the latter.
+`local_id` is a source-system identifier. Native C2M2 identifies records using
+`id_namespace` together with `local_id`; DAPPER's compact profile does not
+model that two-column key separately. A storage path alone should not imply
+C2M2 registration. The [HuBMAP example](../examples/example_geneset_hubmap.yaml)
+retains C2M2 metadata only on its GMT and uses File for the other 74 records.
+See [gene-set authoring](geneset-authoring.md) for collection and row references.
 
 `DrsObject` remains separate: GA4GH DRS can describe a blob or a bundle. A file
 can reference one or more blob representations through `drs_representation`
