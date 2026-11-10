@@ -5,11 +5,12 @@ related biomedical knowledge products.
 
 ## Release
 
-Use [0.2.0](https://github.com/broadinstitute/dapper/releases/tag/0.2.0)
-to pin the gene-set/GMT, scientific provenance, and embedding model described
-here. See the [release and migration notes](docs/releases/0.2.0.md). Pull
-that tag when generating or validating its identifiers; the 0.2.0 alphas and
-0.1.0 use different gene-set and claims models.
+Use [0.2.1-a1](https://github.com/broadinstitute/dapper/releases/tag/0.2.1-a1)
+to pin the model described here. It adds value locators and result collections
+to [0.2.0](docs/releases/0.2.0.md) without changing any identifier. See the
+[release and migration notes](docs/releases/0.2.1-a1.md). Pull the tag when
+generating or validating its identifiers; the 0.2.0 alphas and 0.1.0 use
+different gene-set and claims models.
 
 ## Repository layout
 
@@ -99,6 +100,16 @@ plus `vector_row`; model, provider, dimensions, dtype, normalization, the
 embedded text, its template and `vector_sha256` make up the identity. See the
 [embeddings guide](schema/docs/embeddings.md) and
 [example](schema/examples/example_embedding_graph.yaml).
+
+`ResultCollection` is one immutable version of a method's results: member
+`Dataset`s placed by `dimension_values` and `file_roles`, plus the claim and
+query template files. It and `GeneSetCollection` both specialize the abstract
+`Collection`, a versioned `Set` of DAPPER records. `ValueLocator` pins the
+exact bytes of a value in a result file so evidence can ground there. See the
+[result collections guide](schema/docs/result-collections.md) and
+[example](schema/examples/example_result_collection.yaml). Results that a
+repository already describes with Croissant map onto these classes directly;
+see [Croissant and DAPPER](schema/docs/croissant.md).
 
 Validate a single instance from the repository root with:
 

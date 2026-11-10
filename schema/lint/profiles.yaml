@@ -40,13 +40,13 @@ edge_group_overrides:
 edge_endpoints:
   Used:
     subject: [Activity]
-    object: [File, C2M2File, Dataset, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
+    object: [File, C2M2File, Dataset, ResultCollection, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
   WasGeneratedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Embedding, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Embedding, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
     object: [Activity]
   WasDerivedFrom:
-    subject: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
-    object: [Dataset, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    object: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
   HasDrsObject:
     subject: [Dataset]
     object: [DrsObject]
@@ -60,22 +60,22 @@ edge_endpoints:
     subject: [Activity]
     object: [AgenticWorkspace]
   HasCreator:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Person, Organization]
   HasContributor:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Person, Organization]
   WasAttributedTo:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
     object: [Person, Organization]
   FundedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Award]
   IsDescribedBy:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [Publication]
   HasRecommendedCitation:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [RecommendedCitation]
   HasDataUseTerm:
     subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
@@ -84,7 +84,7 @@ edge_endpoints:
     subject: [Activity]
     object: [LineageStep]
   HasMirrorProvenance:
-    subject: [Dataset, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
     object: [MirrorProvenance]
   PackagedAs:
     subject: [Dataset]
@@ -194,3 +194,26 @@ profiles:
     activities_require_inputs: warning
     # Saved textual expressions point to their account, not the other way round.
     reverse_context_predicates: [dapper:scientific_account]
+
+  result-collection:
+    title: Result collection version
+    description: >-
+      One version of a collection of analysis results: its Datasets and their
+      files by role, the claim and query templates, the manifest it was built
+      from, and the activities that produced the result files and published
+      the version. Member Datasets are prov:hadMember members, so they are
+      not end results of their own.
+    canonical_example: schema/examples/example_result_collection.yaml
+    terminal:
+      class: ResultCollection
+      min: 1
+      max: 1
+    required_edges:
+      - group: was_generated_by_edges
+        object_class: Activity
+        min: 1
+        severity: error
+        why: >-
+          A collection version must name the Activity that published it, which
+          used its manifest; otherwise the version cannot be traced to a commit.
+    activities_require_inputs: warning
