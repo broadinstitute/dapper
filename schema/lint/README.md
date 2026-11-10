@@ -19,6 +19,7 @@ An *end modality* is a terminal product of a pipeline. The supported profiles ar
 | `bottom-line-result` | A `Dataset` — variant-level summary statistics from a meta-analysis | exactly 1 |
 | `geneset` | A `GeneSet` or `GeneSetCollection` | 1 or more |
 | `scientific-account` | A `ScientificAccount` | exactly 1 |
+| `result-collection` | A `ResultCollection` version | exactly 1 |
 
 A bottom-line document has exactly one final Dataset, but may contain other
 Datasets as upstream inputs or derivation sources. Terminal selection excludes
@@ -40,6 +41,15 @@ are supplied they must agree. Inverse links also connect contained sets when
 the collection's full membership has not been enumerated. These links are
 independent of GMT file and row references.
 
+A `ResultCollection` version's Datasets are its `members` (`prov:hadMember`),
+so they are not end results of their own. Neither is an earlier version that a
+later one names in `was_revision_of`, and a revision must keep the same class
+and `collection_key`. Each must give one `dimension_values` entry
+per collection dimension, in order. No two may share all values, and every
+`file_roles` file must also be in `has_file`. Listing more than one method is
+a warning, not an error. See the
+[result collections guide](../docs/result-collections.md).
+
 ## The three things you need
 
 1. **The schema** — [`schema/dapper.yaml`](../dapper.yaml). The authoritative
@@ -48,6 +58,7 @@ independent of GMT file and row references.
 2. **The canonical example** for your modality — copy its shape:
    - `bottom-line-result` → [`example_bottom_line_af_aa.yaml`](../examples/example_bottom_line_af_aa.yaml)
    - `geneset` → [`example_geneset_graph.yaml`](../examples/example_geneset_graph.yaml)
+   - `result-collection` → [`example_result_collection.yaml`](../examples/example_result_collection.yaml)
 3. **The linter** — this directory. Run it before you hand anything back.
 
 ## Running the linter

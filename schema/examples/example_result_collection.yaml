@@ -1,0 +1,170 @@
+# A result collection version: two trait datasets, their files by role, and templates.
+# Entirely synthetic: the traits, genes, methods and numbers are made up, and no
+# analysis was run. Only the NDJSON result files under data/result-collection/ are real bytes, so
+# their checksums and any ValueLocator spans can be verified.
+# See ../docs/result-collections.md. Re-mint with:
+#   uv run schema/identity/dapper_identity.py assign <this-file>
+prefixes:
+  EXTRAIT: 'urn:example:trait:'
+files:
+- id: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  name: Gene statistics for Trait T1
+  description: Synthetic per-gene result file for Trait T1; one NDJSON row per gene.
+  filename: gene_stats.ndjson
+  mime_type: application/jsonlines
+  sha256: b60d4e02c05fb880625cd6537723c94826a6517431a23f94c71b4e62bb3a584b
+  size_in_bytes: 222
+  location: data/result-collection/trait-t1/gene_stats.ndjson
+- id: dapper:File.LVxNl1Bk0BZdOMESst3XeZwMxGk2tNb-
+  name: Gene statistics for Trait T2
+  description: Synthetic per-gene result file for Trait T2; one NDJSON row per gene.
+  filename: gene_stats.ndjson
+  mime_type: application/jsonlines
+  sha256: 5b317029dbf622698de56c5c862ff4533ac284dbe3c3106e2b1f07203b2c574d
+  size_in_bytes: 147
+  location: data/result-collection/trait-t2/gene_stats.ndjson
+- id: dapper:File.ldXPev1OdOsK3BDw7gwckOn6UAK1IseZ
+  name: Summary statistics for Trait T1
+  description: Illustrative association-analysis input for Trait T1.
+  filename: sumstats.t1.tsv
+- id: dapper:File.RT2Ov0CBWSRWZDIJmIHQCKz6OA-h7E9i
+  name: Summary statistics for Trait T2
+  description: Illustrative association-analysis input for Trait T2.
+  filename: sumstats.t2.tsv
+- id: dapper:File.a_ogGMJY6LkimajtXz_sg0vN1uFQZZLR
+  name: Croissant record
+  description: The repository's Croissant 1.0 record for these results, as fetched. Its FileObjects became
+    the result Files below.
+  filename: croissant.json
+  mime_type: application/ld+json
+  sha256: 967fb4fb1ff28a622c3cd3ea99bff9e25ac55f619f753a939609e7957bf5a176
+  size_in_bytes: 6380
+  location: data/result-collection/croissant.json
+- id: dapper:File.kf9JkLwc3M4MLBHzGLwv7-zj-dPtMt2V
+  name: Collection manifest
+  description: Illustrative collection manifest declaring the trait and library dimensions, the gene_stats
+    file role, its row kind and metrics.
+  filename: collection.yaml
+  mime_type: application/yaml
+- id: dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+  name: Measurement claim template
+  description: 'Illustrative claim template: one measurement claim per gene_stats row, with one ClaimScore
+    and one value-grounded EvidenceItem per metric.'
+  filename: measurement.yaml
+  mime_type: application/yaml
+- id: dapper:File.16ZOR18yQPqArslbgBfk3fn3beSppk2H
+  name: Top genes query template
+  description: 'Illustrative query template: top genes for one trait by one metric, with parameters, a
+    bounded plan and a runnable example.'
+  filename: top-genes.yaml
+  mime_type: application/yaml
+activities:
+- id: dapper:Activity.nKCXq8gfA0eJ5uZr8S8cLWEJ66aWvsik
+  name: Example gene-association run (Trait T1)
+  description: Synthetic method run that wrote this trait's gene_stats file.
+  software_name: ExampleMethod
+  software_version: 1.0.0
+  code_version: illustrative-only
+  trait: EXTRAIT:T1
+- id: dapper:Activity.r1PPAJUo5tu-Wq2GBe85f7KaxCAx9krG
+  name: Example gene-association run (Trait T2)
+  description: Synthetic method run that wrote this trait's gene_stats file.
+  software_name: ExampleMethod
+  software_version: 1.0.0
+  code_version: illustrative-only
+  trait: EXTRAIT:T2
+- id: dapper:Activity.dMsLrwFhN6iVGm9PCdFTNf9XrpczrWWL
+  name: Publish collection version 2026.11.0
+  description: Imported the repository's Croissant record, downloaded each listed file and checked its
+    sha256, then built this version from the manifest at a reviewed commit.
+  activity_type: ResultCollectionPublication
+  software_name: example-collection-cli
+  code_version: illustrative-only
+datasets:
+- id: dapper:Dataset.jylddvwojkGUxUh2ez4kntC7ZJZhM7d3
+  name: Example gene associations, Trait T1
+  description: ExampleMethod gene-level results for Trait T1 against gene-set library example-library-v1.
+  trait: EXTRAIT:T1
+  has_file:
+  - dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  dimension_values:
+  - dimension: trait
+    dimension_value: EXTRAIT:T1
+  - dimension: library
+    dimension_value: example-library-v1
+  file_roles:
+  - role: gene_stats
+    file: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  was_generated_by: dapper:Activity.nKCXq8gfA0eJ5uZr8S8cLWEJ66aWvsik
+- id: dapper:Dataset.WxCgiU0XysPj8zkw6xsyHXd-uo-azwmL
+  name: Example gene associations, Trait T2
+  description: ExampleMethod gene-level results for Trait T2 against gene-set library example-library-v1.
+  trait: EXTRAIT:T2
+  has_file:
+  - dapper:File.LVxNl1Bk0BZdOMESst3XeZwMxGk2tNb-
+  dimension_values:
+  - dimension: trait
+    dimension_value: EXTRAIT:T2
+  - dimension: library
+    dimension_value: example-library-v1
+  file_roles:
+  - role: gene_stats
+    file: dapper:File.LVxNl1Bk0BZdOMESst3XeZwMxGk2tNb-
+  was_generated_by: dapper:Activity.r1PPAJUo5tu-Wq2GBe85f7KaxCAx9krG
+result_collections:
+- id: dapper:ResultCollection.YYCvSaxs2YsxU3mZdnW6YL9-EPOkavV2
+  name: Example gene associations 2026.11.0
+  collection_key: example-gene-associations
+  version: 2026.11.0
+  description: Gene-level association results from one method, one dataset per trait and gene-set library,
+    with the template that mints measurement claims from them and a query template that reads them.
+  methods:
+  - ExampleMethod
+  dataset_dimensions:
+  - trait
+  - library
+  members:
+  - dapper:Dataset.jylddvwojkGUxUh2ez4kntC7ZJZhM7d3
+  - dapper:Dataset.WxCgiU0XysPj8zkw6xsyHXd-uo-azwmL
+  n_members: 2
+  has_claim_template:
+  - dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+  has_query_template:
+  - dapper:File.16ZOR18yQPqArslbgBfk3fn3beSppk2H
+  has_manifest_file: dapper:File.kf9JkLwc3M4MLBHzGLwv7-zj-dPtMt2V
+  was_generated_by: dapper:Activity.dMsLrwFhN6iVGm9PCdFTNf9XrpczrWWL
+used_edges:
+- subject: dapper:Activity.nKCXq8gfA0eJ5uZr8S8cLWEJ66aWvsik
+  predicate: prov:used
+  object: dapper:File.ldXPev1OdOsK3BDw7gwckOn6UAK1IseZ
+- subject: dapper:Activity.r1PPAJUo5tu-Wq2GBe85f7KaxCAx9krG
+  predicate: prov:used
+  object: dapper:File.RT2Ov0CBWSRWZDIJmIHQCKz6OA-h7E9i
+- subject: dapper:Activity.dMsLrwFhN6iVGm9PCdFTNf9XrpczrWWL
+  predicate: prov:used
+  object: dapper:File.kf9JkLwc3M4MLBHzGLwv7-zj-dPtMt2V
+- subject: dapper:Activity.dMsLrwFhN6iVGm9PCdFTNf9XrpczrWWL
+  predicate: prov:used
+  object: dapper:File.a_ogGMJY6LkimajtXz_sg0vN1uFQZZLR
+was_generated_by_edges:
+- subject: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.nKCXq8gfA0eJ5uZr8S8cLWEJ66aWvsik
+- subject: dapper:File.LVxNl1Bk0BZdOMESst3XeZwMxGk2tNb-
+  predicate: prov:wasGeneratedBy
+  object: dapper:Activity.r1PPAJUo5tu-Wq2GBe85f7KaxCAx9krG
+_illustrative:
+- dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+- dapper:File.LVxNl1Bk0BZdOMESst3XeZwMxGk2tNb-
+- dapper:File.ldXPev1OdOsK3BDw7gwckOn6UAK1IseZ
+- dapper:File.RT2Ov0CBWSRWZDIJmIHQCKz6OA-h7E9i
+- dapper:File.a_ogGMJY6LkimajtXz_sg0vN1uFQZZLR
+- dapper:File.kf9JkLwc3M4MLBHzGLwv7-zj-dPtMt2V
+- dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+- dapper:File.16ZOR18yQPqArslbgBfk3fn3beSppk2H
+- dapper:Activity.nKCXq8gfA0eJ5uZr8S8cLWEJ66aWvsik
+- dapper:Activity.r1PPAJUo5tu-Wq2GBe85f7KaxCAx9krG
+- dapper:Activity.dMsLrwFhN6iVGm9PCdFTNf9XrpczrWWL
+- dapper:Dataset.jylddvwojkGUxUh2ez4kntC7ZJZhM7d3
+- dapper:Dataset.WxCgiU0XysPj8zkw6xsyHXd-uo-azwmL
+- dapper:ResultCollection.YYCvSaxs2YsxU3mZdnW6YL9-EPOkavV2

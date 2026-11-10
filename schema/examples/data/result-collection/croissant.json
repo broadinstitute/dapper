@@ -1,0 +1,222 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "sc": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "dct": "http://purl.org/dc/terms/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileObject": "cr:fileObject",
+    "md5": "cr:md5",
+    "recordSet": "cr:recordSet",
+    "source": "cr:source"
+  },
+  "@type": "sc:Dataset",
+  "name": "example-gene-associations",
+  "description": "Synthetic gene-level association results for two traits, published as a repository would. Used by the DAPPER Croissant guide.",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "version": "2026.11.0",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "url": "https://example.org/datasets/example-gene-associations",
+  "citeAs": "Example Lab (2026). Example gene associations, version 2026.11.0.",
+  "creator": {
+    "@type": "sc:Organization",
+    "name": "Example Lab"
+  },
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "gene-stats-t1",
+      "name": "gene-stats-t1",
+      "description": "Per-gene results for Trait T1, one JSON object per line.",
+      "contentUrl": "trait-t1/gene_stats.ndjson",
+      "encodingFormat": "application/jsonlines",
+      "sha256": "b60d4e02c05fb880625cd6537723c94826a6517431a23f94c71b4e62bb3a584b"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "gene-stats-t2",
+      "name": "gene-stats-t2",
+      "description": "Per-gene results for Trait T2, one JSON object per line.",
+      "contentUrl": "trait-t2/gene_stats.ndjson",
+      "encodingFormat": "application/jsonlines",
+      "sha256": "5b317029dbf622698de56c5c862ff4533ac284dbe3c3106e2b1f07203b2c574d"
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "gene_stats_t1",
+      "name": "gene_stats_t1",
+      "description": "Rows of gene-stats-t1.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t1/gene",
+          "name": "gene",
+          "description": "Gene identifier as given by the method (a synthetic symbol here).",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t1"
+            },
+            "extract": {
+              "column": "gene"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t1/trait",
+          "name": "trait",
+          "description": "Trait key the row was computed for.",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t1"
+            },
+            "extract": {
+              "column": "trait"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t1/combined",
+          "name": "combined",
+          "description": "Synthetic combined score; higher means stronger association.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t1"
+            },
+            "extract": {
+              "column": "combined"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t1/log_bf",
+          "name": "log_bf",
+          "description": "Synthetic direct-evidence score.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t1"
+            },
+            "extract": {
+              "column": "log_bf"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t1/prior",
+          "name": "prior",
+          "description": "Synthetic gene-set prior score.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t1"
+            },
+            "extract": {
+              "column": "prior"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "gene_stats_t2",
+      "name": "gene_stats_t2",
+      "description": "Rows of gene-stats-t2.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t2/gene",
+          "name": "gene",
+          "description": "Gene identifier as given by the method (a synthetic symbol here).",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t2"
+            },
+            "extract": {
+              "column": "gene"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t2/trait",
+          "name": "trait",
+          "description": "Trait key the row was computed for.",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t2"
+            },
+            "extract": {
+              "column": "trait"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t2/combined",
+          "name": "combined",
+          "description": "Synthetic combined score; higher means stronger association.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t2"
+            },
+            "extract": {
+              "column": "combined"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t2/log_bf",
+          "name": "log_bf",
+          "description": "Synthetic direct-evidence score.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t2"
+            },
+            "extract": {
+              "column": "log_bf"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "gene_stats_t2/prior",
+          "name": "prior",
+          "description": "Synthetic gene-set prior score.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "gene-stats-t2"
+            },
+            "extract": {
+              "column": "prior"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

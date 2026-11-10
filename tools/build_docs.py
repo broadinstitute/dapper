@@ -32,6 +32,10 @@ GENERATED = ROOT / ".build" / "model-docs"
 SITE = ROOT / "site"
 
 
+# Guides link examples relatively for GitHub; the built site has no examples
+# directory, so those links point at the repository instead.
+GITHUB_EXAMPLES = "https://github.com/broadinstitute/dapper/blob/main/schema/examples/"
+
 def build_site() -> None:
     subprocess.run([sys.executable, str(ROOT / "portal" / "build.py"), "--check"], check=True)
     # Only remove this script's generated Markdown, never the source guides.
@@ -73,6 +77,11 @@ def build_site() -> None:
     shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
     shutil.copy2(ROOT / "schema" / "docs" / "geneset-authoring.md", guides / "geneset-authoring.md")
     shutil.copy2(ROOT / "schema" / "docs" / "embeddings.md", guides / "embeddings.md")
+    croissant_guide = (ROOT / "schema" / "docs" / "croissant.md").read_text()
+    (guides / "croissant.md").write_text(croissant_guide.replace("../examples/", GITHUB_EXAMPLES))
+    collections_guide = (ROOT / "schema" / "docs" / "result-collections.md").read_text()
+    (guides / "result-collections.md").write_text(
+        collections_guide.replace("../examples/", GITHUB_EXAMPLES))
     identity_guide = (ROOT / "schema" / "identity" / "README.md").read_text()
     (guides / "identity.md").write_text(
         identity_guide.replace("../docs/geneset-authoring.md", "geneset-authoring.md"))
@@ -103,6 +112,8 @@ def build_site() -> None:
                     {"Bottom-line results": "guides/bottom-line-results.md"},
                     {"Genetic ancestry": "guides/ancestry.md"},
                     {"Scientific claims and accounts": "guides/claims.md"},
+                    {"Result collections and value locators": "guides/result-collections.md"},
+                    {"Croissant and DAPPER": "guides/croissant.md"},
                     {"Scientific object citations": "guides/citations.md"},
                     {"Computed identifiers": "guides/identity.md"}]},
         {"Full schema": "reference/index.md"},

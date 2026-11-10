@@ -73,6 +73,12 @@ load your own DAPPER YAML.
 The [citation guide](guides/citations.md) covers exact object references,
 paragraph spans, and the separate versioned citation metadata contract.
 
+[Result collections](guides/result-collections.md) version a method's results
+together with the templates that turn them into claims. Value locators pin the
+exact bytes behind each number. [Croissant and DAPPER](guides/croissant.md)
+shows how a repository's Croissant record imports into a collection, and how
+to publish DAPPER results as Croissant.
+
 These reference pages are generated from [the schema](schema/dapper.yaml).
 Class pages include direct and inherited slots; shared slot pages show how a
 field is used across classes.

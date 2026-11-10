@@ -117,6 +117,15 @@ INLINE_LINKS = {
     "embedding_of": ("dapper:embeddingOf", "in"),
     "has_embedding": ("dapper:hasEmbedding", "out"),
     "has_vector_file": ("dapper:hasVectorFile", "in"),
+    # Result collections: templates and the manifest flow into the version
+    # (member Datasets use `members`, as for every Collection).
+    "has_claim_template": ("dapper:has_claim_template", "in"),
+    "has_query_template": ("dapper:has_query_template", "in"),
+    "has_manifest_file": ("dapper:has_manifest_file", "in"),
+    "was_revision_of": ("prov:wasRevisionOf", "in"),
+    # Evidence grounded at the file boundary: file -> locator -> evidence.
+    "value_locators": ("dapper:value_locators", "in"),
+    "file": ("dapper:file", "in"),
 }
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
@@ -130,6 +139,8 @@ FAMILY = {
     "CellState": "data",
     "Dataset": "data",
     "Embedding": "data",
+    "ResultCollection": "data",
+    "ValueLocator": "data",
     "Activity": "process",
     "MechanisticModel": "claim",
     "Claim": "claim",
@@ -180,6 +191,29 @@ GRAPH_DOCS = [
             "generation branches to their input files."
         ),
         "start": "dapper:ScientificAccount.Ddyw_8CFbVpwdBfXogo2GlOHDJzZpdUw",
+    },
+    {
+        "file": "example_result_collection.yaml",
+        "key": "result_collection",
+        "title": "Result collection version",
+        "blurb": (
+            "Synthetic: one version of a collection holding two trait datasets from one "
+            "method, each with its result file by role, plus the claim template, query "
+            "template and manifest the version was published from. Claims minted from it "
+            "are in the next graph and never point back at the collection."
+        ),
+        "start": "dapper:ResultCollection.YYCvSaxs2YsxU3mZdnW6YL9-EPOkavV2",
+    },
+    {
+        "file": "example_collection_claims.yaml",
+        "key": "collection_claims",
+        "title": "Claim grounded by a value locator",
+        "blurb": (
+            "Synthetic: a measurement claim minted from the Trait T1 result file. Its "
+            "evidence names the exact bytes of the score in that file, so it can be "
+            "re-read and compared against the file's sha256."
+        ),
+        "start": "dapper:Claim.hu-9iCQsBHfKCuMIUn_tVUc_EKgcl6a6",
     },
     {
         "file": "example_file_graph.yaml",

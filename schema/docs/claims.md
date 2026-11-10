@@ -238,6 +238,12 @@ a reference cycle back to the Claim that owns the evidence. Evidence can also
 retain a publication, snippet, or source nanopublication. When `source_claims`
 is supplied, target, direction, explanation, and context are required.
 
+Since 0.2.1-a1, evidence can also ground directly in a result file through
+`value_locators`. Each locator pins the exact bytes of one value in a File. Such
+evidence needs a target and an explanation but no source claim, and it has no
+direction unless a declared rule supplies one. See
+[result collections](result-collections.md#value-locators).
+
 Multiple evidence uses can assess the same proposition, including in opposing
 directions. An EvidenceItem reused by several Claims retains the same target
 and interpretation. The relation records an evidential argument, not guaranteed
