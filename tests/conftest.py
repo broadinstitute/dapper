@@ -1,11 +1,11 @@
 """Shared fixtures.
 
-`schema/converter/` and `schema/identity/` are standalone PEP-723 scripts, not
+`converter/` and `identity/` are standalone PEP-723 scripts, not
 an installed package — the same reason portal/build.py reads DOC_GROUPS out of
 the source text instead of importing it. Tests do import them, so their
 directories go on sys.path here rather than in every test module.
 
-The SchemaView is session-scoped: building it parses the whole of dapper.yaml
+The SchemaView is session-scoped: building it parses dapper.yaml and its imports
 and dominates the runtime of anything that touches identity.
 """
 from __future__ import annotations
@@ -19,14 +19,14 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = REPO_ROOT / "schema" / "dapper.yaml"
-EXAMPLES = REPO_ROOT / "schema" / "examples"
+EXAMPLES = REPO_ROOT / "examples"
 FIXTURES = Path(__file__).parent / "fixtures"
 HZ2 = FIXTURES / "geneset-hubmap-hz2"
 
-sys.path.insert(0, str(REPO_ROOT / "schema" / "identity"))
-sys.path.insert(0, str(REPO_ROOT / "schema" / "converter"))
-sys.path.insert(0, str(REPO_ROOT / "schema" / "lint"))
-sys.path.insert(0, str(REPO_ROOT / "schema"))
+sys.path.insert(0, str(REPO_ROOT / "identity"))
+sys.path.insert(0, str(REPO_ROOT / "converter"))
+sys.path.insert(0, str(REPO_ROOT / "lint"))
+sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from dapper_identity import load_schema
 
@@ -58,5 +58,5 @@ def hz2_meta() -> dict:
 
 @pytest.fixture(scope="session")
 def example_docs() -> dict[str, dict]:
-    """Every schema/examples/*.yaml, parsed, keyed by filename."""
+    """Every examples/*.yaml, parsed, keyed by filename."""
     return {p.name: yaml.safe_load(p.read_text()) for p in sorted(EXAMPLES.glob("*.yaml"))}

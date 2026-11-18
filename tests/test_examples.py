@@ -1,4 +1,4 @@
-"""Tests over schema/examples/*.yaml — the documents shipped as the model's
+"""Tests over examples/*.yaml — the documents shipped as the model's
 worked examples and rendered by the portal.
 
 These are the files a reader is most likely to copy, and the ones the portal
@@ -34,7 +34,7 @@ def test_there_are_examples_to_check():
     renamed directory or a broken glob would turn the whole file green while
     checking nothing at all.
     """
-    assert EXAMPLE_FILES, "schema/examples/*.yaml is empty — did the glob break?"
+    assert EXAMPLE_FILES, "examples/*.yaml is empty — did the glob break?"
     assert GRAPH_FILES
 
 
@@ -61,7 +61,7 @@ def test_every_example_id_matches_its_content(path, sv):
     doc = yaml.safe_load(path.read_text())
     problems = verify(doc, sv)
     assert problems == [], (
-        f"{path.name} has stale identifiers — re-mint with schema/identity/mint.py:\n  "
+        f"{path.name} has stale identifiers — re-mint with identity/mint.py:\n  "
         + "\n  ".join(problems)
     )
 

@@ -31,10 +31,9 @@ import yaml
 
 HERE = Path(__file__).parent
 REPO_ROOT = HERE.parent
-# `schema/` is the model boundary for this repository (see README), so the
-# schema and its examples live under it while the portal sits beside it.
+# `schema/` holds only the LinkML modules; examples sit beside it at the root.
 SCHEMA_DIR = REPO_ROOT / "schema"
-EXAMPLES = SCHEMA_DIR / "examples"
+EXAMPLES = REPO_ROOT / "examples"
 SCHEMA = SCHEMA_DIR / "dapper.yaml"
 LIB = HERE / "lib"
 OUT = HERE / "index.html"
@@ -47,7 +46,7 @@ LIB_FILES = ["cytoscape.min.js", "elk.bundled.js", "cytoscape-elk.js", "js-yaml.
 # so an uploaded document rendered 1 node instead of 18. Read as source rather
 # than imported so the portal keeps its light dependency set (no rdflib).
 def _node_groups() -> dict[str, str]:
-    src = (Path(__file__).parent.parent / "schema" / "identity" / "dapper_identity.py").read_text()
+    src = (REPO_ROOT / "identity" / "dapper_identity.py").read_text()
     block = src[src.index("DOC_GROUPS = {"):]
     block = block[: block.index("}") + 1]
     return dict(re.findall(r'"([^"]+)":\s*"([^"]+)"', block))
@@ -344,7 +343,7 @@ def load_schema(schema: dict | None = None) -> dict:
                 "url": doc_url("slots", slot_name),
                 "mappings": mappings(slot),
                 "description": (slot.get("description") or "").strip(),
-                # A mirror must never rewrite these (see the mirroring invariant in schema/dapper.yaml).
+                # A mirror must never rewrite these (see the mirroring invariant in schema/core.yaml).
                 "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
             enum_name = slot.get("range")

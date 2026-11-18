@@ -4,8 +4,9 @@ version: 0.2.0
 title: DAPPER scientific claims
 description: >-
   Propositions, attributed assessments, and paragraph-oriented scientific accounts.
-  Imported by dapper.yaml, which supplies HashableNode, ProvenancedResource,
-  DismechLinked, and the literal/relationship and identity slot mixins.
+  Imported by dapper.yaml. core.yaml supplies HashableNode, ProvenancedResource,
+  DismechLinked, and the literal/relationship and identity slot mixins;
+  dapper.yaml supplies MechanisticModel and EvidenceItem.
 license: https://creativecommons.org/licenses/by/4.0/
 default_prefix: dapper
 default_range: string
@@ -18,6 +19,7 @@ prefixes:
   linkml: https://w3id.org/linkml/
 imports:
   - linkml:types
+  - core
 
 # SEPIO's draft source still declares an example.org default namespace.
 # Use documentation links and explicit conceptual alignment rather than assert

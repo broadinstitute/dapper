@@ -1,4 +1,4 @@
-"""Unit tests for schema/identity/dapper_identity.py — the minting algorithm.
+"""Unit tests for identity/dapper_identity.py — the minting algorithm.
 
 lint_identity.py already checks the SCHEMA-WIDE invariants (every Node marked,
 every class hashable, no dotted terms) and `verify-vectors` replays the frozen
@@ -290,7 +290,7 @@ def test_verify_catches_a_hand_written_identifier(sv):
 # a literal scalar, so _rewrite_node leaves it out of the digest input while the
 # text rewriter changed it on disk — digest and file then disagree.
 DOC_WITH_COMMENTS = """\
-# A curated comment, of the kind schema/examples carries to distinguish real
+# A curated comment, of the kind examples carries to distinguish real
 # transcribed provenance from illustrative steps.
 persons:
   - id: orcid:0000-0002-1825-0097
@@ -382,7 +382,7 @@ def test_assign_cli_leaves_a_document_it_cannot_mint_untouched(tmp_path, monkeyp
 def test_assign_cli_is_idempotent_on_disk(tmp_path, monkeypatch):
     """Running it twice on unchanged data reproduces the file byte for byte.
 
-    The headline guarantee in schema/identity/README.md, and the reason a changed
+    The headline guarantee in identity/README.md, and the reason a changed
     id can be read as a real signal about changed content. In-memory idempotence
     is covered above; this asserts it survives the round trip through the file,
     which is where it was actually broken — `assign` converged only on run two.
@@ -505,7 +505,7 @@ def test_vector_classes_all_exist_in_the_schema(sv):
     should force the rename to be dealt with deliberately.
     """
     for vec in _vectors():
-        assert sv.get_class(vec["class"]) is not None, f"{vec['class']} is not in dapper.yaml"
+        assert sv.get_class(vec["class"]) is not None, f"{vec['class']} is not in the schema"
 
 
 # --------------------------------------------------------------------------

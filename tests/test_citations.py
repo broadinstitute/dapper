@@ -22,7 +22,7 @@ def document():
 
 @pytest.fixture
 def record():
-    return json.loads((REPO_ROOT / "schema/citations/example-record.json").read_text())
+    return json.loads((REPO_ROOT / "citations/example-record.json").read_text())
 
 
 @pytest.fixture(scope="module")

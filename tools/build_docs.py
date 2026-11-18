@@ -64,24 +64,31 @@ def build_site() -> None:
     shutil.copytree(ROOT / "docs" / "assets", GENERATED / "assets")
     guides = GENERATED / "guides"
     guides.mkdir()
-    guide = (ROOT / "schema" / "docs" / "files-and-drs.md").read_text()
-    (guides / "files-and-drs.md").write_text(guide.replace("../identity/README.md", "identity.md"))
-    shutil.copy2(ROOT / "schema" / "docs" / "claims.md", guides / "claims.md")
-    citation_guide = (ROOT / "schema" / "docs" / "citations.md").read_text()
-    (guides / "citations.md").write_text(citation_guide.replace("../citations/", "../schema/citations/"))
-    shutil.copy2(ROOT / "schema" / "docs" / "bottom-line-results.md", guides / "bottom-line-results.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "geneset-authoring.md", guides / "geneset-authoring.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "embeddings.md", guides / "embeddings.md")
-    identity_guide = (ROOT / "schema" / "identity" / "README.md").read_text()
-    (guides / "identity.md").write_text(
-        identity_guide.replace("../docs/geneset-authoring.md", "geneset-authoring.md"))
-    shutil.copytree(ROOT / "schema" / "examples", GENERATED / "examples",
+    # Source guides link by repository path; the site keeps its own layout
+    # (examples/ beside guides/, citations under schema/), so links are mapped.
+    site_links = {
+        "../../examples/": "../examples/",
+        "../../citations/": "../schema/citations/",
+        "../../identity/README.md": "identity.md",
+        "../docs/guides/geneset-authoring.md": "geneset-authoring.md",
+    }
+
+    def publish(source: Path, name: str) -> None:
+        text = source.read_text()
+        for repo_link, site_link in site_links.items():
+            text = text.replace(repo_link, site_link)
+        (guides / name).write_text(text)
+
+    for name in ("files-and-drs.md", "claims.md", "citations.md", "bottom-line-results.md",
+                 "ancestry.md", "geneset-authoring.md", "embeddings.md"):
+        publish(ROOT / "docs" / "guides" / name, name)
+    publish(ROOT / "identity" / "README.md", "identity.md")
+    shutil.copytree(ROOT / "examples", GENERATED / "examples",
                     ignore=shutil.ignore_patterns("*.py", "__pycache__"))
     (GENERATED / "schema").mkdir()
     for module in (ROOT / "schema").glob("*.yaml"):
         shutil.copy2(module, GENERATED / "schema" / module.name)
-    shutil.copytree(ROOT / "schema" / "citations", GENERATED / "schema" / "citations")
+    shutil.copytree(ROOT / "citations", GENERATED / "schema" / "citations")
 
     navigation = [{"Overview": "index.md"}]
     counts = {}

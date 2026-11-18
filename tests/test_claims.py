@@ -20,7 +20,7 @@ def claim_schema():
 
 @pytest.fixture
 def claim_example():
-    return yaml.safe_load((REPO_ROOT / "schema/examples/example_pigean_claims.yaml").read_text())
+    return yaml.safe_load((REPO_ROOT / "examples/example_pigean_claims.yaml").read_text())
 
 
 def errors(schema, cls, node):
@@ -151,12 +151,12 @@ def test_portal_loads_accounts_and_connects_claims():
 
 @pytest.fixture
 def account_example():
-    return yaml.safe_load((REPO_ROOT / "schema/examples/example_scientific_account.yaml").read_text())
+    return yaml.safe_load((REPO_ROOT / "examples/example_scientific_account.yaml").read_text())
 
 
 @pytest.mark.parametrize("filename", ["example_scientific_account.yaml", "example_claim_provenance_trace.yaml"])
 def test_migrated_scientific_documents_validate(claim_schema, filename):
-    document = yaml.safe_load((REPO_ROOT / "schema/examples" / filename).read_text())
+    document = yaml.safe_load((REPO_ROOT / "examples" / filename).read_text())
     for cls, node in index_document(document).values():
         assert not errors(claim_schema, cls, node), (cls, errors(claim_schema, cls, node))
     assert check_scientific_content(index_document(document)) == []
