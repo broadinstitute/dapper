@@ -126,9 +126,21 @@ def transform_identifiers(document: dict, sv, groups: dict[str, str], *, compact
             errors.append((where, str(exc)))
             return value
 
+    def concrete(node, class_name):
+        """The class an inline value declares through its type designator (e.g. a
+        Context's `context_type`), when it names a subclass of the slot's range.
+        Without this, fields of the subclass (a TraitContext's `trait`) would be
+        invisible to prefix resolution."""
+        for slot in slots_for(class_name).values():
+            named = node.get(slot.name) if slot.designates_type else None
+            if isinstance(named, str) and named in classes and class_name in sv.class_ancestors(named):
+                return named
+        return class_name
+
     def record(node, class_name, where):
         if not isinstance(node, dict):
             return
+        class_name = concrete(node, class_name)
         for key, value in list(node.items()):
             slot = slots_for(class_name).get(key)
             if slot is None or value is None:

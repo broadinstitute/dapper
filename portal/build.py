@@ -1108,12 +1108,23 @@ function mappingsHtml(items) {
   return (items || []).map(m => `<span>${esc(m.relation)}: ${referenceHtml(m.target)}</span>`).join("; ");
 }
 
+// An inline object that names its own class through a type designator (a
+// Context's `context_type`) is shown with that class's field metadata, so a
+// nested ancestry code still links its enum and a trait its catalog.
+function inlineClass(obj) {
+  for (const [key, value] of Object.entries(obj))
+    if (key.endsWith("_type") && typeof value === "string" && own(DATA.schema, value)) return DATA.schema[value];
+  return null;
+}
+
 function valueHtml(v, ids, meta = {}) {
   if (Array.isArray(v))
     return `<span class="list-item">${v.map(x => valueHtml(x, ids, meta)).join('</span><span class="list-item">')}</span>`;
-  if (v && typeof v === "object")
+  if (v && typeof v === "object") {
+    const nested = inlineClass(v);
     return `<dl class="nested-fields">${Object.entries(v).map(([k, value]) =>
-      `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids)}</dd>`).join("")}</dl>`;
+      `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids, (nested && own(nested.attributes, k)) || {})}</dd>`).join("")}</dl>`;
+  }
   const s = String(v);
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
   const pv = own(meta.enum && meta.enum.values, s);
@@ -1148,7 +1159,11 @@ function modelDetailsHtml(cls, fields) {
   if (cls.uri) html += `<p class="insp-desc"><strong>Class URI</strong> ${referenceHtml(cls.uri)}</p>`;
   if (cls.mappings && cls.mappings.length)
     html += `<p class="insp-desc"><strong>Mappings</strong> ${mappingsHtml(cls.mappings)}</p>`;
-  html += `<dl class="fields">`;
+  return html + modelFieldsHtml(cls, fields) + `</details>`;
+}
+
+function modelFieldsHtml(cls, fields) {
+  let html = `<dl class="fields">`;
   for (const [key, value] of Object.entries(fields)) {
     const meta = own(cls.attributes, key);
     if (!meta) continue;
@@ -1166,9 +1181,13 @@ function modelDetailsHtml(cls, fields) {
         if (pv.description) html += `<div class="why">${textHtml(pv.description)}</div>`;
       }
     }
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const nested = item && typeof item === "object" ? inlineClass(item) : null;
+      if (nested) html += modelFieldsHtml(nested, item);
+    }
     html += `</dd></div>`;
   }
-  return html + `</dl></details>`;
+  return html + `</dl>`;
 }
 
 function paragraphCitationsHtml(paragraph, graph) {

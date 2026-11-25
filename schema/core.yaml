@@ -19,7 +19,8 @@ description: >-
   a File, so evidence can ground in a result file.
 
   Scientific reasoning lives in claims.yaml and each domain in its own module
-  (genesets, cell_programs, mechanisms, nanopub, dismech, replay, cfde);
+  (genesets, cell_programs, mechanisms, nanopub, dismech, replay, cfde,
+  biology);
   dapper.yaml imports them all. A project that needs only attribution and
   provenance can import this module alone.
 license: https://opensource.org/license/mit

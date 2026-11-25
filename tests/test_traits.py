@@ -73,3 +73,16 @@ def test_portal_inherits_trait_context_and_preserves_catalog_reference():
     graph = portal.build_graph(next(g for g in portal.GRAPH_DOCS if g["key"] == "bottom_line_af_aa"))
     result = next(n for n in graph["nodes"] if n["id"] == graph["start"])
     assert lp.context_value(result["fields"], "TraitContext", "trait") == AF
+
+
+def test_trait_inside_a_context_is_resolved_through_document_prefixes(sv):
+    """Prefix resolution follows `context_type` into the concrete context, so a
+    TraitContext's CURIE is still checked and expanded like the old `trait` field."""
+    from document_prefixes import transform_identifiers
+    doc = {"datasets": [
+        {"id": "dapper:Dataset.x", "contexts": [{"context_type": "TraitContext", "trait": "NOPE:1"}]},
+        {"id": "dapper:Dataset.y", "contexts": [{"context_type": "TraitContext", "trait": AF}]},
+    ]}
+    out, errors = transform_identifiers(doc, sv, {"datasets": "Dataset"})
+    assert [where for where, _ in errors] == ["datasets[0].contexts[0].trait"]
+    assert out["datasets"][1]["contexts"][0]["trait"] == KPN_BASE + "0000096"

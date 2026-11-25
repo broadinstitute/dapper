@@ -677,12 +677,12 @@ classes:
         description: >-
           The publication this evidence comes from — a Publication node id, or
           a `PMID:` CURIE.
-        exact_mappings:
+        close_mappings:
           - dismech:reference
       reference_title:
         is_a: literal
         mixins: [hashable]
-        exact_mappings:
+        close_mappings:
           - dismech:reference_title
         description: Title of the referenced publication.
       direction:
@@ -696,19 +696,19 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Where the evidence was drawn from (database, deep-research run, ...).
-        exact_mappings:
+        close_mappings:
           - dismech:evidence_source
       snippet:
         is_a: literal
         mixins: [hashable]
         description: Verbatim quoted passage supporting the claim.
-        exact_mappings:
+        close_mappings:
           - dismech:snippet
       explanation:
         is_a: literal
         mixins: [hashable]
         description: Curator/agent rationale for how the passage or source claims bear on the target proposition.
-        exact_mappings:
+        close_mappings:
           - dismech:explanation
       from_nanopub:
         is_a: relationship

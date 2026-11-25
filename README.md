@@ -9,7 +9,8 @@ Use [0.3.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.3.0-a1)
 to pin the model described here. It splits the schema into concept modules
 (`core.yaml`, `claims.yaml` and one per domain) that `dapper.yaml` imports,
 flattens the repository layout, and adds value locators and result collections to
-[0.2.0](docs/releases/0.2.0.md) without changing any identifier. See the
+[0.2.0](docs/releases/0.2.0.md). It also reshapes DISMECH links, account
+framing and ancestry/trait context, so records using those re-mint. See the
 [release and migration notes](docs/releases/0.3.0-a1.md). Pull the tag when
 generating or validating its identifiers; the 0.2.0 alphas and 0.1.0 use
 different gene-set and claims models.
@@ -31,6 +32,7 @@ schema/
   dismech.yaml              # DISMECH cross-walk edge
   replay.yaml               # AgenticWorkspace
   cfde.yaml                 # C2M2File
+  biology.yaml              # AncestryContext, TraitContext (kinds of the core Context)
 examples/                   # LinkML instance and graph examples
 identity/                   # computed content identifiers (DAPPER-ID-1)
 lint/                       # provenance-graph linter and modality profiles
@@ -77,7 +79,7 @@ The model is split into modules. `schema/core.yaml` holds what is tracked
 embeddings, collections) and can be imported on its own. `schema/claims.yaml`
 is the scientific reasoning layer. Each domain (gene sets, gene programs and
 cell states, mechanistic models, nanopublications, the DISMECH cross-walk,
-agentic replay, CFDE files) has its own module. `schema/dapper.yaml` only
+agentic replay, CFDE files, biological contexts) has its own module. `schema/dapper.yaml` only
 imports them. Tools and validation always start from `dapper.yaml`, and every
 module is linted on its own.
 

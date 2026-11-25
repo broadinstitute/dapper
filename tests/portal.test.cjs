@@ -265,3 +265,18 @@ test('a result keeps its file and DRS access visible without tracing downstream 
     assert.equal(cy.elements('.lit, .dim, .context').length, 0);
   } finally { cy.destroy(); }
 });
+
+test('a Dataset shows its contexts with the ancestry enum and trait catalog links', () => {
+  const { run } = runtime();
+  const dataset = `(() => { const g = DATA.graphs.find(g => g.key === "bottom_line_af_aa");
+                              return g.nodes.find(n => n.id === g.start); })()`;
+  // Field values: each context's fields use its own class's metadata.
+  const values = run(`fieldsHtml(${dataset}.fields, DATA.schema.Dataset, new Set())`);
+  assert.match(values, /href="model\/reference\/enums\/AncestryEnum\/"/);
+  assert.match(values, /href="https:\/\/broadinstitute.github.io\/kpn-data-models\/kpn.trait\/0000096\/"/);
+  // Model details document the nested context fields, with the enum meaning.
+  const details = run(`modelDetailsHtml(DATA.schema.Dataset, ${dataset}.fields)`);
+  assert.match(details, /href="model\/reference\/slots\/ancestry\/"/);
+  assert.match(details, /Vocabulary: .*AncestryEnum/);
+  assert.match(details, /AA — Meaning: .*HANCESTRO_0016/);
+});
