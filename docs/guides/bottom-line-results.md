@@ -102,9 +102,9 @@ maps the legacy source label `AF` to the stable numeric suffix `0000096`.
 The KPN namespace replaces the registry's former `PORTAL` prefix while keeping
 that suffix. `0000001` identifies age-related hearing impairment, not AF.
 
-Dataset and Activity expose this optional, single-valued URI/CURIE field through
-`TraitContext`. It is hashable because the measured trait is part of the record's
-scientific scope. A bare `AF` string is not accepted as the trait identifier.
+A Dataset or Activity states its trait with a `TraitContext` in `contexts`:
+`{context_type: TraitContext, trait: KPN.TRAIT:0000096}`. Contexts are part of
+identity because the measured trait is part of the record's scientific scope. A bare `AF` string is not accepted as the trait identifier.
 The existing AF filenames and source labels are retained for traceability.
 
 The schema declares `KPN.TRAIT` as

@@ -60,7 +60,7 @@ def check_ancestry(doc: lp.Document, vocab: lp.Vocabulary, sv, report: lp.Report
         entry = doc.nodes.get(dataset_id)
         if not entry or entry[1] != "Dataset":
             continue
-        declared = entry[2].get("ancestry")
+        declared = lp.context_value(entry[2], "AncestryContext", "ancestry")
         code = locations[location_id]
         if declared is not None and code in allowed and declared != code:
             report.add("error", "dig-ancestry", dataset_id,

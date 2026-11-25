@@ -87,7 +87,8 @@ used both, and the Claims those Activities generated.
 
 Each member Dataset lists one `dimension_value` per collection dimension, in
 the collection's order. No two Datasets may share every value. When a
-dimension also has its own slot (`trait`, `ancestry`), the two must agree.
+dimension also has a matching context (a `TraitContext` or
+`AncestryContext`), the two must agree.
 
 A value is whatever the data uses: a CURIE when one exists, otherwise the
 source's own label (`cfde-inc-v2`). DAPPER does not normalize identifiers. For

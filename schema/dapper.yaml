@@ -39,6 +39,9 @@ description: >-
 
     cfde.yaml. `C2M2File`, a File with CFDE C2M2 identifiers.
 
+    biology.yaml. The biological kinds of the core `Context`:
+      `AncestryContext` and `TraitContext`.
+
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, scientific accounts, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
@@ -69,3 +72,4 @@ imports:
   - dismech
   - replay
   - cfde
+  - biology

@@ -117,8 +117,8 @@ test('gene-set membership pointers navigate both ways with a consistent flow lay
 
 test('enum values link to definitions with explicitly qualified ontology mappings', () => {
   const { run } = runtime();
-  const render = value => run(`valueHtml(${JSON.stringify(value)}, new Set(), DATA.schema.Dataset.attributes.ancestry)`);
-  const details = value => run(`modelDetailsHtml(DATA.schema.Dataset, {ancestry: ${JSON.stringify(value)}})`);
+  const render = value => run(`valueHtml(${JSON.stringify(value)}, new Set(), DATA.schema.AncestryContext.attributes.ancestry)`);
+  const details = value => run(`modelDetailsHtml(DATA.schema.AncestryContext, {ancestry: ${JSON.stringify(value)}})`);
   assert.match(render('AA'), /href="model\/reference\/enums\/AncestryEnum\/"/);
   assert.match(render('AA'), /href="http:\/\/purl.obolibrary.org\/obo\/HANCESTRO_0016"/);
   assert.match(details('AA'), /Meaning:.*HANCESTRO_0016/);

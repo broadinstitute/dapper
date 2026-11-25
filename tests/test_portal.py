@@ -21,7 +21,7 @@ def test_portal_vocabulary_agrees_with_namespace(sv):
 
 def test_inherited_enum_links_preserve_mapping_strength():
     classes = portal.load_schema()
-    ancestry = classes["Dataset"]["attributes"]["ancestry"]
+    ancestry = classes["AncestryContext"]["attributes"]["ancestry"]
     assert ancestry["url"] == "model/reference/slots/ancestry/"
     assert ancestry["enum"]["url"] == "model/reference/enums/AncestryEnum/"
     values = ancestry["enum"]["values"]
@@ -30,7 +30,7 @@ def test_inherited_enum_links_preserve_mapping_strength():
     assert values["HS"]["mappings"] == [{"relation": "close", "target": "HANCESTRO:0014"}]
     assert "meaning" not in values["Mixed"]
     assert not values["Mixed"]["mappings"]
-    assert classes["Activity"]["attributes"]["ancestry"] == ancestry
+    assert classes["Dataset"]["attributes"]["contexts"] == classes["Activity"]["attributes"]["contexts"]
 
 
 def test_embedded_data_cannot_close_script_element():

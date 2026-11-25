@@ -1,15 +1,16 @@
 # Ancestry context for genetic analyses
 
 `AncestryEnum` provides nine source-compatible DIG codes with readable labels
-and ontology mappings. Dataset and Activity gain an optional, single-valued
-`ancestry` field through the `AncestryContext` mixin. The field records the
+and ontology mappings. A Dataset or Activity states its ancestry scope with an
+`AncestryContext` in its `contexts` list (`schema/biology.yaml`):
+`{context_type: AncestryContext, ancestry: AA}`. The context records the
 source-reported population grouping represented by a Dataset or targeted by an
 Activity. It does not establish participant classification methods or
 individual genetic ancestry proportions.
 
-The field is hashable: changing ancestry changes the record's DAPPER ID.
-Records without ancestry remain valid and retain their existing IDs. Omit the
-field when unknown; do not use `Mixed` as a missing-value code. Values are
+Contexts are part of identity: changing ancestry changes the record's DAPPER
+ID. Records without an ancestry context remain valid. State at most one
+AncestryContext per record, and omit it when unknown; do not use `Mixed` as a missing-value code. Values are
 case-sensitive. Importers must explicitly map other systems' codes and verify
 their definitions before translating them (for example, `AFR` is not an
 additional accepted spelling of `AF`).
@@ -94,23 +95,32 @@ example includes their minted IDs and lineage:
 datasets:
   - name: Published bottom-line summary statistics for AF / AA
     resource_type: dataset
-    ancestry: AA
-    trait: KPN.TRAIT:0000096
+    contexts:
+      - context_type: AncestryContext
+        ancestry: AA
+      - context_type: TraitContext
+        trait: KPN.TRAIT:0000096
 
 activities:
   - name: Bottom-line ancestry-specific METAL for AF / AA
     activity_type: AncestrySpecificStage
-    ancestry: AA
-    trait: KPN.TRAIT:0000096
+    contexts:
+      - context_type: AncestryContext
+        ancestry: AA
+      - context_type: TraitContext
+        trait: KPN.TRAIT:0000096
 ```
+
+Contexts are sorted by `context_type`: their order is part of the record's
+identity, and the linter warns about an unsorted list.
 
 The final Dataset connects to its File distribution through `has_file`.
 Scientific context can be queried through that link; File and DrsObject have
-no ancestry field. The example retains the supplied staging-bucket location.
+no contexts. The example retains the supplied staging-bucket location.
 The production listing above does not demonstrate identical file content or
 verify a publication execution.
 
-The separate `trait` field identifies atrial fibrillation using the KPN
+The separate `TraitContext` identifies atrial fibrillation using the KPN
 catalog; see [trait identity in the bottom-line guide](bottom-line-results.md#trait-identity).
 Ancestry and trait are independent dimensions of the analysis scope.
 
@@ -152,7 +162,7 @@ uv run identity/dapper_identity.py assign path/to/result.yaml
 
 ## Ontology links and extension
 
-The model navigator exposes the enum, slot, and mixin through
+The model navigator exposes the enum, slot, and context class through
 `dapper_enum:AncestryEnum`, `dapper_slot:ancestry`, and
 `dapper_class:AncestryContext`. Its enum page links meanings to HANCESTRO and
 shows qualified mappings separately, including the HS close mapping.

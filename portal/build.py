@@ -201,7 +201,7 @@ GRAPH_DOCS = [
             "template and manifest the version was published from. Claims minted from it "
             "are in the next graph and never point back at the collection."
         ),
-        "start": "dapper:ResultCollection.YYCvSaxs2YsxU3mZdnW6YL9-EPOkavV2",
+        "start": "dapper:ResultCollection.eGKSDXSSrrG49bHahck92lSBA9Wiiy0V",
     },
     {
         "file": "example_collection_claims.yaml",
@@ -212,7 +212,7 @@ GRAPH_DOCS = [
             "evidence names the exact bytes of the score in that file, so it can be "
             "re-read and compared against the file's sha256."
         ),
-        "start": "dapper:Claim.hu-9iCQsBHfKCuMIUn_tVUc_EKgcl6a6",
+        "start": "dapper:Claim.Vf_uxxl6WZBtqWNUrNzKinfs2p2S5km1",
     },
     {
         "file": "example_file_graph.yaml",
@@ -284,7 +284,7 @@ GRAPH_DOCS = [
             "outputs inferred by the source are labeled in their descriptions. "
             "This is a schema-valid mapping, not verified execution provenance."
         ),
-        "start": "dapper:Dataset.CBE87jpWVPa6Xtocr66ztw75eR0CUw53",
+        "start": "dapper:Dataset.f_eG9tG-l9ufCa4zUASJVpTpLwQhxwYl",
     },
 ]
 

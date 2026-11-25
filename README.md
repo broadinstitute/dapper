@@ -175,11 +175,12 @@ distribution without inventing C2M2 or DRS registrations. Its
 the provenance linter and is included in the portal.
 
 The [ancestry guide](docs/guides/ancestry.md) describes `AncestryEnum`, its
-HANCESTRO mappings, and the optional `ancestry` field on Dataset and Activity.
+HANCESTRO mappings, and the `AncestryContext` a Dataset or Activity can list
+in its `contexts`.
 The AF / AA example includes explicit ancestry scope. Use
 `uv run lint/lint_dig_ancestry.py path/to/result.yaml` to also check
 declared ancestry against DIG's public/staging export folder conventions.
-The example also uses `trait: KPN.TRAIT:0000096` for atrial fibrillation;
+The example also uses a `TraitContext` with `KPN.TRAIT:0000096` for atrial fibrillation;
 the portal links this CURIE to the renamed KPN trait catalog.
 
 Build the searchable LinkML reference and the provenance inspector together:

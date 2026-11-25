@@ -15,7 +15,7 @@ import hashlib
 import pytest
 import yaml
 
-from conftest import EXAMPLES, SCHEMA
+from conftest import EXAMPLES, SCHEMA, set_context
 from dapper_identity import DOC_GROUPS, assign_ids, compute_id, verify
 
 import lint_provenance as lp
@@ -184,13 +184,13 @@ def test_two_datasets_with_the_same_dimension_values_are_rejected(collection_doc
                                                                   vocab, sv, validator):
     first, second = collection_doc["datasets"]
     second["dimension_values"] = copy.deepcopy(first["dimension_values"])
-    second["trait"] = first["trait"]
+    second["contexts"] = copy.deepcopy(first["contexts"])
     report = lint_doc(remint(collection_doc, sv), tmp_path, vocab, sv, validator)
     assert any("same dimension values" in f.message for f in findings(report))
 
 
-def test_trait_dimension_must_agree_with_trait_slot(collection_doc, tmp_path, vocab, sv, validator):
-    collection_doc["datasets"][0]["trait"] = "EXTRAIT:T9"
+def test_trait_dimension_must_agree_with_trait_context(collection_doc, tmp_path, vocab, sv, validator):
+    set_context(collection_doc["datasets"][0], "TraitContext", "trait", "EXTRAIT:T9")
     report = lint_doc(remint(collection_doc, sv), tmp_path, vocab, sv, validator)
     assert any("disagrees" in f.message for f in findings(report))
 

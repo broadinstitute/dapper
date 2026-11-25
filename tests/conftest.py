@@ -60,3 +60,17 @@ def hz2_meta() -> dict:
 def example_docs() -> dict[str, dict]:
     """Every examples/*.yaml, parsed, keyed by filename."""
     return {p.name: yaml.safe_load(p.read_text()) for p in sorted(EXAMPLES.glob("*.yaml"))}
+
+
+def set_context(node: dict, context_type: str, field: str, value) -> dict:
+    """Set (value) or remove (None) the node's context of one kind, keeping
+    `contexts` sorted by context_type as the linter expects. Returns node."""
+    contexts = [c for c in node.get("contexts") or [] if c.get("context_type") != context_type]
+    if value is not None:
+        contexts.append({"context_type": context_type, field: value})
+    contexts.sort(key=lambda c: c["context_type"])
+    if contexts:
+        node["contexts"] = contexts
+    else:
+        node.pop("contexts", None)
+    return node

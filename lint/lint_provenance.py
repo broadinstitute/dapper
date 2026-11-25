@@ -404,6 +404,36 @@ def check_predicates(doc: Document, vocab: Vocabulary, rep: Report) -> None:
                 f"predicate is {actual!r}, but {class_name} declares {expected!r}")
 
 
+def context_value(node: dict, context_type: str, field: str):
+    """`field` of the node's context of `context_type` (e.g. the trait of its
+    TraitContext), or None when it has no such context."""
+    for context in node.get("contexts") or []:
+        if isinstance(context, dict) and context.get("context_type") == context_type:
+            return context.get(field)
+    return None
+
+
+def check_contexts(doc: Document, rep: Report) -> None:
+    """A record states at most one context of each kind, sorted by kind.
+
+    The schema allows any list of Contexts. Two TraitContexts on one Dataset
+    would make "the" trait ambiguous, so that is an error. Order is part of
+    identity, so an unsorted list is a warning: the same contexts in another
+    order would mint a different id.
+    """
+    for node_id, (_, class_name, node) in doc.nodes.items():
+        kinds = [c.get("context_type") for c in node.get("contexts") or [] if isinstance(c, dict)]
+        repeated = sorted({k for k in kinds if kinds.count(k) > 1 and k})
+        if repeated:
+            rep.add("error", "contexts", f"{node_id}.contexts",
+                    f"{class_name} lists more than one {', '.join(repeated)}",
+                    "State at most one context of each kind.")
+        elif kinds != sorted(kinds, key=str):
+            rep.add("warning", "contexts", f"{node_id}.contexts",
+                    "contexts are not sorted by context_type",
+                    "Sort them: order is part of the record's identity.")
+
+
 def endpoint_spec(vocab: Vocabulary, class_name: str) -> dict:
     """The endpoint rule for an Edge class: its own, or its nearest ancestor's.
 
@@ -639,7 +669,7 @@ def check_result_collections(doc: Document, vocab: Vocabulary, rep: Report) -> N
                     rep.add("error", "result-collection", where,
                             f"has the same dimension values as {seen[key]}")
                 seen.setdefault(key, dataset_id)
-                trait = dataset.get("trait")
+                trait = context_value(dataset, "TraitContext", "trait")
                 listed = dict(zip(names, key)).get("trait")
                 # `trait` was resolved through the document's prefixes; the
                 # dimension value is a literal, so expand it the same way.
@@ -648,7 +678,7 @@ def check_result_collections(doc: Document, vocab: Vocabulary, rep: Report) -> N
                 expanded = declared[prefix] + local if colon and prefix in declared else listed
                 if isinstance(trait, str) and listed is not None and trait not in (listed, expanded):
                     rep.add("error", "result-collection", where,
-                            f"trait dimension {listed!r} disagrees with the Dataset's trait {trait!r}")
+                            f"trait dimension {listed!r} disagrees with the Dataset's TraitContext {trait!r}")
 
             files = dataset.get("has_file") or []
             roles = [r for r in dataset.get("file_roles") or [] if isinstance(r, dict)]
@@ -1008,6 +1038,7 @@ def lint(path: Path, vocab: Vocabulary, sv, validator,
     check_gene_set_counts(doc, rep)
     check_gene_set_membership(doc, rep)
     check_result_collections(doc, vocab, rep)
+    check_contexts(doc, rep)
     check_collection_versions(doc, sv, rep)
     check_refs(doc, vocab, rep)
     for where, problem in check_scientific_content(

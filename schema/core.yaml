@@ -99,8 +99,6 @@ prefixes:
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
   CL: http://purl.obolibrary.org/obo/CL_
-  HANCESTRO: http://purl.obolibrary.org/obo/HANCESTRO_
-  KPN.TRAIT: https://broadinstitute.github.io/kpn-data-models/kpn.trait/
   HGNC: http://identifiers.org/hgnc/
   PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —
@@ -130,51 +128,6 @@ imports:
 # ENUMS
 # ===========================================================================
 enums:
-  AncestryEnum:
-    description: >-
-      Source-reported ancestry grouping of a genetic dataset or analysis.
-      Initial codes follow DIG. Mixed denotes a combined analysis grouping,
-      not individual genetic admixture. Omit ancestry when unknown.
-    see_also:
-      - https://ebispot.github.io/hancestro/
-      - https://github.com/broadinstitute/dig-dug-portal/blob/859ebdf777d498dab583bb5d49b952ccf167e946/src/utils/formatters.js#L27-L48
-    annotations:
-      dapper:ontology_version: HANCESTRO releases/2025-10-14
-    permissible_values:
-      AA:
-        title: African American / Afro-Caribbean
-        meaning: HANCESTRO:0016
-      AF:
-        title: African, unspecified
-        meaning: HANCESTRO:0010
-      EA:
-        title: East Asian
-        meaning: HANCESTRO:0009
-      EU:
-        title: European
-        meaning: HANCESTRO:0005
-      GME:
-        title: Middle Eastern / North African / Persian
-        meaning: HANCESTRO:0015
-      HS:
-        title: Hispanic / Latin American, as reported
-        description: >-
-          Source-reported grouping; participant classification method is
-          unspecified. Do not infer genetic admixture from this label alone.
-        close_mappings:
-          - HANCESTRO:0014
-      Mixed:
-        title: Multiple ancestry groups
-        description: >-
-          Analysis or data collection combining ancestry groups; component
-          groups may be unspecified. Does not assert individual admixture.
-      SA:
-        title: South Asian
-        meaning: HANCESTRO:0006
-      SSAF:
-        title: Sub-Saharan African
-        meaning: HANCESTRO:0011
-
   ResourceTypeEnum:
     description: DataCite-style resource type (resourceTypeGeneral) for the returned entity.
     permissible_values:
@@ -420,35 +373,19 @@ slots:
     description: >-
       Abstract base for scalar (data) attributes. Concrete scalar slots
       declare `is_a: literal`.
-  ancestry:
+  contexts:
     is_a: literal
     mixins: [hashable]
-    range: AncestryEnum
-    multivalued: false
-    required: false
-    slot_uri: dapper:ancestry
+    range: Context
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+    slot_uri: dapper:contexts
     description: >-
-      Source-reported population grouping represented by a Dataset or
-      targeted by an Activity. Omit when unknown or not applicable. This
-      records analysis scope, not individual ancestry proportions or the
-      participant classification method.
-  trait:
-    is_a: relationship
-    mixins: [hashable]
-    range: uriorcurie
-    multivalued: false
-    required: false
-    slot_uri: dapper:trait
-    broad_mappings:
-      - schema:about
-    id_prefixes:
-      - KPN.TRAIT
-    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
-    description: >-
-      Identifier of the trait measured by a Dataset or targeted by an Activity.
-      Prefer a stable catalog CURIE, such as KPN.TRAIT:0000096 for atrial
-      fibrillation, over a source abbreviation such as AF. External trait
-      definitions remain in their catalog; no local trait node is required.
+      Typed settings a Dataset represents or an Activity targets, e.g. an
+      AncestryContext and a TraitContext (biology.yaml). At most one context
+      of each kind. Contexts are part of identity, including their order, so
+      list them sorted by context_type. Omit when none applies.
   has_embedding:
     is_a: relationship
     mixins: [unhashable]  # inverse of Embedding.embedding_of; a derived representation never changes what a node is
@@ -502,17 +439,29 @@ slots:
 # ===========================================================================
 classes:
 
-  AncestryContext:
-    mixin: true
-    description: Optional ancestry scope for genetic data and analyses.
-    slots:
-      - ancestry
+  Context:
+    abstract: true
+    description: >-
+      A typed statement of the setting a record applies to, such as the
+      ancestry group a dataset represents or the trait an analysis targets.
+      Abstract: core says only that records can have contexts, and domain
+      modules define the kinds (biology.yaml: AncestryContext, TraitContext).
+      A value object without its own identifier; it is part of the owning
+      record's identity.
+    attributes:
+      context_type:
+        designates_type: true
+        range: string
+        required: true
+        description: >-
+          The concrete Context class, e.g. `AncestryContext`. Hashed with the
+          rest of the context, so different kinds never collide.
 
-  TraitContext:
+  Contextual:
     mixin: true
-    description: Optional trait scope for datasets and analyses.
+    description: Lets a record state the typed Contexts it applies to.
     slots:
-      - trait
+      - contexts
 
   # ---- Required KG skeleton base classes ---------------------------------
   Node:
@@ -750,8 +699,7 @@ classes:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
-      - AncestryContext
-      - TraitContext
+      - Contextual
     class_uri: schema:Dataset
     aliases:
       - dataset
@@ -906,7 +854,7 @@ classes:
         description: >-
           This Dataset's value along each of the dataset_dimensions of the
           ResultCollection that lists it, in that order. When a dimension
-          also has a dedicated slot (trait, ancestry), the two must agree.
+          also has a matching Context (trait, ancestry), the two must agree.
       file_roles:
         is_a: literal
         mixins: [hashable]
@@ -1668,8 +1616,7 @@ classes:
     is_a: HashableNode
     mixins:
       - PortalLinked
-      - AncestryContext
-      - TraitContext
+      - Contextual
     class_uri: prov:Activity
     close_mappings:
       - schema:Action
