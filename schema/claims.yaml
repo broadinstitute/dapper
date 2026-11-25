@@ -30,7 +30,11 @@ imports:
 # OWL equivalence to a provisional or invented SEPIO class URI.
 enums:
   GapKindEnum:
-    description: Kind of missing knowledge; independent of resolution or review status.
+    description: >-
+      Kind of missing knowledge; independent of resolution or review status.
+      Values match the gap kinds of DISMECH's DiscussionKindEnum.
+    close_mappings:
+      - dismech:DiscussionKindEnum
     permissible_values:
       KNOWLEDGE_GAP:
         description: Missing knowledge about the biological system or its evidence.
@@ -101,6 +105,11 @@ slots:
     slot_uri: dapper:subject_entity
     range: uriorcurie
     description: Upstream (subject) entity of a structured proposition or model.
+  proposition:
+    is_a: relationship
+    slot_uri: dapper:proposition
+    range: Proposition
+    description: The Proposition a Claim assesses or a Hypothesis frames.
   object_entity:
     is_a: relationship
     slot_uri: dapper:object_entity
@@ -173,7 +182,7 @@ classes:
         is_a: literal
         mixins: [hashable]
         range: PropositionKindEnum
-        description: Result or biological interpretation; independent of its role as a hypothesis.
+        description: Result or biological interpretation; independent of whether a Hypothesis frames it.
       mechanistic_model:
         is_a: relationship
         mixins: [hashable]
@@ -344,25 +353,33 @@ classes:
         multivalued: true
         description: Publication back-references; excluded from claim identity to avoid cycles.
 
-  Question:
+  Framing:
     is_a: HashableNode
+    abstract: true
     mixins:
       - ProvenancedResource
+    close_mappings:
+      - dismech:Discussion
     description: >-
-      An inquiry to be addressed, independent of a proposed answer or assessment.
-      It has no truth assessment or confidence score. Accounts can share the same
-      question and propose different hypotheses in response.
+      What a ScientificAccount sets out to address: a Question, a
+      KnowledgeGap, or a Hypothesis. An account lists one or more framings in
+      order. A framing carries no truth assessment or confidence score, and
+      accounts can share a framing while answering it differently. DISMECH
+      records the same idea as a Discussion with a kind (OPEN_QUESTION,
+      KNOWLEDGE_GAP, EMERGING_HYPOTHESIS, ...).
     attributes:
       text:
         is_a: literal
         mixins: [hashable]
-        required: true
         pattern: '\S'
-        description: The inquiry expressed in natural language.
+        description: >-
+          The framing in natural language: the question asked, the gap, or
+          how the account frames its hypothesis. Required for Question and
+          KnowledgeGap.
       scope:
         is_a: literal
         mixins: [hashable]
-        description: Biological or analytical setting that bounds this inquiry.
+        description: Biological or analytical setting that bounds this framing.
       about_entities:
         is_a: relationship
         mixins: [hashable]
@@ -370,15 +387,34 @@ classes:
         multivalued: true
         description: >-
           Identifiers of diseases, genes, mechanisms, phenotypes, or other entities
-          that this inquiry concerns. These supply entity context, not proposed
+          that this framing concerns. These supply entity context, not proposed
           answers or evidence. Omit when unavailable; do not invent identifiers.
 
-  KnowledgeGap:
-    is_a: Question
+  Question:
+    is_a: Framing
     description: >-
-      A Question identifying knowledge that is missing. Inherited text expresses
-      the inquiry; gap_description states what is not yet known. Recording a gap
+      An inquiry to be addressed, independent of a proposed answer or
+      assessment. Accounts can share the same question and propose different
+      hypotheses in response.
+    slot_usage:
+      text:
+        required: true
+        description: The inquiry expressed in natural language.
+
+  KnowledgeGap:
+    is_a: Framing
+    close_mappings:
+      - dismech:Discussion
+    description: >-
+      Knowledge identified as missing. text expresses the inquiry the gap
+      raises; gap_description states what is not yet known. Recording a gap
       does not assess a proposed answer or imply that work has resolved it.
+      Corresponds to a DISMECH Discussion of kind KNOWLEDGE_GAP (or
+      HUMAN_MODEL_MISMATCH).
+    slot_usage:
+      text:
+        required: true
+        description: The inquiry the gap raises, in natural language.
     attributes:
       gap_kind:
         is_a: literal
@@ -390,7 +426,28 @@ classes:
         mixins: [hashable]
         required: true
         pattern: '\S'
-        description: The specific missing knowledge motivating the inherited question.
+        description: The specific missing knowledge the gap identifies.
+
+  Hypothesis:
+    is_a: Framing
+    description: >-
+      A Proposition put forward for investigation in an account. The
+      Hypothesis only frames it: it neither asserts the proposition nor
+      changes its identity, and it carries no confidence, status or
+      evidence. Those belong on Claims that assess the proposition, and any
+      mechanistic structure on the proposition's ExplanatoryModel. Other
+      accounts may frame the same proposition differently. Optional text
+      records how this account phrases the hypothesis when that differs from
+      the proposition's statement.
+    attributes:
+      proposition:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        required: true
+        pattern: '\S'
+        description: The Proposition proposed for investigation.
 
   ScientificAccount:
     is_a: HashableNode
@@ -399,8 +456,10 @@ classes:
     description: >-
       An attributed scientific account organized as framing, context, claims,
       and optional closing. It is not a Claim and has no aggregate proposition
-      or score. A hypothesis is a Proposition's role in this account. Membership
-      and order do not imply causation or evidential support.
+      or score. Its framing is one or more Questions, KnowledgeGaps or
+      Hypotheses, in order; a Hypothesis proposes an existing Proposition for
+      investigation without asserting it. Membership and order do not imply
+      causation or evidential support.
     slot_usage:
       was_generated_by:
         required: true
@@ -408,23 +467,19 @@ classes:
         required: true
         minimum_cardinality: 1
     attributes:
-      question:
+      framing:
         is_a: relationship
         mixins: [hashable]
-        range: Question
+        range: Framing
         inlined: false
-        pattern: '\S'
-        description: The Question or KnowledgeGap motivating this account.
-      hypothesis:
-        is_a: relationship
-        mixins: [hashable]
-        range: Proposition
-        inlined: false
+        multivalued: true
+        required: true
+        minimum_cardinality: 1
         pattern: '\S'
         description: >-
-          A proposition proposed for investigation in this account. This role
-          neither asserts it nor changes its identity; other accounts may use
-          the same proposition differently.
+          Ordered, distinct Questions, KnowledgeGaps and Hypotheses this
+          account addresses. An account may, for example, pose a question and
+          propose a hypothesis in response.
       context:
         is_a: literal
         mixins: [hashable]
@@ -468,19 +523,6 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Optional editorial synthesis or limitations; does not create an additional claim.
-    rules:
-      - preconditions:
-          slot_conditions:
-            context:
-              required: true
-        postconditions:
-          any_of:
-            - slot_conditions:
-                question:
-                  required: true
-            - slot_conditions:
-                hypothesis:
-                  required: true
 
   CitationOccurrence:
     description: >-
@@ -495,7 +537,7 @@ classes:
         range: uriorcurie
         required: true
         pattern: '\S'
-        description: Exact Claim, Question, or most-specific KnowledgeGap identifier.
+        description: Exact Claim, Question, or KnowledgeGap identifier.
       citation_metadata_revision:
         range: integer
         required: true

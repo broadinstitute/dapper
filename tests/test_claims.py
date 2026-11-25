@@ -142,7 +142,7 @@ def test_portal_loads_accounts_and_connects_claims():
     portal = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(portal)
     schema = portal.load_schema()
-    assert {"hypothesis", "component_claims", "context", "was_generated_by"} <= set(schema["ScientificAccount"]["attributes"])
+    assert {"framing", "component_claims", "context", "was_generated_by"} <= set(schema["ScientificAccount"]["attributes"])
     example = next(g for g in portal.GRAPH_DOCS if g["key"] == "pigean_claims")
     graph = portal.build_graph(example)
     assert example["start"] in {n["id"] for n in graph["nodes"]}
@@ -163,37 +163,48 @@ def test_migrated_scientific_documents_validate(claim_schema, filename):
 
 
 def test_retired_classes_are_replaced_and_models_do_not_assess(sv):
-    assert not {"Hypothesis", "CompositeClaim"} & set(sv.all_classes())
+    assert "CompositeClaim" not in sv.all_classes()
     assert "Claim" not in sv.class_ancestors("ScientificAccount")
+    assessment = {"confidence", "status", "has_score", "has_evidence"}
     model_slots = {s.name for s in sv.class_induced_slots("MechanisticModel")}
-    assert not {"confidence", "status", "has_score", "has_evidence"} & model_slots
+    assert not assessment & model_slots
+    # The 0.3.0 Hypothesis is a framing that points at a Proposition. It is not
+    # the retired 0.1 Hypothesis, which carried its own statement, assessment
+    # and causal chain.
+    assert "Framing" in sv.class_ancestors("Hypothesis")
+    hypothesis_slots = {s.name for s in sv.class_induced_slots("Hypothesis")}
+    assert not (assessment | {"statement", "has_causal_step", "mechanistic_model"}) & hypothesis_slots
 
 
-@pytest.mark.parametrize("framing", ["question", "hypothesis"])
-def test_any_framing_role_is_sufficient(claim_schema, account_example, framing):
+@pytest.mark.parametrize("index", [0, 1])
+def test_any_single_framing_is_sufficient(claim_schema, account_example, index):
     account = account_example["scientific_accounts"][0]
-    values = {"question": account["question"], "hypothesis": account["hypothesis"]}
-    for key in values:
-        account.pop(key, None)
-    account[framing] = values[framing]
+    assert len(account["framing"]) == 2
+    account["framing"] = [account["framing"][index]]
     assert not errors(claim_schema, "ScientificAccount", account)
+    assert check_scientific_content(index_document(account_example)) == []
 
 
 def test_missing_and_blank_framing_is_rejected(claim_schema, account_example):
     account = account_example["scientific_accounts"][0]
-    account.pop("question")
-    account.pop("hypothesis")
+    framing = account.pop("framing")
     assert errors(claim_schema, "ScientificAccount", account)
-    account["question"] = "  "
+    account["framing"] = []
     assert errors(claim_schema, "ScientificAccount", account)
+    account["framing"] = ["  "]
+    assert errors(claim_schema, "ScientificAccount", account)
+    account["framing"] = framing
+    assert not errors(claim_schema, "ScientificAccount", account)
 
 
-def test_hypothesis_role_reuses_the_assessed_proposition(account_example, sv):
+def test_hypothesis_frames_the_assessed_proposition_without_changing_it(account_example, sv):
     account = account_example["scientific_accounts"][0]
-    target = account_example["claims"][1]["proposition"]
-    assert account["hypothesis"] == target
+    hypothesis = account_example["hypotheses"][0]
+    assert hypothesis["id"] in account["framing"]
+    assert hypothesis["proposition"] == account_example["claims"][1]["proposition"]
     before = deepcopy(account_example["propositions"])
-    account.pop("hypothesis")
+    account["framing"].remove(hypothesis["id"])
+    account_example.pop("hypotheses")
     assign_ids(account_example, sv)
     assert account_example["propositions"] == before
 
@@ -208,6 +219,7 @@ def test_source_claim_evidence_needs_an_explicit_interpretation(claim_schema, ac
 @pytest.mark.parametrize("mutation, expected", [
     ("conclusion", "subset"), ("duplicate", "distinct"),
     ("hypothesis", "must resolve to Proposition"),
+    ("framing", "must resolve to Framing"),
     ("target", "targets a different proposition"),
     ("cycle", "circular evidential support"),
     ("all_conclusions", "at least one claim"),
@@ -218,7 +230,8 @@ def test_cross_record_constraints(account_example, mutation, expected):
     evidence = account_example["evidence_items"][0]
     if mutation == "conclusion": account["conclusion_claims"] = ["urn:absent"]
     if mutation == "duplicate": account["component_claims"].append(result["id"])
-    if mutation == "hypothesis": account["hypothesis"] = result["id"]
+    if mutation == "hypothesis": account_example["hypotheses"][0]["proposition"] = result["id"]
+    if mutation == "framing": account["framing"] = [result["id"]]
     if mutation == "target": evidence["target_proposition"] = result["proposition"]
     if mutation == "cycle": evidence["source_claims"] = [conclusion["id"]]
     if mutation == "all_conclusions": account["conclusion_claims"] = account["component_claims"][:]
@@ -261,10 +274,11 @@ def test_renderer_keeps_each_pigean_score_separate(claim_example):
     assert all(s["references"][0] in {c["id"] for c in claim_example["claims"]} for s in scores)
 
 
-def test_knowledge_gap_is_a_question_and_works_as_account_framing(sv, claim_schema, account_example):
+def test_knowledge_gap_is_a_framing_sibling_of_question(sv, claim_schema, account_example):
     gap = account_example["knowledge_gaps"][0]
-    assert "Question" in sv.class_ancestors("KnowledgeGap")
-    assert account_example["scientific_accounts"][0]["question"] == gap["id"]
+    assert "Framing" in sv.class_ancestors("KnowledgeGap")
+    assert "Question" not in sv.class_ancestors("KnowledgeGap")
+    assert gap["id"] in account_example["scientific_accounts"][0]["framing"]
     assert not errors(claim_schema, "KnowledgeGap", gap)
     assert check_scientific_content(index_document(account_example)) == []
     without_inherited_text = {k: v for k, v in gap.items() if k != "text"}
@@ -274,12 +288,13 @@ def test_knowledge_gap_is_a_question_and_works_as_account_framing(sv, claim_sche
     assert errors(claim_schema, "KnowledgeGap", {**gap, "confidence": 0.9})
 
 
-def test_question_and_knowledge_gap_both_resolve_through_question_field(claim_schema, account_example):
+def test_question_and_knowledge_gap_both_work_as_framing(claim_schema, account_example):
     gap = account_example.pop("knowledge_gaps")[0]
     question = {k: v for k, v in gap.items() if k not in {"gap_description", "gap_kind"}}
     question["id"] = "urn:test:plain-question"
     account_example["questions"] = [question]
-    account_example["scientific_accounts"][0]["question"] = question["id"]
+    framing = account_example["scientific_accounts"][0]["framing"]
+    framing[framing.index(gap["id"])] = question["id"]
     account_example["paragraphs"][0]["citations"][0]["target_id"] = question["id"]
     assert not errors(claim_schema, "Question", question)
     assert check_scientific_content(index_document(account_example)) == []

@@ -6,8 +6,8 @@ description: >-
   from claims.yaml), its ordered
   `CausalStep`s, and the `Mechanism`s they invoke. A model holds structure and
   scope, not an assessment; confidence, review status and evidence live on
-  Claim (claims.yaml), and a hypothesis is a Proposition's role within a
-  ScientificAccount. CausalStep and CausalLinkTypeEnum currently match
+  Claim (claims.yaml), and a ScientificAccount proposes it through a
+  Hypothesis framing. CausalStep and CausalLinkTypeEnum currently match
   DISMECH's CausalEdge (recorded as close mappings); what a causal step means
   is DAPPER's to define, and the two may diverge.
 license: https://opensource.org/license/mit
@@ -71,7 +71,7 @@ classes:
       Optional biological model elaborating one or more causal relationships.
       Contains structure and scope, not an assessment, confidence, or review
       status. A Proposition may reference this model and Claims assess that
-      proposition. Its use as a hypothesis belongs to a ScientificAccount.
+      proposition. An account proposes it for investigation with a Hypothesis framing.
     close_mappings:
       - dismech:MechanisticHypothesis
     attributes:

@@ -90,8 +90,7 @@ INLINE_LINKS = {
     "has_score": ("dapper:has_score", "in"),
     "component_claims": ("dapper:component_claims", "in"),
     "conclusion_claims": ("dapper:conclusion_claims", "in"),
-    "hypothesis": ("dapper:hypothesis", "in"),
-    "question": ("dapper:question", "in"),
+    "framing": ("dapper:framing", "in"),
     "about_entities": ("dapper:about_entities", "in"),
     "mechanistic_model": ("dapper:mechanistic_model", "in"),
     "has_causal_step": ("dapper:has_causal_step", "in"),
@@ -146,6 +145,7 @@ FAMILY = {
     "ScientificAccount": "claim",
     "Question": "claim",
     "KnowledgeGap": "claim",
+    "Hypothesis": "claim",
     "Paragraph": "publication",
     "EvidenceItem": "claim",
     "Mechanism": "claim",
@@ -177,7 +177,7 @@ GRAPH_DOCS = [
             "the hypothesis role; separate Claims report a result and assess its biological "
             "meaning. Inspect the evidence use, assumptions, and saved results paragraph."
         ),
-        "start": "dapper:ScientificAccount.4EdFhOCSYboZhnZiHbT3qnyYeqyyvbIs",
+        "start": "dapper:ScientificAccount.964RBhDcGip7cgNGCkXiEIZyFZPHy7IB",
     },
     {
         "file": "example_pigean_claims.yaml",
@@ -189,7 +189,7 @@ GRAPH_DOCS = [
             "not real PIGEAN/EAGGL outputs. Follow both the GWAS and gene-set "
             "generation branches to their input files."
         ),
-        "start": "dapper:ScientificAccount.Ddyw_8CFbVpwdBfXogo2GlOHDJzZpdUw",
+        "start": "dapper:ScientificAccount.8AePya9C1SyzkZpAEpJ1pC_hHNqVpqyj",
     },
     {
         "file": "example_result_collection.yaml",
@@ -233,7 +233,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:ScientificAccount.5DL2Fp_YSvjCkZS3D4GWktP3zMgpOnBY",
+        "start": "dapper:ScientificAccount.IK4OOMaU5RRi5UVxad7xoTLQGmTpiXum",
     },
     {
         "file": "example_geneset_graph.yaml",
@@ -1188,16 +1188,18 @@ function accountOverviewHtml(node, graph) {
   const fields = node.fields;
   let html = `<section class="scientific-account"><h3>Scientific account</h3>`;
   const prose = (label, text) => text ? `<p><strong>${esc(label)}</strong><br>${esc(text)}</p>` : "";
-  if (fields.question) {
-    const question = byId.get(fields.question);
-    html += prose("Question", question?.fields.text || fields.question);
-    if (question?.cls === "KnowledgeGap") html += prose("Knowledge gap", question.fields.gap_description);
-    html += prose("Gap kind", question?.fields.gap_kind);
-    if (question?.fields.about_entities?.length) html += `<p><strong>Entity context</strong><br>${valueHtml(question.fields.about_entities, new Set(byId.keys()))}</p>`;
-  }
-  if (fields.hypothesis) {
-    const proposition = byId.get(fields.hypothesis);
-    html += prose("Hypothesis under investigation", proposition?.fields.statement || fields.hypothesis);
+  for (const ref of fields.framing || []) {
+    const framing = byId.get(ref);
+    if (framing?.cls === "Hypothesis") {
+      const proposition = byId.get(framing.fields.proposition);
+      html += prose("Hypothesis under investigation",
+        framing.fields.text || proposition?.fields.statement || framing.fields.proposition);
+    } else {
+      html += prose(framing?.cls === "KnowledgeGap" ? "Knowledge gap" : "Question", framing?.fields.text || ref);
+      if (framing?.cls === "KnowledgeGap") html += prose("Missing knowledge", framing.fields.gap_description);
+      html += prose("Gap kind", framing?.fields.gap_kind);
+    }
+    if (framing?.fields.about_entities?.length) html += `<p><strong>Entity context</strong><br>${valueHtml(framing.fields.about_entities, new Set(byId.keys()))}</p>`;
   }
   html += prose("Context", fields.context);
   for (const assumption of fields.assumptions || []) html += prose("Assumption", assumption);

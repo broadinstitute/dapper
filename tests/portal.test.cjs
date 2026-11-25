@@ -27,7 +27,7 @@ test('scientific accounts show roles, evidence, and a saved paragraph without as
   const rendered = run(`(() => {
     const graph = JSON.parse(JSON.stringify(DATA.graphs.find(g => g.key === "scientific_account")));
     const account = graph.nodes.find(n => n.cls === "ScientificAccount");
-    graph.nodes.find(n => n.id === account.fields.question).fields.text = '<img src=x onerror=alert(1)>';
+    graph.nodes.find(n => n.id === account.fields.framing[0]).fields.text = '<img src=x onerror=alert(1)>';
     const conclusion = graph.nodes.find(n => n.id === account.fields.conclusion_claims[0]);
     delete conclusion.fields.statement;
     conclusion.fields.direction = 'DISPUTES';
@@ -62,7 +62,7 @@ test('citation excerpts count Unicode code points and escape authored text', () 
 test('uploaded scientific accounts open at the account even when a paragraph is its terminal expression', () => {
   const { run } = runtime();
   const graph = run(`graphFromDoc({
-    scientific_accounts: [{id: "account", question: "question", component_claims: ["claim"]}],
+    scientific_accounts: [{id: "account", framing: ["question"], component_claims: ["claim"]}],
     questions: [{id: "question", text: "What was found?"}],
     claims: [{id: "claim", proposition: "proposition"}],
     propositions: [{id: "proposition", statement: "An illustrative result."}],

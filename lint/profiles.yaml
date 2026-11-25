@@ -42,13 +42,13 @@ edge_group_overrides:
 edge_endpoints:
   Used:
     subject: [Activity]
-    object: [File, C2M2File, Dataset, ResultCollection, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
+    object: [File, C2M2File, Dataset, ResultCollection, Set, GeneSet, GeneProgram, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap, Hypothesis]
   WasGeneratedBy:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Embedding, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, File, C2M2File, Embedding, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap, Hypothesis]
     object: [Activity]
   WasDerivedFrom:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
-    object: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap, Hypothesis]
+    object: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, File, C2M2File, DrsObject, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Proposition, ClaimScore, Nanopublication, Publication, Question, KnowledgeGap, Hypothesis]
   HasDrsObject:
     subject: [Dataset]
     object: [DrsObject]
@@ -62,22 +62,22 @@ edge_endpoints:
     subject: [Activity]
     object: [AgenticWorkspace]
   HasCreator:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [Person, Organization]
   HasContributor:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [Person, Organization]
   WasAttributedTo:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, NanopubProvenance, Question, KnowledgeGap, Hypothesis]
     object: [Person, Organization]
   FundedBy:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [Award]
   IsDescribedBy:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [Publication]
   HasRecommendedCitation:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [RecommendedCitation]
   HasDataUseTerm:
     subject: [Dataset, Set, GeneSet, GeneProgram, CellState]
@@ -86,7 +86,7 @@ edge_endpoints:
     subject: [Activity]
     object: [LineageStep]
   HasMirrorProvenance:
-    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap]
+    subject: [Dataset, ResultCollection, Set, GeneSet, GeneProgram, CellState, Claim, ScientificAccount, MechanisticModel, EvidenceItem, Paragraph, Question, KnowledgeGap, Hypothesis]
     object: [MirrorProvenance]
   PackagedAs:
     subject: [Dataset]

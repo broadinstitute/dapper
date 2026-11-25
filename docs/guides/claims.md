@@ -24,9 +24,11 @@ model.
 
 ```mermaid
 flowchart LR
-    A[ScientificAccount] -->|question| Q[Question]
-    K[KnowledgeGap] -. inherits .-> Q
-    A -->|hypothesis role| P[Proposition]
+    A[ScientificAccount] -->|framing| F[Framing]
+    Q[Question] -. is a .-> F
+    K[KnowledgeGap] -. is a .-> F
+    H[Hypothesis] -. is a .-> F
+    H -->|proposition| P[Proposition]
     A -->|component claims| C[Claim]
     C -->|assesses| P
     C -->|evidence| E[EvidenceItem]
@@ -86,45 +88,51 @@ Use **Claim** as the DAPPER object name. “Assertion” describes putting conte
 forward and remains useful in ontology mappings and publication terminology;
 it does not require a second parallel DAPPER class.
 
+### Framing
+
+A **Framing** is what an account sets out to address. It is abstract; use one
+of its three kinds below. `ScientificAccount.framing` lists one or more
+framings in order, so an account can pose a question and propose a hypothesis
+in response. Framings carry no truth assessment or confidence score, and
+accounts can share a framing while answering it differently. Every framing may
+have `text`, `scope`, `about_entities` (URI/CURIE references supplying entity
+context), and provenance.
+
+DISMECH represents the same idea as a `Discussion` with a `kind`
+(`OPEN_QUESTION`, `KNOWLEDGE_GAP`, `EMERGING_HYPOTHESIS`, ...); `Framing` maps
+to it as a close match.
+
 ### Question
 
 A **Question** expresses an inquiry that the work aims to address. It identifies
-what is unknown and the relevant scope. It has no truth assessment or confidence
-score. The minimum content is `text`, with optional `scope`, `about_entities`
-(URI/CURIE references supplying entity context), and provenance.
-
-`ScientificAccount.question` references a Question. Accounts can share it while
-proposing different hypotheses. Claims can contribute to answering it, but the
-existence of a linked Claim does not mean that the inquiry has been resolved.
+what is unknown and the relevant scope. `text` is required. Claims can
+contribute to answering it, but the existence of a linked Claim does not mean
+that the inquiry has been resolved.
 
 ### KnowledgeGap
 
-A **KnowledgeGap** inherits from **Question**. It identifies a specific absence
-of knowledge motivating an inquiry. Inherited `text` expresses the question;
-required `gap_description` describes what is missing. It inherits scope and
-provenance from Question and is accepted wherever a Question is referenced.
-Optional `gap_kind` distinguishes `KNOWLEDGE_GAP` and `HUMAN_MODEL_MISMATCH`;
-omission means unclassified. Neither value is a resolution status.
+A **KnowledgeGap** identifies a specific absence of knowledge. It is a sibling
+of Question, not a kind of Question. `text` expresses the inquiry the gap
+raises; required `gap_description` describes what is missing. Optional
+`gap_kind` distinguishes `KNOWLEDGE_GAP` and `HUMAN_MODEL_MISMATCH` (the same
+values as DISMECH's discussion kinds); omission means unclassified. Neither
+value is a resolution status. The gap is distinct from any proposition
+proposed as its answer.
 
-An account uses the same `question` field for a Question or a KnowledgeGap.
-There is no parallel free-text gap field, and the gap is distinct from any
-proposition proposed as its answer.
+### Hypothesis
 
-### Hypothesis (role)
-
-A **Hypothesis** is a candidate answer or explanation proposed for investigation.
-Its content is a Proposition, optionally elaborated by a MechanisticModel.
-It may address the account's question.
+A **Hypothesis** puts a Proposition forward for investigation. Its content is
+the Proposition it references, optionally elaborated by a MechanisticModel; it
+has no statement, confidence, status or evidence of its own. Optional `text`
+records how this account phrases the hypothesis when that differs from the
+proposition's statement.
 
 Hypothesis describes the role of content in an investigation; Claim describes
 an attributed assertion or assessment of content. They are not successive stages
-on a confidence scale. Claims can assess the proposition used as a hypothesis,
-and a proposed hypothesis can itself be put forward through a Claim.
-
-`ScientificAccount.hypothesis` references the Proposition proposed for
-investigation. A Claim can assess that exact same Proposition. The role belongs
-to the account; it is not a global flag on Proposition and does not depend on
-confidence. There is no standalone generic Hypothesis class.
+on a confidence scale. A Claim can assess the exact Proposition a Hypothesis
+frames, and framing a proposition never changes the proposition's identity.
+This is not the Hypothesis class retired in 0.2.0, which bundled content,
+assessment and mechanism together.
 
 ### MechanisticModel (optional)
 
@@ -266,8 +274,8 @@ do not copy that graph into paragraph context.
 
 The record has six conceptual parts, represented by the following fields:
 
-- **Framing — required:** `question` references a Question or KnowledgeGap,
-  and/or `hypothesis` references a Proposition. Both may coexist.
+- **Framing — required:** `framing` lists one or more Questions,
+  KnowledgeGaps and Hypotheses, in order.
 - **Context — required:** `context` provides a concise account of the approach and the relevant
   scope, with model and assumption information where applicable.
 - **Component claims — required:** `component_claims` is an ordered list containing at least one
@@ -286,7 +294,7 @@ must be represented as a Claim. A restatement or editorial remark need not
 create a new Claim. Framing and context can reference Claims for scientific
 assertions being assessed; assumptions remain explicitly marked as assumed.
 
-The account associates its question with a proposition proposed as its hypothesis. Claim-to-proposition
+The account's framing can pair a question with a Hypothesis that proposes an answer. Claim-to-proposition
 links identify assessed content. Account-to-claim links express membership.
 EvidenceItems express evidential use. Paragraph-to-account links express
 textual realization. These relations must not be treated as interchangeable.
@@ -363,7 +371,7 @@ render a faithful results paragraph. Missing provenance or interpretation detail
 should be visible; a polished paragraph must not imply that the record is complete.
 
 Reuse existing Proposition, Claim, score, provenance, and mechanistic records.
-Keep question and hypothesis references, context, and assumptions on the account.
+Keep framing references, context, and assumptions on the account.
 Reuse EvidenceItem for interpretations and MechanisticModel only when biological structure is useful. A saved Paragraph
 is needed only when its wording or publication metadata needs to be retained.
 
@@ -388,13 +396,13 @@ The `mechanistic_model` slots of `Proposition`, `ScientificAccount` and
 `MechanisticModel` lives in `schema/mechanisms.yaml`, so claims does not
 depend on any domain module. Scientific records
 use the document groups `propositions`, `claims`, `claim_scores`,
-`scientific_accounts`, `questions`, `knowledge_gaps`, `paragraphs`, `evidence_items`,
+`scientific_accounts`, `questions`, `knowledge_gaps`, `hypotheses`, `paragraphs`, `evidence_items`,
 and optional
 `mechanistic_models`, `causal_steps`, and `mechanisms`.
 
 The [fictional study](../../examples/example_scientific_account.yaml) demonstrates
-a KnowledgeGap used as the account's Question, and one Proposition serving as
-hypothesis and assessment target. The
+an account framed by a KnowledgeGap and a Hypothesis, whose Proposition is
+also the assessment target. The
 [PIGEAN account](../../examples/example_pigean_claims.yaml) preserves three separate
 scores and both input-provenance branches. The
 [provenance trace](../../examples/example_claim_provenance_trace.yaml) connects a
@@ -423,10 +431,14 @@ examples and tooling are migrated; arbitrary external records are not silently
 converted. Class names contribute to identifiers, so migrated records must be
 re-minted, retaining old published versions as historical records.
 
-- `Hypothesis` is removed. Put its evaluated content in a Proposition and its
+- The 0.1 `Hypothesis` is removed. Put its evaluated content in a Proposition and its
   attributed assessment, status, and evidence in a Claim. Put any biological
-  structure in an optional MechanisticModel. `ScientificAccount.hypothesis`
-  selects the Proposition's role in a particular investigation.
+  structure in an optional MechanisticModel. In 0.3.0, a new, thin
+  `Hypothesis` framing references that Proposition from an account's `framing`
+  (0.2.0 used `ScientificAccount.hypothesis` for this).
+- 0.3.0 replaces `ScientificAccount.question` and `.hypothesis` with one
+  ordered `framing` list. Move the question id into it, wrap the hypothesis
+  Proposition in a `hypotheses` record and list that, then re-mint.
 - `Hypothesis.confidence` moves to a typed ClaimScore. Preserve its reported
   meaning and scale; do not invent a probability interpretation for an unknown
   score. Existing review-status values are retained in `ClaimStatusEnum`.

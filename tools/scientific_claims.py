@@ -32,14 +32,19 @@ def _refs(node: dict, field: str) -> list[str]:
     return [v for v in (value if isinstance(value, list) else [value]) if isinstance(v, str)]
 
 
+# Concrete Framing classes an account's `framing` may reference.
+FRAMINGS = {"Question", "KnowledgeGap", "Hypothesis"}
+
+
 def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
     """Return (location, problem) pairs; schema validation checks record shapes."""
     problems = []
     targets = {
         "Proposition": {"mechanistic_model": "MechanisticModel"},
         "Claim": {"proposition": "Proposition", "has_score": "ClaimScore", "has_evidence": "EvidenceItem"},
-        "ScientificAccount": {"question": "Question", "hypothesis": "Proposition", "component_claims": "Claim",
+        "ScientificAccount": {"framing": "Framing", "component_claims": "Claim",
                               "conclusion_claims": "Claim", "mechanistic_model": "MechanisticModel"},
+        "Hypothesis": {"proposition": "Proposition"},
         "EvidenceItem": {"source_claims": "Claim", "target_proposition": "Proposition",
                          "mechanistic_model": "MechanisticModel"},
         "MechanisticModel": {"has_causal_step": "CausalStep"},
@@ -52,11 +57,11 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
                 problems.append((f"{nid}.{field}", "references must be distinct"))
             for ref in refs:
                 actual = nodes.get(ref, (None, {}))[0]
-                if actual != expected and not (expected == "Question" and actual == "KnowledgeGap"):
+                if actual != expected and not (expected == "Framing" and actual in FRAMINGS):
                     problems.append((f"{nid}.{field}", f"{ref} must resolve to {expected}; found {actual or 'no local record'}"))
         if cls == "ScientificAccount":
-            if not any(isinstance(node.get(k), str) and node[k].strip() for k in ("question", "hypothesis")):
-                problems.append((nid, "framing needs a Question (including KnowledgeGap) or hypothesis"))
+            if not _refs(node, "framing"):
+                problems.append((nid, "framing needs at least one Question, KnowledgeGap or Hypothesis"))
             members = set(_refs(node, "component_claims"))
             conclusions = set(_refs(node, "conclusion_claims"))
             if not conclusions <= members:
@@ -184,20 +189,24 @@ def render_account(document: dict, account_id: str | None = None) -> list[dict]:
                 text += "."
             segments.append({"role": role, "text": text, "references": list(refs)})
 
-    if account.get("question"):
-        ref = account["question"]
-        question = nodes[ref][1]
-        add("framing", question["text"], ref)
-        add("knowledge_gap", question.get("gap_description"), ref)
-        if question.get("scope"):
-            add("question_scope", "Question scope: " + question["scope"], ref)
-    if account.get("hypothesis"):
-        ref = account["hypothesis"]
-        add("hypothesis", "Hypothesis under investigation: " + nodes[ref][1]["statement"], ref)
-        scope = nodes[ref][1].get("scope")
-        if scope:
-            add("scope", "Scope: " + scope, ref)
-            included_scopes.add(scope)
+    for ref in _refs(account, "framing"):
+        cls, framing = nodes[ref]
+        if cls == "Hypothesis":
+            proposition_ref = framing["proposition"]
+            proposition = nodes[proposition_ref][1]
+            add("hypothesis", "Hypothesis under investigation: "
+                + (framing.get("text") or proposition["statement"]), ref, proposition_ref)
+            if framing.get("scope"):
+                add("framing_scope", "Hypothesis scope: " + framing["scope"], ref)
+            scope = proposition.get("scope")
+            if scope:
+                add("scope", "Scope: " + scope, proposition_ref)
+                included_scopes.add(scope)
+        else:
+            add("framing", framing["text"], ref)
+            add("knowledge_gap", framing.get("gap_description"), ref)
+            if framing.get("scope"):
+                add("question_scope", "Question scope: " + framing["scope"], ref)
     add("context", account.get("context"), account_id)
     for assumption in account.get("assumptions") or []:
         add("assumption", "Assumption: " + assumption, account_id)

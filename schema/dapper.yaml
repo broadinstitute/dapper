@@ -17,7 +17,8 @@ description: >-
       collections (`Collection`, `ResultCollection`) and `ValueLocator`.
 
     claims.yaml. Scientific reasoning: `Proposition`, `Claim` and its scores,
-      `EvidenceItem`, `Question` and `KnowledgeGap`, `ScientificAccount`,
+      `EvidenceItem`, the framings (`Question`, `KnowledgeGap`,
+      `Hypothesis`), `ScientificAccount`,
       `Paragraph`, and the abstract `ExplanatoryModel` that domain models
       specialize. Conceptually aligned with SEPIO's Proposition and
       Statement model.

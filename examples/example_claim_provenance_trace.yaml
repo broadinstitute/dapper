@@ -21,7 +21,7 @@ _illustrative:
   - dapper:MechanisticModel.jDq9IM7tTPaV4Skvb4uw8a5rf_oGOE4O
   - dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
   - dapper:EvidenceItem.RnBXp5LWnYHZSKDspRwU24OeQ66Z5qJu
-  - dapper:ScientificAccount.5DL2Fp_YSvjCkZS3D4GWktP3zMgpOnBY
+  - dapper:ScientificAccount.IK4OOMaU5RRi5UVxad7xoTLQGmTpiXum
   - dapper:Question.F8aLp94gR_SDgAfTlitASsRZsPWVBIx8
 c2m2_files:
   - id: dapper:C2M2File.zmm9HPij4ShMcqSp9FKSQJpjoZwnhPS7
@@ -359,10 +359,11 @@ evidence_items:
     was_attributed_to: *id001
     was_generated_by: dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
 scientific_accounts:
-  - id: dapper:ScientificAccount.5DL2Fp_YSvjCkZS3D4GWktP3zMgpOnBY
+  - id: dapper:ScientificAccount.IK4OOMaU5RRi5UVxad7xoTLQGmTpiXum
     name: Illustrative account of proximal-tubule involvement
-    question: dapper:Question.F8aLp94gR_SDgAfTlitASsRZsPWVBIx8
-    hypothesis: dapper:Proposition.PP6O7izYtU0ndKR6rD3hjoRTZighmQVH
+    framing:
+      - dapper:Question.F8aLp94gR_SDgAfTlitASsRZsPWVBIx8
+      - dapper:Hypothesis.GIBYK5DieLKVueCp5CqNzqY3XeL952dO
     context: This graph combines real gene-set file provenance with illustrative enrichment and mechanistic assessments. The claims and nanopublications are illustrative, not published scientific claims.
     component_claims:
       - dapper:Claim.TzNWzGw2cPtTCFox0lV0KhX7WxzEkzLP
@@ -392,3 +393,6 @@ corresponds_to_dismech_edges:
     predicate: skos:closeMatch
     object: MONDO:0015612
     dismech_class: dismech:MechanisticHypothesis
+hypotheses:
+  - id: dapper:Hypothesis.GIBYK5DieLKVueCp5CqNzqY3XeL952dO
+    proposition: dapper:Proposition.PP6O7izYtU0ndKR6rD3hjoRTZighmQVH

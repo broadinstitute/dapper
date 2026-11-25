@@ -107,6 +107,7 @@ DOC_GROUPS = {
     "scientific_accounts": "ScientificAccount",
     "questions": "Question",
     "knowledge_gaps": "KnowledgeGap",
+    "hypotheses": "Hypothesis",
     "paragraphs": "Paragraph",
     "claim_scores": "ClaimScore",
     "causal_steps": "CausalStep",
