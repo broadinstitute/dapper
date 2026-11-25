@@ -1,0 +1,205 @@
+id: https://broadinstitute.github.io/dapper/model/schema/mechanisms.yaml
+name: dapper_mechanisms
+title: DAPPER mechanistic models
+description: >-
+  Optional biological structure: `MechanisticModel`, its ordered
+  `CausalStep`s, and the `Mechanism`s they invoke. A model holds structure and
+  scope, not an assessment; confidence, review status and evidence live on
+  Claim (claims.yaml), and a hypothesis is a Proposition's role within a
+  ScientificAccount. CausalStep and CausalLinkTypeEnum are shaped like
+  DISMECH's CausalEdge so chains round-trip without translation.
+license: https://opensource.org/license/mit
+version: 0.3.0-a1
+
+default_prefix: dapper
+default_range: string
+
+prefixes:
+  dapper: https://broadinstitute.github.io/dapper/ns#
+  dapper_class: https://broadinstitute.github.io/dapper/model/reference/classes/
+  dapper_slot: https://broadinstitute.github.io/dapper/model/reference/slots/
+  dapper_enum: https://broadinstitute.github.io/dapper/model/reference/enums/
+  dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
+  linkml: https://w3id.org/linkml/
+  dismech: https://w3id.org/monarch-initiative/dismech/
+
+imports:
+  - linkml:types
+  - core
+
+# ===========================================================================
+# ENUMS
+# ===========================================================================
+enums:
+  CausalLinkTypeEnum:
+    description: >-
+      Directness of a causal step. Values are copied VERBATIM from DISMECH's
+      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a DAPPER causal
+      step round-trips into a DISMECH `CausalEdge.causal_link_type` with no
+      value translation. Do not add or rename values here without changing
+      them upstream first.
+    exact_mappings:
+      - dismech:CausalLinkTypeEnum
+    annotations:
+      dapper:source_standard: DISMECH CausalLinkTypeEnum
+    permissible_values:
+      DIRECT:
+        description: The subject acts directly on the object; no intermediates.
+      INDIRECT_KNOWN_INTERMEDIATES:
+        description: >-
+          Indirect, and the intervening mechanisms are known and should be
+          listed in `intermediate_mechanisms`.
+      INDIRECT_UNKNOWN_INTERMEDIATES:
+        description: Indirect, but the intervening mechanisms are not known.
+      UNKNOWN:
+        description: Directness has not been determined.
+
+# ===========================================================================
+# CLASSES
+# ===========================================================================
+classes:
+# ===========================================================================
+# BLOCK — HYPOTHESIS (the REVEAL output)
+#
+# Mechanistic structure is optional content. Hypothesis is a Proposition's
+# role in a ScientificAccount; attribution and assessment live on Claim.
+# DISMECH alignments here are conceptual, not assertions of complete equivalence.
+
+  MechanisticModel:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+      - DismechLinked
+    description: >-
+      Optional biological model elaborating one or more causal relationships.
+      Contains structure and scope, not an assessment, confidence, or review
+      status. A Proposition may reference this model and Claims assess that
+      proposition. Its use as a hypothesis belongs to a ScientificAccount.
+    close_mappings:
+      - dismech:MechanisticHypothesis
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        description: Description of the proposed biological structure.
+      subject_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Optional upstream entity in the mechanistic model.
+      object_entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Optional downstream entity in the mechanistic model.
+      has_causal_step:
+        is_a: relationship
+        mixins: [hashable]
+        range: CausalStep
+        inlined: false
+        multivalued: true
+        description: Causal steps, ordered by each step's step_index.
+      scope:
+        is_a: literal
+        mixins: [hashable]
+        description: Biological conditions under which the model is proposed to apply.
+      applies_to_subtypes:
+        is_a: literal
+        mixins: [hashable]
+        multivalued: true
+        description: Disease subtypes to which this model applies.
+
+  CausalStep:
+    is_a: HashableNode
+    mixins:
+      - DismechLinked
+    description: >-
+      One ordered link in a mechanistic model's causal chain: subject -> object, with
+      a directness classification and optional intermediates. Deliberately
+      shaped as DISMECH's `CausalEdge` so a chain can be written into a DISMECH
+      entry, or read out of one, without translation.
+    exact_mappings:
+      - dismech:CausalEdge
+    annotations:
+      dapper:source_standard: DISMECH CausalEdge
+    attributes:
+      step_index:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+        description: >-
+          0-based position in the chain. Carries the ordering explicitly
+          because RDF graphs are unordered.
+      step_subject:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: Upstream end of this step (gene, variant, mechanism, phenotype, ...).
+      step_object:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: >-
+          Downstream end of this step. Corresponds to DISMECH `CausalEdge.target`.
+        exact_mappings:
+          - dismech:target
+      causal_link_type:
+        is_a: literal
+        mixins: [hashable]
+        range: CausalLinkTypeEnum
+        description: >-
+          Directness of the step. Values are DISMECH's verbatim.
+        exact_mappings:
+          - dismech:causal_link_type
+      intermediate_mechanisms:
+        is_a: literal
+        mixins: [hashable]
+        multivalued: true
+        description: >-
+          Known intervening mechanisms, required in spirit when
+          `causal_link_type` is INDIRECT_KNOWN_INTERMEDIATES.
+        exact_mappings:
+          - dismech:intermediate_mechanisms
+      via_mechanism:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        description: Mechanism node ids for this step (structured counterpart of the above).
+      description:
+        is_a: literal
+        mixins: [hashable]
+
+  Mechanism:
+    is_a: HashableNode
+    mixins:
+      - DismechLinked
+    description: >-
+      A biological mechanism invoked by a causal step. Intentionally thin —
+      DISMECH's `Mechanism` is `name` + `description`, and the rich
+      pathophysiology (cell types, biological processes, pathways, locations)
+      lives upstream in DISMECH's `Pathophysiology`. Point at it with
+      `DismechLinked` rather than copying it here.
+    exact_mappings:
+      - dismech:Mechanism
+    close_mappings:
+      - dismech:Pathophysiology
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+      biological_process:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        multivalued: true
+        description: GO biological process CURIE(s), e.g. `obo:GO_0006629`.
+
+  HasCausalStep:
+    is_a: Edge
+    description: MechanisticModel → CausalStep.
+    slot_usage:
+      predicate:
+        ifabsent: string(dapper:hasCausalStep)

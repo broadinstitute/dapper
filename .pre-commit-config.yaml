@@ -3,8 +3,10 @@ repos:
     hooks:
       - id: linkml-lint
         name: linkml-lint (no warnings)
-        # core.yaml is linted alone too, so it stays importable without dapper.yaml.
-        entry: bash -c 'linkml-lint -c .linkml-lint.yaml schema/dapper.yaml && linkml-lint -c .linkml-lint.yaml schema/core.yaml'
+        # Every module is linted alone: linkml-lint checks only the given
+        # schema's own elements, and each module must stay importable without
+        # dapper.yaml (which only imports the others).
+        entry: bash -c 'for f in schema/*.yaml; do linkml-lint -c .linkml-lint.yaml "$f" || exit 1; done'
         language: python
         additional_dependencies: [linkml]
         pass_filenames: false

@@ -382,7 +382,8 @@ claims standard.
 ## Using and reviewing the implementation
 
 The root `schema/dapper.yaml` imports `schema/claims.yaml`, which builds on the
-shared base classes in `schema/core.yaml`. Scientific records
+shared base classes in `schema/core.yaml`. `EvidenceItem` lives in claims;
+the optional mechanistic structure lives in `schema/mechanisms.yaml`. Scientific records
 use the document groups `propositions`, `claims`, `claim_scores`,
 `scientific_accounts`, `questions`, `knowledge_gaps`, `paragraphs`, `evidence_items`,
 and optional

@@ -4,7 +4,7 @@
 Usage: uv run --with pyyaml tools/graphify_schema.py
 
 This supplements graphify's code/document extraction. Local imports (core.yaml,
-claims.yaml) are followed; remote ones such as linkml:types are not fetched.
+claims.yaml and the domain modules) are followed; remote ones such as linkml:types are not fetched.
 Only declared structure and literal mentions of known classes are indexed.
 """
 

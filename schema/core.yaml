@@ -14,14 +14,14 @@ description: >-
   immutable version of a named collection of analysis results: Datasets of
   result files identified by declared dimensions (`DimensionValue`,
   `FileRole`), the claim templates that mint Claims from them, and the query
-  templates that read them. `GeneSetCollection` (dapper.yaml) also
+  templates that read them. `GeneSetCollection` (genesets.yaml) also
   specializes Collection. `ValueLocator` pins the exact bytes of one value in
   a File, so evidence can ground in a result file.
 
-  Domain blocks (gene sets, single-cell, nanopublications, mechanistic models,
-  DISMECH cross-walk, agentic replay) live in dapper.yaml, which imports this
-  module. A project that needs only attribution and provenance can import
-  this module alone.
+  Scientific reasoning lives in claims.yaml and each domain in its own module
+  (genesets, cell_programs, mechanisms, nanopub, dismech, replay, cfde);
+  dapper.yaml imports them all. A project that needs only attribution and
+  provenance can import this module alone.
 license: https://opensource.org/license/mit
 version: 0.3.0-a1
 
@@ -747,7 +747,7 @@ classes:
           dapper:append_only: true
 
   # DISMECH cross-walk pointers. Lives in core because Dataset uses it; the
-  # cross-walk itself is documented in dapper.yaml.
+  # cross-walk itself is documented in dismech.yaml.
   DismechLinked:
     mixin: true
     description: >-

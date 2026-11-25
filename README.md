@@ -6,9 +6,9 @@ related biomedical knowledge products.
 ## Release
 
 Use [0.3.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.3.0-a1)
-to pin the model described here. It splits the schema into a domain-neutral
-`core.yaml` and the domain blocks in `dapper.yaml`, flattens the repository
-layout, and adds value locators and result collections to
+to pin the model described here. It splits the schema into concept modules
+(`core.yaml`, `claims.yaml` and one per domain) that `dapper.yaml` imports,
+flattens the repository layout, and adds value locators and result collections to
 [0.2.0](docs/releases/0.2.0.md) without changing any identifier. See the
 [release and migration notes](docs/releases/0.3.0-a1.md). Pull the tag when
 generating or validating its identifiers; the 0.2.0 alphas and 0.1.0 use
@@ -21,9 +21,16 @@ root.
 
 ```text
 schema/
-  dapper.yaml               # root model: imports core + claims, adds domain blocks
-  core.yaml                 # domain-neutral attribution, provenance, and identity
-  claims.yaml               # propositions, claims, scores, and scientific accounts
+  dapper.yaml               # root model: imports every module below, defines nothing
+  core.yaml                 # what is tracked: identity, attribution, provenance, files, collections
+  claims.yaml               # scientific reasoning: propositions, claims, evidence, accounts
+  genesets.yaml             # GeneSet, GeneSetCollection
+  cell_programs.yaml        # GeneProgram, CellState
+  mechanisms.yaml           # MechanisticModel, CausalStep, Mechanism
+  nanopub.yaml              # nanopublications
+  dismech.yaml              # DISMECH cross-walk edge
+  replay.yaml               # AgenticWorkspace
+  cfde.yaml                 # C2M2File
 examples/                   # LinkML instance and graph examples
 identity/                   # computed content identifiers (DAPPER-ID-1)
 lint/                       # provenance-graph linter and modality profiles
@@ -65,13 +72,14 @@ Provenance Profile it's named after. It covers citation, funding, PROV
 lineage, file identity, controlled-access terms, workflow provenance,
 nanopublications, scientific accounts, and agentic replay.
 
-The model is split into modules. `schema/core.yaml` holds the domain-neutral
-parts (the graph skeleton, identity, attribution, provenance, files, DRS, DUO,
-embeddings) and can be imported on its own. `schema/claims.yaml` holds
-scientific claims. `schema/dapper.yaml` imports both and adds the domain
-blocks: gene sets, single-cell, nanopublications, mechanistic models, the
-DISMECH cross-walk, and agentic replay. Tools and validation always start from
-`dapper.yaml`.
+The model is split into modules. `schema/core.yaml` holds what is tracked
+(the graph skeleton, identity, attribution, provenance, files, DRS, DUO,
+embeddings, collections) and can be imported on its own. `schema/claims.yaml`
+is the scientific reasoning layer. Each domain (gene sets, gene programs and
+cell states, mechanistic models, nanopublications, the DISMECH cross-walk,
+agentic replay, CFDE files) has its own module. `schema/dapper.yaml` only
+imports them. Tools and validation always start from `dapper.yaml`, and every
+module is linted on its own.
 
 Scientific assessments use `Claim`, reusable `Proposition` records, and typed
 `ClaimScore` values. `ScientificAccount` organizes a question, hypothesis role,

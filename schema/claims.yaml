@@ -3,10 +3,11 @@ name: dapper_claims
 version: 0.3.0-a1
 title: DAPPER scientific claims
 description: >-
-  Propositions, attributed assessments, and paragraph-oriented scientific accounts.
-  Imported by dapper.yaml. core.yaml supplies HashableNode, ProvenancedResource,
-  DismechLinked, and the literal/relationship and identity slot mixins;
-  dapper.yaml supplies MechanisticModel and EvidenceItem.
+  Scientific reasoning: propositions, attributed assessments and their
+  evidence, and paragraph-oriented scientific accounts. core.yaml supplies
+  HashableNode, ProvenancedResource, ValueLocator, DismechLinked, and the
+  literal/relationship and identity slot mixins; mechanisms.yaml supplies
+  MechanisticModel.
 license: https://creativecommons.org/licenses/by/4.0/
 default_prefix: dapper
 default_range: string
@@ -17,9 +18,11 @@ prefixes:
   dapper_enum: https://broadinstitute.github.io/dapper/model/reference/enums/
   dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
   linkml: https://w3id.org/linkml/
+  dismech: https://w3id.org/monarch-initiative/dismech/
 imports:
   - linkml:types
   - core
+  - mechanisms
 
 # SEPIO's draft source still declares an example.org default namespace.
 # Use documentation links and explicit conceptual alignment rather than assert
@@ -82,6 +85,26 @@ enums:
         description: Judged by the assessor to be refuted.
       retracted:
         description: Withdrawn by its creator.
+
+# Slots shared by several classes, declared once. Each class still carries
+# them as attributes (with its own hashability and wording); the shared
+# declaration gives each one a single URI.
+slots:
+  mechanistic_model:
+    is_a: relationship
+    slot_uri: dapper:mechanistic_model
+    range: MechanisticModel
+    description: Optional mechanistic structure an assessment, proposition or account draws on.
+  subject_entity:
+    is_a: relationship
+    slot_uri: dapper:subject_entity
+    range: uriorcurie
+    description: Upstream (subject) entity of a structured proposition or model.
+  object_entity:
+    is_a: relationship
+    slot_uri: dapper:object_entity
+    range: uriorcurie
+    description: Downstream (object) entity of a structured proposition or model.
 
 classes:
   Proposition:
@@ -527,3 +550,154 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Language tag for this expression.
+
+  # ---- evidence (moved from dapper.yaml in 0.3.0-a1) -----------------------
+
+  EvidenceItem:
+    is_a: HashableNode
+    mixins:
+      - ProvenancedResource
+    description: >-
+      Evidence used in an attributed assessment of a target proposition.
+      Can retain a publication passage, use source Claims, or ground directly
+      in result-file values via value_locators, with a direction, rationale,
+      and assumptions. At least one grounding (source_claims, value_locators,
+      reference, or snippet) should be present. The target is a Proposition
+      rather than the owning Claim, so Claim -> EvidenceItem -> Proposition has
+      no back-reference cycle. Reuse across Claims requires the same target and
+      interpretation.
+    close_mappings:
+      - dismech:EvidenceItem
+    see_also:
+      - https://sepio-framework.github.io/sepio-linkml/EvidenceLine/
+    annotations:
+      dapper:source_standard: DISMECH EvidenceItem and SEPIO EvidenceLine (conceptual alignment)
+    attributes:
+      source_claims:
+        is_a: relationship
+        mixins: [hashable]
+        range: Claim
+        inlined: false
+        multivalued: true
+        description: >-
+          Source assessments used as evidence; not automatically accepted as
+          true. Optional since 0.3.0-a1, so evidence read directly from a
+          result file can ground in value_locators without a synthetic
+          intermediate claim.
+      value_locators:
+        slot_uri: dapper:value_locators
+        is_a: relationship
+        mixins: [hashable]
+        range: ValueLocator
+        inlined: false
+        multivalued: true
+        description: >-
+          Exact file spans grounding this evidence at the result-file boundary;
+          the preferred grounding for evidence read directly from a result
+          file. Added in 0.3.0-a1.
+      target_proposition:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        description: Proposition to which direction and explanation apply.
+      context:
+        is_a: literal
+        mixins: [hashable]
+        description: Analytical or biological model context needed to interpret this evidence use.
+      assumptions:
+        is_a: literal
+        mixins: [hashable]
+        multivalued: true
+        description: Assumptions licensing this interpretation; not claims assessed by this work.
+      mechanistic_model:
+        is_a: relationship
+        mixins: [hashable]
+        range: MechanisticModel
+        inlined: false
+        description: Optional biological structure used in the interpretation.
+      reference:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: >-
+          The publication this evidence comes from — a Publication node id, or
+          a `PMID:` CURIE.
+        exact_mappings:
+          - dismech:reference
+      reference_title:
+        is_a: literal
+        mixins: [hashable]
+        exact_mappings:
+          - dismech:reference_title
+        description: Title of the referenced publication.
+      direction:
+        is_a: literal
+        mixins: [hashable]
+        range: EvidenceDirectionEnum
+        description: Direction of this evidence use relative to target_proposition.
+        close_mappings:
+          - dismech:supports
+      evidence_source:
+        is_a: literal
+        mixins: [hashable]
+        description: Where the evidence was drawn from (database, deep-research run, ...).
+        exact_mappings:
+          - dismech:evidence_source
+      snippet:
+        is_a: literal
+        mixins: [hashable]
+        description: Verbatim quoted passage supporting the claim.
+        exact_mappings:
+          - dismech:snippet
+      explanation:
+        is_a: literal
+        mixins: [hashable]
+        description: Curator/agent rationale for how the passage or source claims bear on the target proposition.
+        exact_mappings:
+          - dismech:explanation
+      from_nanopub:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        description: >-
+          The nanopublication this evidence is drawn from, when the evidence is
+          itself a published, signed claim rather than a passage from a paper.
+          Following it reaches that claim's own provenance graph, and from
+          there the analysis and dataset it rests on.
+
+    rules:
+      - preconditions:
+          slot_conditions:
+            source_claims:
+              required: true
+        postconditions:
+          slot_conditions:
+            target_proposition:
+              required: true
+            direction:
+              required: true
+            explanation:
+              required: true
+            context:
+              required: true
+      # Evidence read from a file must still say what it bears on and how.
+      # Direction stays optional: a raw measurement supplies none, and DAPPER
+      # does not infer one by thresholding a value without a declared rule.
+      - preconditions:
+          slot_conditions:
+            value_locators:
+              required: true
+        postconditions:
+          slot_conditions:
+            target_proposition:
+              required: true
+            explanation:
+              required: true
+
+  HasEvidence:
+    is_a: Edge
+    description: Claim → EvidenceItem.
+    slot_usage:
+      predicate:
+        ifabsent: string(dapper:hasEvidence)

@@ -1,5 +1,7 @@
-# uv run --with linkml linkml-lint -c .linkml-lint.yaml schema/dapper.yaml
-# uv run --with linkml linkml-lint -c .linkml-lint.yaml schema/core.yaml
+# Lint every module on its own: linkml-lint checks only the elements of the
+# schema it is given, not those of its imports, so dapper.yaml (imports only)
+# covers nothing by itself.
+#   for f in schema/*.yaml; do uv run --with linkml linkml-lint -c .linkml-lint.yaml "$f"; done
 rules:
   recommended:
     level: warning
@@ -20,7 +22,7 @@ rules:
   standard_naming:
     level: warning
     # CausalLinkTypeEnum's values are copied verbatim from DISMECH's own
-    # CausalLinkTypeEnum (see schema/dapper.yaml) so a causal step round-trips
+    # CausalLinkTypeEnum (see schema/mechanisms.yaml) so a causal step round-trips
     # with no value translation. Renaming them here would break that.
     exclude:
       - DIRECT
@@ -37,5 +39,21 @@ rules:
       - Mixed
       - SA
       - SSAF
+      # claims.yaml enum values predate per-module linting and appear in
+      # minted records; renaming them would change identifiers.
+      - KNOWLEDGE_GAP
+      - HUMAN_MODEL_MISMATCH
+      - SUPPORTS
+      - DISPUTES
+      - NEUTRAL
+      - MIXED
+      - PROBABILITY
+      - POSTERIOR_PROBABILITY
+      - EFFECT_ESTIMATE
+      - LOADING
+      - SCORE
+      - RESULT
+      - BIOLOGICAL_INTERPRETATION
+      - UNSPECIFIED
   canonical_prefixes:
     level: warning

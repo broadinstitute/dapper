@@ -1,0 +1,74 @@
+id: https://broadinstitute.github.io/dapper/model/schema/dismech.yaml
+name: dapper_dismech
+title: DAPPER DISMECH harmonization
+description: >-
+  Instance-level correspondence to the Monarch Initiative DISMECH
+  disease-pathophysiology schema (https://w3id.org/monarch-initiative/dismech).
+  DISMECH is not edited; harmonization lives on the DAPPER side as class
+  mappings in each module, the core `DismechLinked` mixin, and the
+  `CorrespondsToDismech` edge defined here.
+license: https://opensource.org/license/mit
+version: 0.3.0-a1
+
+default_prefix: dapper
+default_range: string
+
+prefixes:
+  dapper: https://broadinstitute.github.io/dapper/ns#
+  dapper_class: https://broadinstitute.github.io/dapper/model/reference/classes/
+  dapper_slot: https://broadinstitute.github.io/dapper/model/reference/slots/
+  dapper_enum: https://broadinstitute.github.io/dapper/model/reference/enums/
+  dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
+  linkml: https://w3id.org/linkml/
+  skos: http://www.w3.org/2004/02/skos/core#
+
+imports:
+  - linkml:types
+  - core
+
+# ===========================================================================
+# BLOCK — DISMECH HARMONIZATION
+#
+# DISMECH (https://w3id.org/monarch-initiative/dismech) is mirrored into this
+# repo VERBATIM from monarch-initiative/dismech and is refreshed by
+# models/dismech/pull_dismech.py. It is therefore NOT editable here: any local
+# change is silently reverted on the next refresh. All harmonization is
+# expressed on THIS side, as mappings and pointers, so both models can evolve
+# independently and still line up.
+#
+# Cross-walk summary (DAPPER <-> DISMECH):
+#   dapper:Dataset             <-> dismech:Dataset            (complementary halves:
+#                                DISMECH describes the science of a dataset,
+#                                DAPPER describes its attribution)
+#   dapper:Publication         <-> dismech:PublicationReference
+#   dapper:Activity            <-> dismech:CurationEvent      (DISMECH's homegrown
+#                                mini-PROV; DAPPER's PROV-O subsumes it)
+#   dapper:MechanisticModel    ~   dismech:MechanisticHypothesis
+#   dapper:CausalStep          <-> dismech:CausalEdge
+#   dapper:Mechanism           <-> dismech:Mechanism
+#   dapper:EvidenceItem        <-> dismech:EvidenceItem
+#
+# NOTE ON IDENTITY. DISMECH keys a disease by `Disease.name` (a plain string)
+# and a dataset by `accession` (a CURIE). DAPPER keys every Node by a
+# CURIE/URI `id`. When pointing at a DISMECH entry, prefer the ontology term
+# (MONDO CURIE) it carries in `disease_term`, and record the upstream string
+# key separately in `dismech_entry_key` so the join is lossless in both
+# directions.
+# ===========================================================================
+
+# ===========================================================================
+# CLASSES
+# ===========================================================================
+classes:
+  CorrespondsToDismech:
+    is_a: Edge
+    description: >-
+      Any DAPPER node → the DISMECH entry it corresponds to. The instance-
+      level counterpart of the class-level `exact_mappings` in block (A).
+    slot_usage:
+      subject:
+        description: DAPPER node id.
+      predicate:
+        ifabsent: string(skos:closeMatch)
+      object:
+        description: DISMECH entry identifier (prefer the MONDO CURIE).
