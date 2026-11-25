@@ -157,7 +157,7 @@ class Vocabulary:
 
     node_groups: dict[str, str]                   # group key -> class
     edge_groups: dict[str, str]                   # group key -> Edge class
-    edge_endpoints: dict[str, dict[str, list[str]]]
+    edge_endpoints: dict[str, dict[str, list[str] | str]]  # "external": end outside the document
     edge_predicates: dict[str, str]               # Edge class -> expected predicate
     profiles: dict[str, dict]
     relationship_slots: dict[str, dict[str, str]] # class -> slot -> predicate URI
@@ -404,6 +404,17 @@ def check_predicates(doc: Document, vocab: Vocabulary, rep: Report) -> None:
                 f"predicate is {actual!r}, but {class_name} declares {expected!r}")
 
 
+def endpoint_spec(vocab: Vocabulary, class_name: str) -> dict:
+    """The endpoint rule for an Edge class: its own, or its nearest ancestor's.
+
+    So `CorrespondsToDismech` follows `CorrespondsTo` without restating it.
+    """
+    for name in vocab.schema.class_ancestors(class_name):
+        if name in vocab.edge_endpoints:
+            return vocab.edge_endpoints[name] or {}
+    return {}
+
+
 def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     """Edge subjects and objects are nodes of the classes the edge allows.
 
@@ -417,7 +428,7 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
         # `or {}` rather than skipping: the both-ends-present rule below is
         # universal, so it must run even for an edge class with no declared
         # endpoint types.
-        spec = vocab.edge_endpoints.get(class_name) or {}
+        spec = endpoint_spec(vocab, class_name)
         for end in ("subject", "object"):
             node_id = edge.get(end)
 
@@ -427,6 +438,11 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
             if node_id is None or not str(node_id).strip():
                 rep.add("error", "endpoints", f"{group}[{end}]",
                         f"{class_name} has no {end} — an edge needs both ends")
+                continue
+
+            # `external` marks an end that names something outside the
+            # document (e.g. a CorrespondsTo object), so it need not resolve.
+            if spec.get(end) == "external":
                 continue
 
             actual = doc.class_of(str(node_id))
@@ -460,6 +476,8 @@ def check_endpoints(doc: Document, vocab: Vocabulary, rep: Report) -> None:
         for end in ("subject", "object"):
             actual = doc.class_of(getattr(link, end))
             allowed = spec.get(end)
+            if allowed == "external":
+                continue
             if actual is not None and allowed and not any(
                     c in vocab.schema.class_ancestors(actual) for c in allowed):
                 rep.add("error", "endpoints", link.where,

@@ -21,9 +21,9 @@ rules:
     level: error
   standard_naming:
     level: warning
-    # CausalLinkTypeEnum's values are copied verbatim from DISMECH's own
-    # CausalLinkTypeEnum (see schema/mechanisms.yaml) so a causal step round-trips
-    # with no value translation. Renaming them here would break that.
+    # CausalLinkTypeEnum's values (schema/mechanisms.yaml) match DISMECH's
+    # and appear in minted causal steps; renaming them is a modelling decision,
+    # not a lint fix.
     exclude:
       - DIRECT
       - INDIRECT_KNOWN_INTERMEDIATES

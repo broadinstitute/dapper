@@ -34,8 +34,10 @@ edge_group_overrides:
 # something checkable.
 #
 # Endpoint constraints also accept descendants of each listed class. An edge
-# class omitted here still requires both endpoints to resolve to local nodes;
-# only the additional class constraints are omitted. The same type constraints
+# class inherits the rule of its nearest ancestor listed here. An edge class
+# with no rule still requires both endpoints to resolve to local nodes; only
+# the additional class constraints are omitted. `external` marks an endpoint
+# that names something outside the document, which need not resolve. The same type constraints
 # apply to equivalent inline relationships whose targets are present locally.
 edge_endpoints:
   Used:
@@ -97,6 +99,11 @@ edge_endpoints:
   HasEmbedding:
     subject: [Node]
     object: [Embedding]
+  # A correspondence points at an entry in another resource. Subclasses such
+  # as CorrespondsToDismech inherit this rule.
+  CorrespondsTo:
+    subject: [Node]
+    object: external
 
 # ---------------------------------------------------------------------------
 # End-modality profiles

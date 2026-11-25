@@ -746,58 +746,12 @@ classes:
           dapper:mirror_mutable: true
           dapper:append_only: true
 
-  # DISMECH cross-walk pointers. Lives in core because Dataset uses it; the
-  # cross-walk itself is documented in dismech.yaml.
-  DismechLinked:
-    mixin: true
-    description: >-
-      Mixin adding pointers from a DAPPER node to the DISMECH entry it
-      corresponds to. Applied to any class that has a DISMECH counterpart.
-      These are POINTERS, not copies — the curated content stays upstream in
-      DISMECH and is fetched by following them. This keeps the two models
-      harmonized without duplicating (and then drifting from) Monarch's data.
-    attributes:
-      dismech_class:
-        is_a: literal
-        mixins: [hashable]
-        range: uriorcurie
-        description: >-
-          CURIE of the DISMECH class this node corresponds to, e.g.
-          `dismech:MechanisticHypothesis`. Machine-readable restatement of the
-          class-level `exact_mappings`, useful when only an instance is in hand.
-      dismech_entry_key:
-        is_a: literal
-        mixins: [hashable]
-        description: >-
-          The upstream DISMECH string key for this entry — `Disease.name` for a
-          disease, `hypothesis_group_id` for a mechanistic hypothesis. DISMECH
-          uses plain strings as identifiers, so this is NOT a CURIE and MUST NOT
-          be written into `id`.
-      dismech_disease_term:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: >-
-          The MONDO CURIE of the DISMECH disease this node attaches to (DISMECH
-          `Disease.disease_term` -> DiseaseDescriptor -> Term.id). This is the
-          stable, resolvable join key between the two models; prefer it over
-          `dismech_entry_key`.
-      dismech_source_url:
-        is_a: literal
-        mixins: [hashable]
-        range: uri
-        description: >-
-          Deep link to the entry on https://dismech.monarchinitiative.org, for
-          human review.
-
   Dataset:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
       - AncestryContext
       - TraitContext
-      # Lets a Dataset point at the DISMECH entry describing its science.
-      - DismechLinked
     class_uri: schema:Dataset
     aliases:
       - dataset
@@ -2440,4 +2394,23 @@ classes:
     slot_usage:
       predicate:
         ifabsent: string(dapper:hasWorkflowProvenance)
+
+  CorrespondsTo:
+    is_a: Edge
+    description: >-
+      Any DAPPER node → an entry in an external resource that describes the
+      same thing, such as an ontology term or a curated knowledge-base entry.
+      The object is an external IRI or CURIE, not a node in the document.
+      The default predicate is skos:closeMatch; use skos:exactMatch or
+      skos:relatedMatch when that is what holds. Edges are not part of a
+      node's identity, so adding or removing a correspondence never changes
+      the node's id. Resource-specific subclasses (dismech.yaml:
+      CorrespondsToDismech) add the fields their resource needs.
+    slot_usage:
+      subject:
+        description: DAPPER node id.
+      predicate:
+        ifabsent: string(skos:closeMatch)
+      object:
+        description: External IRI or CURIE of the corresponding entry.
 

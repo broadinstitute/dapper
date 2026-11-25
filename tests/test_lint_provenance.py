@@ -578,10 +578,49 @@ def test_edge_endpoint_classes_all_exist(vocab, sv):
     for edge_class, spec in vocab.edge_endpoints.items():
         assert edge_class in sv.all_classes(), f"unknown edge class {edge_class}"
         for end in ("subject", "object"):
-            for class_name in spec.get(end) or []:
+            allowed = spec.get(end)
+            if allowed == "external":
+                continue
+            assert allowed is None or isinstance(allowed, list), (
+                f"{edge_class}.{end} must be a class list or 'external'")
+            for class_name in allowed or []:
                 assert class_name in sv.all_classes(), (
                     f"{edge_class}.{end} names unknown class {class_name}"
                 )
+
+
+def test_endpoint_rules_are_inherited_by_edge_subclasses(vocab):
+    """CorrespondsToDismech has no rule of its own; it follows CorrespondsTo."""
+    assert "CorrespondsToDismech" not in vocab.edge_endpoints
+    assert lp.endpoint_spec(vocab, "CorrespondsToDismech") == vocab.edge_endpoints["CorrespondsTo"]
+
+
+def _correspondence_doc(object_id):
+    return {
+        "prefixes": {"MONDO": "http://purl.obolibrary.org/obo/MONDO_",
+                     "EXAMPLE": "https://example.org/"},
+        "mechanisms": [{"id": "dapper:Mechanism.x", "name": "m"}],
+        "corresponds_to_dismech_edges": [{
+            "subject": "dapper:Mechanism.x",
+            "predicate": "skos:closeMatch",
+            "object": object_id,
+            "dismech_class": "dismech:Mechanism",
+        }],
+    }
+
+
+def test_correspondence_object_may_be_external(tmp_path, vocab, sv, validator):
+    """An `external` end need not resolve to a node in the document."""
+    report = lint_doc(_correspondence_doc("MONDO:0015612"), tmp_path, vocab, sv, validator)
+    assert "endpoints" not in checks_firing(report), report.findings
+
+
+def test_correspondence_subject_must_still_resolve(tmp_path, vocab, sv, validator):
+    """Only the object is external; the subject must be a node here."""
+    doc = _correspondence_doc("MONDO:0015612")
+    doc["corresponds_to_dismech_edges"][0]["subject"] = "EXAMPLE:not-here"
+    report = lint_doc(doc, tmp_path, vocab, sv, validator)
+    assert "endpoints" in checks_firing(report, "error"), report.findings
 
 
 def test_required_edge_groups_are_real_edge_groups(vocab):

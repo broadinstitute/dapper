@@ -7,8 +7,9 @@ description: >-
   `CausalStep`s, and the `Mechanism`s they invoke. A model holds structure and
   scope, not an assessment; confidence, review status and evidence live on
   Claim (claims.yaml), and a hypothesis is a Proposition's role within a
-  ScientificAccount. CausalStep and CausalLinkTypeEnum are shaped like
-  DISMECH's CausalEdge so chains round-trip without translation.
+  ScientificAccount. CausalStep and CausalLinkTypeEnum currently match
+  DISMECH's CausalEdge (recorded as close mappings); what a causal step means
+  is DAPPER's to define, and the two may diverge.
 license: https://opensource.org/license/mit
 version: 0.3.0-a1
 
@@ -35,15 +36,10 @@ imports:
 enums:
   CausalLinkTypeEnum:
     description: >-
-      Directness of a causal step. Values are copied VERBATIM from DISMECH's
-      `CausalLinkTypeEnum` (dismech:CausalLinkTypeEnum) so a DAPPER causal
-      step round-trips into a DISMECH `CausalEdge.causal_link_type` with no
-      value translation. Do not add or rename values here without changing
-      them upstream first.
-    exact_mappings:
+      Directness of a causal step. The values currently match DISMECH's
+      `CausalLinkTypeEnum`; DAPPER owns them and may extend or revise them.
+    close_mappings:
       - dismech:CausalLinkTypeEnum
-    annotations:
-      dapper:source_standard: DISMECH CausalLinkTypeEnum
     permissible_values:
       DIRECT:
         description: The subject acts directly on the object; no intermediates.
@@ -71,7 +67,6 @@ classes:
     is_a: ExplanatoryModel
     mixins:
       - ProvenancedResource
-      - DismechLinked
     description: >-
       Optional biological model elaborating one or more causal relationships.
       Contains structure and scope, not an assessment, confidence, or review
@@ -114,17 +109,12 @@ classes:
 
   CausalStep:
     is_a: HashableNode
-    mixins:
-      - DismechLinked
     description: >-
       One ordered link in a mechanistic model's causal chain: subject -> object, with
-      a directness classification and optional intermediates. Deliberately
-      shaped as DISMECH's `CausalEdge` so a chain can be written into a DISMECH
-      entry, or read out of one, without translation.
-    exact_mappings:
+      a directness classification and optional intermediates. Its fields
+      currently match DISMECH's `CausalEdge`; DAPPER owns the definition.
+    close_mappings:
       - dismech:CausalEdge
-    annotations:
-      dapper:source_standard: DISMECH CausalEdge
     attributes:
       step_index:
         is_a: literal
@@ -145,15 +135,15 @@ classes:
         range: uriorcurie
         description: >-
           Downstream end of this step. Corresponds to DISMECH `CausalEdge.target`.
-        exact_mappings:
+        close_mappings:
           - dismech:target
       causal_link_type:
         is_a: literal
         mixins: [hashable]
         range: CausalLinkTypeEnum
         description: >-
-          Directness of the step. Values are DISMECH's verbatim.
-        exact_mappings:
+          Directness of the step.
+        close_mappings:
           - dismech:causal_link_type
       intermediate_mechanisms:
         is_a: literal
@@ -162,7 +152,7 @@ classes:
         description: >-
           Known intervening mechanisms, required in spirit when
           `causal_link_type` is INDIRECT_KNOWN_INTERMEDIATES.
-        exact_mappings:
+        close_mappings:
           - dismech:intermediate_mechanisms
       via_mechanism:
         is_a: relationship
@@ -176,17 +166,14 @@ classes:
 
   Mechanism:
     is_a: HashableNode
-    mixins:
-      - DismechLinked
     description: >-
-      A biological mechanism invoked by a causal step. Intentionally thin —
-      DISMECH's `Mechanism` is `name` + `description`, and the rich
-      pathophysiology (cell types, biological processes, pathways, locations)
-      lives upstream in DISMECH's `Pathophysiology`. Point at it with
-      `DismechLinked` rather than copying it here.
-    exact_mappings:
-      - dismech:Mechanism
+      A biological mechanism invoked by a causal step. Intentionally thin: a
+      name, a description and an optional GO process. Richer pathophysiology
+      (cell types, pathways, locations) can be linked from an external
+      resource with a CorrespondsTo edge (e.g. CorrespondsToDismech) rather
+      than copied here.
     close_mappings:
+      - dismech:Mechanism
       - dismech:Pathophysiology
     attributes:
       description:
