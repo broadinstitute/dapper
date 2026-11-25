@@ -53,12 +53,12 @@ Inline and reified generation relationships are both supported.
 Run from the repository root:
 
 ```sh
-uv run schema/lint/lint_provenance.py tests/fixtures/linter-review/00-valid-control.yaml
-uv run schema/lint/lint_provenance.py tests/fixtures/linter-review/*.yaml
+uv run lint/lint_provenance.py tests/fixtures/linter-review/00-valid-control.yaml
+uv run lint/lint_provenance.py tests/fixtures/linter-review/*.yaml
 ```
 
 If the linter is in a separate checkout, substitute that checkout's path to
-`schema/lint/lint_provenance.py`; keep the fixture paths relative to this repo.
+`lint/lint_provenance.py`; keep the fixture paths relative to this repo.
 The linter loads its own checkout's schema and profiles by default.
 
 The batch command exits **1** because five fixtures deliberately contain errors;

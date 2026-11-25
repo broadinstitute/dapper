@@ -1,4 +1,4 @@
-"""Tests over schema/lint/lint_provenance.py — the end-modality linter.
+"""Tests over lint/lint_provenance.py — the end-modality linter.
 
 Two jobs here, and the second matters more than the first.
 
@@ -374,7 +374,7 @@ def test_external_inline_reference_is_still_allowed(vocab, sv, validator):
     curated CellState names its curator as `was_attributed_to: [orcid:...]` with
     no Person node in the file, which is correct and must not be flagged.
     """
-    path = REPO_ROOT / "schema/examples/example_cell_graph.yaml"
+    path = REPO_ROOT / "examples/example_cell_graph.yaml"
     doc = yaml.safe_load(path.read_text())
     assert any("orcid:" in str(v) for n in doc["cell_states"]
                for v in [n.get("was_attributed_to")]), "fixture no longer covers this"

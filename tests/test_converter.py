@@ -1,7 +1,7 @@
-"""Unit tests for schema/converter/geneset_to_dapper.py.
+"""Unit tests for converter/geneset_to_dapper.py.
 
 The converter implements the crosswalk in
-schema/docs/geneset-provenance-nih-dapp-adaptation.md. The parts worth pinning
+docs/guides/geneset-provenance-nih-dapp-adaptation.md. The parts worth pinning
 down are the ones where dig.geneset and DAPPER disagree in shape:
 
   * edge DIRECTION — dig.geneset draws file --(data input)--> analysis, PROV

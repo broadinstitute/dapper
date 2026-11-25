@@ -1,4 +1,4 @@
-"""Result collections and value locators (0.2.1-a1).
+"""Result collections and value locators (0.3.0-a1).
 
 A ResultCollection version lists Datasets identified by declared dimensions,
 each with its files by role, plus the templates that mint claims from them.

@@ -43,13 +43,13 @@ jobs:
         run: node --test tests/portal.test.cjs
 
       - name: Check identity invariants
-        run: uv run schema/identity/lint_identity.py
+        run: uv run identity/lint_identity.py
 
       - name: Lint end-modality canonical examples
-        run: uv run schema/lint/lint_provenance.py --self-test
+        run: uv run lint/lint_provenance.py --self-test
 
       - name: Replay identifier test vectors
-        run: uv run schema/identity/dapper_identity.py verify-vectors
+        run: uv run identity/dapper_identity.py verify-vectors
 
       - name: Build model documentation (strict links and navigation)
         run: uv run tools/build_docs.py

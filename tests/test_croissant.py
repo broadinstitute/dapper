@@ -1,4 +1,4 @@
-"""Croissant import mapping (schema/docs/croissant.md), checked on real bytes.
+"""Croissant import mapping (docs/guides/croissant.md), checked on real bytes.
 
 The example Croissant record describes the result files of
 example_result_collection.yaml. Each FileObject must match a DAPPER File by

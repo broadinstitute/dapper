@@ -3,7 +3,8 @@
 
 Usage: uv run --with pyyaml tools/graphify_schema.py
 
-This supplements graphify's code/document extraction without fetching imports.
+This supplements graphify's code/document extraction. Local imports (core.yaml,
+claims.yaml) are followed; remote ones such as linkml:types are not fetched.
 Only declared structure and literal mentions of known classes are indexed.
 """
 
@@ -31,32 +32,68 @@ def normalize(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", str(value).lower()).strip("_")
 
 
+SECTIONS = ("classes", "slots", "enums", "types")
+
+
+def load_modules(schema_path: Path) -> list[dict]:
+    """The root schema and its local imports, depth-first, each read once."""
+    modules, seen = [], set()
+
+    def visit(path: Path) -> None:
+        path = path.resolve()
+        if path in seen:
+            return
+        seen.add(path)
+        source = path.read_text()
+        schema = yaml.safe_load(source)
+        marks = {}
+
+        def index_marks(node, at=()):
+            marks.setdefault(at, node.start_mark.line + 1)
+            if isinstance(node, yaml.MappingNode):
+                for key, value in node.value:
+                    child = (*at, key.value)
+                    marks[child] = key.start_mark.line + 1
+                    index_marks(value, child)
+            elif isinstance(node, yaml.SequenceNode):
+                for index, value in enumerate(node.value):
+                    index_marks(value, (*at, str(index)))
+
+        index_marks(yaml.compose(source))
+        module = {"path": path, "schema": schema, "marks": marks,
+                  "source_file": Path(os.path.relpath(path, ROOT)).as_posix(), "local_imports": {}}
+        modules.append(module)
+        for imported in schema.get("imports") or []:
+            if ":" not in imported:
+                target = path.parent / (imported if imported.endswith(".yaml") else f"{imported}.yaml")
+                module["local_imports"][imported] = target.resolve()
+                visit(target)
+
+    visit(schema_path)
+    return modules
+
+
 def extract(schema_path: Path) -> dict:
-    source = schema_path.read_text()
-    source_file = Path(os.path.relpath(schema_path, ROOT)).as_posix()
-    schema = yaml.safe_load(source)
-    marks = {}
-
-    def index_marks(node, path=()):
-        marks.setdefault(path, node.start_mark.line + 1)
-        if isinstance(node, yaml.MappingNode):
-            for key, value in node.value:
-                child = (*path, key.value)
-                marks[child] = key.start_mark.line + 1
-                index_marks(value, child)
-        elif isinstance(node, yaml.SequenceNode):
-            for index, value in enumerate(node.value):
-                index_marks(value, (*path, str(index)))
-
-    index_marks(yaml.compose(source))
+    modules = load_modules(schema_path)
+    root = modules[0]
+    by_path = {m["path"]: m for m in modules}
     stem = normalize(schema_path.stem)
-    # Preserve the agreed schema_dapper IDs even when --schema is elsewhere.
+    # Preserve the agreed schema_dapper IDs even when --schema is elsewhere,
+    # and for declarations that now live in an imported module.
     prefix = f"schema_{stem}"
-    classes = schema.get("classes", {})
-    slots = schema.get("slots", {})
-    enums = schema.get("enums", {})
-    types = schema.get("types", {})
+    merged = {section: {} for section in SECTIONS}
+    owner_module = {}
+    for module in modules:
+        for section in SECTIONS:
+            for name, spec in (module["schema"].get(section) or {}).items():
+                if name in merged[section]:
+                    other = owner_module[(section, name)]["source_file"]
+                    raise ValueError(f"{section}.{name} declared in both {other} and {module['source_file']}")
+                merged[section][name] = spec
+                owner_module[(section, name)] = module
+    classes, slots, enums, types = (merged[s] for s in SECTIONS)
     nodes, edges, edge_keys = {}, [], set()
+    current = {"module": None}  # set while walking a module's own top-level keys
 
     def ident(kind, name):
         return f"{prefix}_{kind}_{normalize(name)}"
@@ -64,7 +101,13 @@ def extract(schema_path: Path) -> dict:
     def slot_id(owner, name):
         return f"{ident('class', owner)}_slot_{normalize(name)}"
 
+    def module_for(path):
+        if len(path) >= 2 and (path[0], path[1]) in owner_module:
+            return owner_module[(path[0], path[1])]
+        return current["module"] or root
+
     def location(path):
+        marks = module_for(path)["marks"]
         while path not in marks and path:
             path = path[:-1]
         return marks.get(path, 1)
@@ -78,7 +121,7 @@ def extract(schema_path: Path) -> dict:
         metadata = {k: v for k, v in spec.items() if k not in STRUCTURES}
         node = {
             "id": node_id, "label": label, "file_type": "concept",
-            "source_file": source_file,
+            "source_file": module_for(path)["source_file"],
             "source_location": f"line {location(path)}",
             "source_line": location(path),
             "source_url": None, "captured_at": None,
@@ -103,7 +146,7 @@ def extract(schema_path: Path) -> dict:
         edges.append({
             "source": start, "target": end, "relation": relation,
             "confidence": "EXTRACTED", "confidence_score": 1.0,
-            "source_file": source_file,
+            "source_file": module_for(path)["source_file"],
             "source_location": f"line {location(path)}",
             "source_line": location(path), "weight": 1.0, **extra,
         })
@@ -130,17 +173,22 @@ def extract(schema_path: Path) -> dict:
         return add_node(f"{ident('term', name)}_{suffix}", name, path,
                         "mapping_target", uri=name)
 
-    document = add_node(
-        ident("schema", schema.get("name", stem)),
-        schema.get("title", schema.get("name", stem)), (), "schema",
-        {"description": schema.get("description", "")}, file_type="document",
-    )
+    documents = {}
+    for module in modules:
+        schema = module["schema"]
+        current["module"] = module
+        name = schema.get("name", module["path"].stem)
+        documents[module["path"]] = add_node(
+            ident("schema", name), schema.get("title", name), (), "schema",
+            {"description": schema.get("description", "")}, file_type="document",
+        )
+    current["module"] = None
     for section, kind in (("classes", "class"), ("slots", "slot"),
                           ("enums", "enum"), ("types", "type")):
-        for name, spec in schema.get(section, {}).items():
+        for name, spec in merged[section].items():
             path = (section, name)
             node_id = add_node(ident(kind, name), name, path, kind, spec, declared=True)
-            edge(document, node_id, f"declares_{kind}", path)
+            edge(documents[owner_module[path]["path"]], node_id, f"declares_{kind}", path)
 
     for owner, cls in classes.items():
         for section in ("attributes", "slot_usage"):
@@ -285,11 +333,18 @@ def extract(schema_path: Path) -> dict:
                                 p, "permissible_value", value_spec, enum=name, value=value)
             edge(enum_id, value_id, "has_permissible_value", p)
             properties(value_id, value_spec or {}, p)
-    for index, imported in enumerate(schema.get("imports", [])):
-        p = ("imports", str(index))
-        import_id = add_node(ident("import", imported), imported, p, "import_reference",
-                             declared_reference_only=True)
-        edge(document, import_id, "imports", p)
+    for module in modules:
+        current["module"] = module
+        document = documents[module["path"]]
+        for index, imported in enumerate(module["schema"].get("imports") or []):
+            p = ("imports", str(index))
+            if imported in module["local_imports"]:
+                target = documents[by_path[module["local_imports"][imported]]["path"]]
+            else:
+                target = add_node(ident("import", imported), imported, p, "import_reference",
+                                  declared_reference_only=True)
+            edge(document, target, "imports", p)
+    current["module"] = None
 
     expected = {
         "class": len(classes), "slot": len(slots), "enum": len(enums),
@@ -310,7 +365,8 @@ def extract(schema_path: Path) -> dict:
         "hyperedges": [], "input_tokens": 0, "output_tokens": 0,
         "extraction_metadata": {
             "extractor": "deterministic LinkML structure", "coverage": actual,
-            "imports_resolved": False, "token_usage": "No model invocation; deterministic extraction.",
+            "imports_resolved": "local",
+            "modules": [m["source_file"] for m in modules], "token_usage": "No model invocation; deterministic extraction.",
         },
     }
 
