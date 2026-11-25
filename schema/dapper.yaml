@@ -17,15 +17,17 @@ description: >-
       collections (`Collection`, `ResultCollection`) and `ValueLocator`.
 
     claims.yaml. Scientific reasoning: `Proposition`, `Claim` and its scores,
-      `EvidenceItem`, `Question` and `KnowledgeGap`, `ScientificAccount` and
-      `Paragraph`. Conceptually aligned with SEPIO's Proposition and
+      `EvidenceItem`, `Question` and `KnowledgeGap`, `ScientificAccount`,
+      `Paragraph`, and the abstract `ExplanatoryModel` that domain models
+      specialize. Conceptually aligned with SEPIO's Proposition and
       Statement model.
 
     genesets.yaml. `GeneSet` and `GeneSetCollection` (dig.geneset).
 
     cell_programs.yaml. `GeneProgram` and `CellState`.
 
-    mechanisms.yaml. `MechanisticModel`, `CausalStep` and `Mechanism`.
+    mechanisms.yaml. `MechanisticModel` (an `ExplanatoryModel`), `CausalStep`
+      and `Mechanism`.
 
     nanopub.yaml. The nanopublication quad, signature and lifecycle.
 

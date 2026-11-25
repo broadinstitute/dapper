@@ -6,8 +6,10 @@ description: >-
   Scientific reasoning: propositions, attributed assessments and their
   evidence, and paragraph-oriented scientific accounts. core.yaml supplies
   HashableNode, ProvenancedResource, ValueLocator, DismechLinked, and the
-  literal/relationship and identity slot mixins; mechanisms.yaml supplies
-  MechanisticModel.
+  literal/relationship and identity slot mixins. Claims stays independent
+  of any domain: a proposition, account or piece of evidence that draws on
+  explicit structure points at the abstract ExplanatoryModel, which domain
+  modules specialize (mechanisms.yaml's MechanisticModel).
 license: https://creativecommons.org/licenses/by/4.0/
 default_prefix: dapper
 default_range: string
@@ -22,7 +24,6 @@ prefixes:
 imports:
   - linkml:types
   - core
-  - mechanisms
 
 # SEPIO's draft source still declares an example.org default namespace.
 # Use documentation links and explicit conceptual alignment rather than assert
@@ -93,8 +94,8 @@ slots:
   mechanistic_model:
     is_a: relationship
     slot_uri: dapper:mechanistic_model
-    range: MechanisticModel
-    description: Optional mechanistic structure an assessment, proposition or account draws on.
+    range: ExplanatoryModel
+    description: Optional explanatory model an assessment, proposition or account draws on.
   subject_entity:
     is_a: relationship
     slot_uri: dapper:subject_entity
@@ -107,6 +108,18 @@ slots:
     description: Downstream (object) entity of a structured proposition or model.
 
 classes:
+
+  ExplanatoryModel:
+    is_a: HashableNode
+    abstract: true
+    description: >-
+      Abstract base for explicit structure that a Proposition elaborates, a
+      ScientificAccount considers, or an EvidenceItem interprets through,
+      e.g. a causal chain. It is content, not an assessment: confidence,
+      review status and evidence live on Claim. The reasoning layer refers
+      only to this class; domain modules define the concrete kinds
+      (mechanisms.yaml: MechanisticModel). Abstract, so it never appears in
+      an identifier.
   Proposition:
     is_a: HashableNode
     description: >-
@@ -164,7 +177,7 @@ classes:
       mechanistic_model:
         is_a: relationship
         mixins: [hashable]
-        range: MechanisticModel
+        range: ExplanatoryModel
         inlined: false
         description: Optional mechanistic structure elaborating this proposition's content.
     rules:
@@ -429,7 +442,7 @@ classes:
       mechanistic_model:
         is_a: relationship
         mixins: [hashable]
-        range: MechanisticModel
+        range: ExplanatoryModel
         inlined: false
         description: Optional biological model being considered; distinct from the analytical method.
       component_claims:
@@ -613,7 +626,7 @@ classes:
       mechanistic_model:
         is_a: relationship
         mixins: [hashable]
-        range: MechanisticModel
+        range: ExplanatoryModel
         inlined: false
         description: Optional biological structure used in the interpretation.
       reference:

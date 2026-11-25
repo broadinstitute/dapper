@@ -2,7 +2,8 @@ id: https://broadinstitute.github.io/dapper/model/schema/mechanisms.yaml
 name: dapper_mechanisms
 title: DAPPER mechanistic models
 description: >-
-  Optional biological structure: `MechanisticModel`, its ordered
+  Optional biological structure: `MechanisticModel` (an `ExplanatoryModel`
+  from claims.yaml), its ordered
   `CausalStep`s, and the `Mechanism`s they invoke. A model holds structure and
   scope, not an assessment; confidence, review status and evidence live on
   Claim (claims.yaml), and a hypothesis is a Proposition's role within a
@@ -26,6 +27,7 @@ prefixes:
 imports:
   - linkml:types
   - core
+  - claims
 
 # ===========================================================================
 # ENUMS
@@ -66,7 +68,7 @@ classes:
 # DISMECH alignments here are conceptual, not assertions of complete equivalence.
 
   MechanisticModel:
-    is_a: HashableNode
+    is_a: ExplanatoryModel
     mixins:
       - ProvenancedResource
       - DismechLinked
