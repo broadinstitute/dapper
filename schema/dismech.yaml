@@ -55,7 +55,7 @@ imports:
 #   with `target` naming another node in the same disease file.
 #     Pathophysiology node   -> CausalVariable (description = node name)
 #     Phenotype node         -> CausalVariable (description = node name,
-#                               aspect = presence)
+#                               aspect = PRESENCE)
 #     CausalEdge             -> CausalLink (cause = owning node, effect =
 #                               target; statement = the edge description, or
 #                               "<cause> is causally upstream of <effect>.")

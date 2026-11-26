@@ -2,11 +2,11 @@
 _illustrative:
   - dapper:Activity.7BrKLe-sCkAvnEFRdETJfttL_u-MVYJ9
   - dapper:Claim.TzNWzGw2cPtTCFox0lV0KhX7WxzEkzLP
-  - dapper:Claim.7oZ2VE0m8aQjqavG5EGmJfn_8n4gzdXv
+  - dapper:Claim.mF7ZmZrl68Uz6KGFYZSeHlRMyEOQuqBV
   - dapper:Nanopublication.ASaAaiwJ--cZdCJBC3u4tYrBqb__RsGF
-  - dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+  - dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
   - dapper:NanopubAssertion.H1Q9QeQYXn9z0rnN4GIzGuWEB9o6WisQ
-  - dapper:NanopubAssertion.bxDsm8GJhlOs1d1tGrECOOZHRuGQ2AT4
+  - dapper:NanopubAssertion.S0xAN3PsjtMyAWCtq9U5QfaOIpYbTnhN
   - dapper:NanopubProvenance.Gb5pCGiB2dLVyN_zHoUXNpelHFZynryQ
   - dapper:NanopubProvenance.5xqEdmT2Qw3_rFFadPF6yYfCvRgGZrHD
   - dapper:NanopubPublicationInfo.6a4hNgtNOBllXBFNOj9sixyn7Afw3qjw
@@ -16,19 +16,19 @@ _illustrative:
   - dapper:AgenticWorkspace._T8w34F1J1K-OE4-e7bT-_tdqjj8Zb_H
   - dapper:AgenticWorkspace.ZkRMX4AJp5BqBQDoFK0H12bzTXwTRDKU
   - dapper:Proposition.uzWQ_35VLw9U8Dg5ju9QaRxvzWVb0RyC
-  - dapper:Proposition.xpjBTU6zm6bZa7GvUo0OKh_nmUH7v60J
+  - dapper:Proposition.IBpwlJ0jCH9yY4mF9BpTY2JNhKS0r-gx
   - dapper:ClaimScore.IjAauu7qrxMQQkFfzRcxi0we289E1fyg
-  - dapper:MechanisticModel.FT6lNNuQflsZMvxRJ_bG8APWOs455Y44
-  - dapper:CausalVariable.W7_5lYWWoXYjvO1pD3m5MM6pPXux-FSH
-  - dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
-  - dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
-  - dapper:CausalVariable.tFYMBBP5rbFfhFHoMDRPClvKOE1LbxKd
-  - dapper:CausalLink.wJX-bDNtVKLwlIXli_ohu_9J9lm7HKOU
-  - dapper:CausalLink.rZSBmKgMXwHv6bCf6AKI2RjVRZTi61Il
-  - dapper:CausalLink.c_OxwHYP1PYDEfrs_Ea5oCcfK6ZbXP0v
+  - dapper:MechanisticModel.0j_-bpQSDK76xKyu6ueYRKY9cp8q38HA
+  - dapper:CausalVariable.oYk5Y3lAr4Q_oOJbmsNkomlndx9C7rg-
+  - dapper:CausalVariable.3l6Je4GKCwZFoD82oI7j1D_GWksOSUgJ
+  - dapper:CausalVariable.z57B5dvswTnzk2Rwo6qiWGHm16zmVCPH
+  - dapper:CausalVariable.CM4654kCDStmmWqOQ6O0GGjPtSumhDJF
+  - dapper:CausalLink.b4TRZU42dG9R3eflQoPs_yd9URQzdESk
+  - dapper:CausalLink.jpbEBRGbfMiYORw9G9TpdJSmilbMB7Qk
+  - dapper:CausalLink.NjGD1tSq0xz1YjM8Vq1MN5mGbrnPXigy
   - dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
-  - dapper:EvidenceItem.w4XfknLsHBFN0vcrE-V-6iFMFJQNOJoq
-  - dapper:ScientificAccount.syVM7Z3BIAVzATdzyOr26S9jyR-Ltvvg
+  - dapper:EvidenceItem.iXafQ-0Yjjqm6bvPZnBBe1f724zNNafF
+  - dapper:ScientificAccount.TP26SivlMom-V6TAeKO1Otvp82fht5QJ
   - dapper:Question.F8aLp94gR_SDgAfTlitASsRZsPWVBIx8
 c2m2_files:
   - id: dapper:C2M2File.zmm9HPij4ShMcqSp9FKSQJpjoZwnhPS7
@@ -163,10 +163,10 @@ nanopublications:
     nanopub_license: https://creativecommons.org/licenses/by/4.0/
     was_created_at: https://nanodash.knowledgepixels.com/
     has_signature_element: dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
-  - id: dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+  - id: dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
     name: 'Biological claim: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction'
     label: CLCN5 LOF -> PT dysfunction -> Dent disease
-    has_assertion: dapper:NanopubAssertion.bxDsm8GJhlOs1d1tGrECOOZHRuGQ2AT4
+    has_assertion: dapper:NanopubAssertion.S0xAN3PsjtMyAWCtq9U5QfaOIpYbTnhN
     has_provenance: dapper:NanopubProvenance.5xqEdmT2Qw3_rFFadPF6yYfCvRgGZrHD
     has_publication_info: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
     has_signature_element: dapper:NanopubSignature.F_sFJ0T_9ynxRvjswYiiLZFYgPMgGlpd
@@ -181,9 +181,9 @@ nanopub_assertions:
     name: "Assertion — the claim being made"
     asserts: dapper:Claim.TzNWzGw2cPtTCFox0lV0KhX7WxzEkzLP
     as_sentence: The HuBMAP ASCT+B marker gene set for epithelial cells of the proximal tubule is enriched among genes implicated in Dent disease.
-  - id: dapper:NanopubAssertion.bxDsm8GJhlOs1d1tGrECOOZHRuGQ2AT4
+  - id: dapper:NanopubAssertion.S0xAN3PsjtMyAWCtq9U5QfaOIpYbTnhN
     name: "Assertion — the claim being made"
-    asserts: dapper:Claim.7oZ2VE0m8aQjqavG5EGmJfn_8n4gzdXv
+    asserts: dapper:Claim.mF7ZmZrl68Uz6KGFYZSeHlRMyEOQuqBV
     as_sentence: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial cells, causing the proximal tubule dysfunction that manifests as Dent disease.
 nanopub_provenances:
   - id: dapper:NanopubProvenance.Gb5pCGiB2dLVyN_zHoUXNpelHFZynryQ
@@ -197,7 +197,7 @@ nanopub_provenances:
       - dapper:C2M2File.lrxz_mf5zFwFtA16CBJZBjS2khG6ol5I
   - id: dapper:NanopubProvenance.5xqEdmT2Qw3_rFFadPF6yYfCvRgGZrHD
     name: "Provenance — where the claim came from"
-    provenance_of: dapper:NanopubAssertion.bxDsm8GJhlOs1d1tGrECOOZHRuGQ2AT4
+    provenance_of: dapper:NanopubAssertion.S0xAN3PsjtMyAWCtq9U5QfaOIpYbTnhN
     was_attributed_to:
       - orcid:0000-0002-1825-0097
     derived_from:
@@ -210,7 +210,7 @@ nanopub_publication_infos:
     pubinfo_of: dapper:Nanopublication.ASaAaiwJ--cZdCJBC3u4tYrBqb__RsGF
   - id: dapper:NanopubPublicationInfo.-I-hMLIwXIOIFBF_exGTDdMqIUqVhEYn
     name: "Publication info — the CLCN5 mechanism hypothesis"
-    pubinfo_of: dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+    pubinfo_of: dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
 nanopub_signatures:
   - id: dapper:NanopubSignature.VflWc_Nf8F2KZNzQf7MGzQUgUuU9c-p8
     name: "Signature — seals the PT marker enrichment claim"
@@ -223,7 +223,7 @@ nanopub_signatures:
     has_algorithm: RSA
     has_signature: <rsa-signature-over-clcn5-pt-dysfunction-dent>
     signed_by: orcid:0000-0002-1825-0097
-    has_signature_target: dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+    has_signature_target: dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
 used_edges:
   - subject: dapper:Activity.PuCB8r1euohreUOudVf2p8-7TFPipARo
     predicate: prov:used
@@ -290,14 +290,14 @@ has_assertion_edges:
   - subject: dapper:Nanopublication.ASaAaiwJ--cZdCJBC3u4tYrBqb__RsGF
     predicate: np:hasAssertion
     object: dapper:NanopubAssertion.H1Q9QeQYXn9z0rnN4GIzGuWEB9o6WisQ
-  - subject: dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+  - subject: dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
     predicate: np:hasAssertion
-    object: dapper:NanopubAssertion.bxDsm8GJhlOs1d1tGrECOOZHRuGQ2AT4
+    object: dapper:NanopubAssertion.S0xAN3PsjtMyAWCtq9U5QfaOIpYbTnhN
 has_provenance_edges:
   - subject: dapper:Nanopublication.ASaAaiwJ--cZdCJBC3u4tYrBqb__RsGF
     predicate: np:hasProvenance
     object: dapper:NanopubProvenance.Gb5pCGiB2dLVyN_zHoUXNpelHFZynryQ
-  - subject: dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
+  - subject: dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
     predicate: np:hasProvenance
     object: dapper:NanopubProvenance.5xqEdmT2Qw3_rFFadPF6yYfCvRgGZrHD
 claims:
@@ -317,30 +317,30 @@ claims:
     has_score:
       - dapper:ClaimScore.IjAauu7qrxMQQkFfzRcxi0we289E1fyg
     statement: 'Illustrative enrichment assessment: The HuBMAP ASCT+B marker gene set for epithelial cells of the proximal tubule is enriched among genes implicated in Dent disease.'
-  - id: dapper:Claim.7oZ2VE0m8aQjqavG5EGmJfn_8n4gzdXv
+  - id: dapper:Claim.mF7ZmZrl68Uz6KGFYZSeHlRMyEOQuqBV
     name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
     status: canonical
     access_level: public
     asserted_in:
-      - dapper:Nanopublication.BcqJoKjjSCyeFigmrfIhYuvqrLIGYsEu
-    proposition: dapper:Proposition.xpjBTU6zm6bZa7GvUo0OKh_nmUH7v60J
+      - dapper:Nanopublication.Zn4VjDmi0GAXuiGxTX-FusAZAp1PuxDj
+    proposition: dapper:Proposition.IBpwlJ0jCH9yY4mF9BpTY2JNhKS0r-gx
     was_attributed_to: &id001
       - orcid:0000-0002-1825-0097
     was_generated_by: dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
     has_evidence:
-      - dapper:EvidenceItem.w4XfknLsHBFN0vcrE-V-6iFMFJQNOJoq
+      - dapper:EvidenceItem.iXafQ-0Yjjqm6bvPZnBBe1f724zNNafF
     statement: 'Illustrative curated biological assessment: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial cells, causing the proximal tubule dysfunction that manifests as Dent disease.'
 propositions:
   - id: dapper:Proposition.uzWQ_35VLw9U8Dg5ju9QaRxvzWVb0RyC
     name: Proximal tubule marker genes are enriched among Dent disease genes
     statement: The HuBMAP ASCT+B marker gene set for epithelial cells of the proximal tubule is enriched among genes implicated in Dent disease.
     proposition_kind: RESULT
-  - id: dapper:Proposition.xpjBTU6zm6bZa7GvUo0OKh_nmUH7v60J
+  - id: dapper:Proposition.IBpwlJ0jCH9yY4mF9BpTY2JNhKS0r-gx
     name: CLCN5 loss of function causes Dent disease via proximal tubule dysfunction
     statement: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial cells, causing the proximal tubule dysfunction that manifests as Dent disease.
     relation_kind: CAUSATION
     proposition_kind: BIOLOGICAL_INTERPRETATION
-    explanatory_model: dapper:MechanisticModel.FT6lNNuQflsZMvxRJ_bG8APWOs455Y44
+    explanatory_model: dapper:MechanisticModel.0j_-bpQSDK76xKyu6ueYRKY9cp8q38HA
 claim_scores:
   - id: dapper:ClaimScore.IjAauu7qrxMQQkFfzRcxi0we289E1fyg
     score_kind: PROBABILITY
@@ -354,74 +354,77 @@ claim_scores:
 # related by definition. The link from the graph to the disease is the
 # proposition's statement and the model's scope.
 mechanistic_models:
-  - id: dapper:MechanisticModel.FT6lNNuQflsZMvxRJ_bG8APWOs455Y44
+  - id: dapper:MechanisticModel.0j_-bpQSDK76xKyu6ueYRKY9cp8q38HA
     name: CLCN5 activity -> endosomal acidification -> PT reabsorption -> LMW proteinuria
     description: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial cells, causing the proximal tubule dysfunction that manifests as Dent disease.
     scope: Proximal tubule epithelial cells (CL:0002306) in Dent disease (MONDO:0015612).
     variables:
-      - dapper:CausalVariable.W7_5lYWWoXYjvO1pD3m5MM6pPXux-FSH
-      - dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
-      - dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
-      - dapper:CausalVariable.tFYMBBP5rbFfhFHoMDRPClvKOE1LbxKd
+      - dapper:CausalVariable.oYk5Y3lAr4Q_oOJbmsNkomlndx9C7rg-
+      - dapper:CausalVariable.3l6Je4GKCwZFoD82oI7j1D_GWksOSUgJ
+      - dapper:CausalVariable.z57B5dvswTnzk2Rwo6qiWGHm16zmVCPH
+      - dapper:CausalVariable.CM4654kCDStmmWqOQ6O0GGjPtSumhDJF
     links:
-      - link: dapper:CausalLink.wJX-bDNtVKLwlIXli_ohu_9J9lm7HKOU
+      - link: dapper:CausalLink.b4TRZU42dG9R3eflQoPs_yd9URQzdESk
         link_type: DIRECT
-      - link: dapper:CausalLink.rZSBmKgMXwHv6bCf6AKI2RjVRZTi61Il
+      - link: dapper:CausalLink.jpbEBRGbfMiYORw9G9TpdJSmilbMB7Qk
         link_type: INDIRECT_KNOWN_INTERMEDIATES
         intermediates:
           - endocytic receptor (megalin/cubilin) recycling to the apical membrane
-      - link: dapper:CausalLink.c_OxwHYP1PYDEfrs_Ea5oCcfK6ZbXP0v
+      - link: dapper:CausalLink.NjGD1tSq0xz1YjM8Vq1MN5mGbrnPXigy
         link_type: DIRECT
 causal_variables:
-  - id: dapper:CausalVariable.W7_5lYWWoXYjvO1pD3m5MM6pPXux-FSH
+  - id: dapper:CausalVariable.oYk5Y3lAr4Q_oOJbmsNkomlndx9C7rg-
     name: CLCN5 activity
     description: Chloride/proton exchange activity of CLCN5 in proximal tubule epithelial cells.
     entity: HGNC:2023
-    aspect: activity
-  - id: dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
+    aspect: ACTIVITY
+  - id: dapper:CausalVariable.3l6Je4GKCwZFoD82oI7j1D_GWksOSUgJ
     name: Endosomal acidification
     description: Rate of endosomal lumen acidification in proximal tubule epithelial cells.
     entity: GO:0048388
-    aspect: rate
-  - id: dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
+    aspect: RATE
+  - id: dapper:CausalVariable.z57B5dvswTnzk2Rwo6qiWGHm16zmVCPH
     name: PT protein reabsorption
     description: Proximal tubule reabsorption of filtered low-molecular-weight proteins.
-    aspect: rate
-  - id: dapper:CausalVariable.tFYMBBP5rbFfhFHoMDRPClvKOE1LbxKd
+    aspect: RATE
+  - id: dapper:CausalVariable.CM4654kCDStmmWqOQ6O0GGjPtSumhDJF
     name: LMW proteinuria
     description: Low-molecular-weight proteinuria.
     entity: HP:0003126
-    aspect: presence
+    aspect: PRESENCE
 causal_links:
-  - id: dapper:CausalLink.wJX-bDNtVKLwlIXli_ohu_9J9lm7HKOU
+  - id: dapper:CausalLink.b4TRZU42dG9R3eflQoPs_yd9URQzdESk
     name: CLCN5 activity increases endosomal acidification
     statement: In proximal tubule epithelial cells, CLCN5 activity increases endosomal lumen acidification.
     relation_kind: CAUSATION
     proposition_kind: BIOLOGICAL_INTERPRETATION
-    cause: dapper:CausalVariable.W7_5lYWWoXYjvO1pD3m5MM6pPXux-FSH
-    effect: dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
+    cause: dapper:CausalVariable.oYk5Y3lAr4Q_oOJbmsNkomlndx9C7rg-
+    effect: dapper:CausalVariable.3l6Je4GKCwZFoD82oI7j1D_GWksOSUgJ
+    causal_relation: CONTRIBUTES_TO
     effect_direction: INCREASES
-  - id: dapper:CausalLink.rZSBmKgMXwHv6bCf6AKI2RjVRZTi61Il
+  - id: dapper:CausalLink.jpbEBRGbfMiYORw9G9TpdJSmilbMB7Qk
     name: Endosomal acidification increases PT protein reabsorption
     statement: In proximal tubule epithelial cells, endosomal acidification increases reabsorption of filtered low-molecular-weight proteins.
     relation_kind: CAUSATION
     proposition_kind: BIOLOGICAL_INTERPRETATION
-    cause: dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
-    effect: dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
+    cause: dapper:CausalVariable.3l6Je4GKCwZFoD82oI7j1D_GWksOSUgJ
+    effect: dapper:CausalVariable.z57B5dvswTnzk2Rwo6qiWGHm16zmVCPH
+    causal_relation: ENABLES
     effect_direction: INCREASES
-  - id: dapper:CausalLink.c_OxwHYP1PYDEfrs_Ea5oCcfK6ZbXP0v
+  - id: dapper:CausalLink.NjGD1tSq0xz1YjM8Vq1MN5mGbrnPXigy
     name: PT protein reabsorption decreases LMW proteinuria
     statement: Proximal tubule reabsorption of filtered low-molecular-weight proteins decreases low-molecular-weight proteinuria.
     relation_kind: CAUSATION
     proposition_kind: BIOLOGICAL_INTERPRETATION
-    cause: dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
-    effect: dapper:CausalVariable.tFYMBBP5rbFfhFHoMDRPClvKOE1LbxKd
+    cause: dapper:CausalVariable.z57B5dvswTnzk2Rwo6qiWGHm16zmVCPH
+    effect: dapper:CausalVariable.CM4654kCDStmmWqOQ6O0GGjPtSumhDJF
+    causal_relation: CAUSES
     effect_direction: DECREASES
 evidence_items:
-  - id: dapper:EvidenceItem.w4XfknLsHBFN0vcrE-V-6iFMFJQNOJoq
+  - id: dapper:EvidenceItem.iXafQ-0Yjjqm6bvPZnBBe1f724zNNafF
     source_claims:
       - dapper:Claim.TzNWzGw2cPtTCFox0lV0KhX7WxzEkzLP
-    target_proposition: dapper:Proposition.xpjBTU6zm6bZa7GvUo0OKh_nmUH7v60J
+    target_proposition: dapper:Proposition.IBpwlJ0jCH9yY4mF9BpTY2JNhKS0r-gx
     direction: SUPPORTS
     evidence_design: OBSERVATIONAL
     from_nanopub: dapper:Nanopublication.ASaAaiwJ--cZdCJBC3u4tYrBqb__RsGF
@@ -432,17 +435,17 @@ evidence_items:
     was_attributed_to: *id001
     was_generated_by: dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
 scientific_accounts:
-  - id: dapper:ScientificAccount.syVM7Z3BIAVzATdzyOr26S9jyR-Ltvvg
+  - id: dapper:ScientificAccount.TP26SivlMom-V6TAeKO1Otvp82fht5QJ
     name: Illustrative account of proximal-tubule involvement
     framing:
       - dapper:Question.F8aLp94gR_SDgAfTlitASsRZsPWVBIx8
-      - dapper:Hypothesis.u1IdHuQDqC45r9aJHMzT9yJaF6FEcUjE
+      - dapper:Hypothesis.LiHxliQuAnu4MSEF7fMswR4yZOUJ4Uyh
     context: This graph combines real gene-set file provenance with illustrative enrichment and mechanistic assessments. The claims and nanopublications are illustrative, not published scientific claims.
     component_claims:
       - dapper:Claim.TzNWzGw2cPtTCFox0lV0KhX7WxzEkzLP
-      - dapper:Claim.7oZ2VE0m8aQjqavG5EGmJfn_8n4gzdXv
+      - dapper:Claim.mF7ZmZrl68Uz6KGFYZSeHlRMyEOQuqBV
     conclusion_claims:
-      - dapper:Claim.7oZ2VE0m8aQjqavG5EGmJfn_8n4gzdXv
+      - dapper:Claim.mF7ZmZrl68Uz6KGFYZSeHlRMyEOQuqBV
     was_generated_by: dapper:Activity.Z3Y4RUvk1X9_QE9m3lKAtjadRIB8qwwf
     was_attributed_to:
       - orcid:0000-0002-1825-0097
@@ -460,5 +463,5 @@ gene_set_collections:
     genome_build: hg38
     has_gmt_file: dapper:C2M2File.o3nliLvFvGExup49WZvoQbmupUnztc5e
 hypotheses:
-  - id: dapper:Hypothesis.u1IdHuQDqC45r9aJHMzT9yJaF6FEcUjE
-    proposition: dapper:Proposition.xpjBTU6zm6bZa7GvUo0OKh_nmUH7v60J
+  - id: dapper:Hypothesis.LiHxliQuAnu4MSEF7fMswR4yZOUJ4Uyh
+    proposition: dapper:Proposition.IBpwlJ0jCH9yY4mF9BpTY2JNhKS0r-gx

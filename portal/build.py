@@ -239,7 +239,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:ScientificAccount.syVM7Z3BIAVzATdzyOr26S9jyR-Ltvvg",
+        "start": "dapper:ScientificAccount.TP26SivlMom-V6TAeKO1Otvp82fht5QJ",
     },
     {
         "file": "example_geneset_graph.yaml",

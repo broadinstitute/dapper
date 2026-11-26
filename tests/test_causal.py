@@ -28,7 +28,7 @@ def errors(schema, cls, node):
 
 
 def _variable(name):
-    return {"id": f"dapper:CausalVariable.{name}", "description": f"{name} level", "aspect": "level"}
+    return {"id": f"dapper:CausalVariable.{name}", "description": f"{name} level", "aspect": "ABUNDANCE"}
 
 
 def _link(cause, effect, direction="INCREASES"):
@@ -98,6 +98,27 @@ def test_a_causal_link_is_always_causation(json_schema):
     assert errors(json_schema, "CausalLink", {**link, "relation_kind": "ASSOCIATION"})
     for required in ("cause", "effect", "statement", "relation_kind"):
         assert errors(json_schema, "CausalLink", {k: v for k, v in link.items() if k != required})
+
+
+def test_aspect_and_causal_relation_are_controlled(json_schema):
+    """What changes (aspect), which way (direction) and which kind of
+    dependence (causal_relation) are all closed vocabularies."""
+    assert not errors(json_schema, "CausalVariable", _variable("a"))
+    assert errors(json_schema, "CausalVariable", {**_variable("a"), "aspect": "level"})
+    link = _link("a", "b")
+    for relation in ("CAUSES", "CONTRIBUTES_TO", "ENABLES", "REGULATES"):
+        assert not errors(json_schema, "CausalLink", {**link, "causal_relation": relation})
+    # Prevention is a sign, not a relation.
+    assert errors(json_schema, "CausalLink", {**link, "causal_relation": "PREVENTS"})
+
+
+def test_a_causal_link_states_structure_only_through_cause_and_effect():
+    doc = _doc([("a", "b")])
+    doc["causal_links"][0]["relation"] = "RO:0002411"
+    doc["causal_links"][0]["subject_entity"] = "HGNC:2023"
+    found = [where for where, _ in problems(doc)]
+    assert found == [f"{doc['causal_links'][0]['id']}.relation",
+                     f"{doc['causal_links'][0]['id']}.subject_entity"]
 
 
 def test_mechanisms_only_on_mechanistic_models(json_schema):

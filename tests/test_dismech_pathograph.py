@@ -101,7 +101,7 @@ def test_projection_says_no_more_than_the_source(projected):
 def test_node_kinds_and_unresolved_targets(projected):
     variables = projected["causal_variables"]
     seizures = [v for v in variables if v["description"] == "Seizures"]
-    assert sorted(v.get("aspect") or "" for v in seizures) == ["", "presence"]
+    assert sorted(v.get("aspect") or "" for v in seizures) == ["", "PRESENCE"]
     linked = {c["subject"] for c in projected["corresponds_to_dismech_edges"]}
     unresolved = [v for v in variables if v["description"] == "Unnamed Downstream State"]
     assert len(unresolved) == 1 and unresolved[0]["id"] not in linked

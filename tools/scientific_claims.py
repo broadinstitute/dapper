@@ -157,6 +157,11 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
             problems.extend(check_citation_occurrences(nid, node, nodes))
         if _accepts("CausalGraph", cls):
             problems.extend(check_causal_graph(nid, node, nodes))
+        if cls == "CausalLink":
+            for field in ("relation", "subject_entity", "object_entity"):
+                if field in node:
+                    problems.append((f"{nid}.{field}", "a CausalLink states its structure with "
+                                     "cause, effect and causal_relation, not " + field))
 
     # Evidence uses must not make a Claim depend on itself, directly or indirectly.
     dependencies = {nid: {source for e in _refs(node, "has_evidence")

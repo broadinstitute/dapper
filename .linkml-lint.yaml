@@ -68,5 +68,17 @@ rules:
       - OBSERVATIONAL
       - MECHANISTIC
       - COMPUTATIONAL
+      - ACTIVITY
+      - ABUNDANCE
+      - EXPRESSION
+      - LOCALIZATION
+      - STRUCTURE
+      - RATE
+      - PRESENCE
+      - SEVERITY
+      - CAUSES
+      - CONTRIBUTES_TO
+      - ENABLES
+      - REGULATES
   canonical_prefixes:
     level: warning

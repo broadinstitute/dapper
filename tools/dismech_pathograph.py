@@ -13,7 +13,7 @@ DISMECH calls a disease's causal graph its pathograph: CausalEdges listed under
 naming its target node by string. The projection (see schema/dismech.yaml):
 
   node            -> CausalVariable, with a CorrespondsToDismech edge naming
-                     the node; a Phenotype's variable has aspect `presence`
+                     the node; a Phenotype's variable has aspect PRESENCE
   CausalEdge      -> CausalLink (owning node -> target), placed in a
                      MechanisticModel by a MechanisticLink
   hypothesis group-> one MechanisticModel per group, plus one for edges in no
@@ -40,7 +40,7 @@ PAGE = "https://dismech.monarchinitiative.org/pages/disorders/{}.html"
 # node list -> (edge list on its nodes, DISMECH class, variable aspect)
 KINDS = {
     "pathophysiology": ("downstream", "dismech:Pathophysiology", None),
-    "phenotypes": ("sequelae", "dismech:Phenotype", "presence"),
+    "phenotypes": ("sequelae", "dismech:Phenotype", "PRESENCE"),
 }
 CLASS_KIND = {cls: kind for kind, (_, cls, _) in KINDS.items()}
 

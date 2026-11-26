@@ -128,6 +128,60 @@ enums:
         description: >-
           The effect changes without a single sign (non-monotone,
           qualitative, or sign depends on context).
+  AspectEnum:
+    description: >-
+      What about an entity a CausalVariable tracks: the kind of change an
+      intervention makes or an effect undergoes. Paired with
+      EffectDirectionEnum on a CausalLink, it says what changes and which
+      way, in the spirit of Biolink's aspect and direction qualifiers.
+    permissible_values:
+      ACTIVITY:
+        description: Functional activity (catalytic, transport, signaling, binding).
+      ABUNDANCE:
+        description: Amount present (protein or metabolite level, cell count).
+      EXPRESSION:
+        description: Transcript or gene-product expression level.
+      LOCALIZATION:
+        description: Where the entity is (subcellular compartment, tissue).
+      STRUCTURE:
+        description: Structural integrity or morphology (of a molecule, cell or tissue).
+      RATE:
+        description: Rate or extent of a process.
+      PRESENCE:
+        description: Whether a state, phenotype or disease is present.
+      SEVERITY:
+        description: Degree of a phenotype or disease when present.
+  CausalRelationEnum:
+    description: >-
+      Which kind of causal dependence a CausalLink asserts, independent of
+      its sign (effect_direction) and of its directness in a graph
+      (link_type). All are interventionist: each says what interventions on
+      the cause would do to the effect. "Prevents" is not a separate value;
+      it is a link whose effect_direction is DECREASES.
+    broad_mappings:
+      - RO:0002410
+    permissible_values:
+      CAUSES:
+        description: >-
+          In the link's contexts, changing the cause is enough to change the
+          effect; it is the main difference-maker (a monogenic loss of
+          function, for example).
+      CONTRIBUTES_TO:
+        description: >-
+          One difference-maker among several: changing the cause shifts the
+          effect's value or probability but does not settle it alone (a risk
+          variant, for example).
+      ENABLES:
+        description: >-
+          A permissive, necessary condition: without the cause the effect
+          cannot occur, but the cause does not by itself drive the effect's
+          level.
+      REGULATES:
+        description: >-
+          Graded, specific control: across a range, the effect's level
+          tracks the cause's level (a dose-response dependence).
+        close_mappings:
+          - RO:0002211
   CausalLinkTypeEnum:
     description: >-
       How a CausalLink sits in one CausalGraph. A link in a graph is direct
@@ -365,10 +419,11 @@ classes:
       aspect:
         is_a: literal
         mixins: [hashable]
+        range: AspectEnum
         slot_uri: dapper:aspect
         description: >-
-          What about the entity varies: activity, abundance, expression,
-          rate, presence, severity, ... For a disease or phenotype, presence.
+          What about the entity varies. For a disease or phenotype, PRESENCE
+          or SEVERITY. Omission means not stated.
 
   CausalLink:
     is_a: Proposition
@@ -382,6 +437,12 @@ classes:
       more than the structure (no "directly" or "necessary" unless the
       structure and contexts support it).
     slot_usage:
+      relation:
+        description: Not used on a CausalLink; use causal_relation.
+      subject_entity:
+        description: Not used on a CausalLink; the cause variable names the entity.
+      object_entity:
+        description: Not used on a CausalLink; the effect variable names the entity.
       relation_kind:
         required: true
         equals_string: CAUSATION
@@ -405,6 +466,14 @@ classes:
         required: true
         slot_uri: dapper:effect
         description: The variable whose value the intervention would change.
+      causal_relation:
+        is_a: literal
+        mixins: [hashable]
+        range: CausalRelationEnum
+        slot_uri: dapper:causal_relation
+        description: >-
+          Which kind of causal dependence the link asserts. Omission means
+          only that the cause makes some difference to the effect.
       effect_direction:
         is_a: literal
         mixins: [hashable]
