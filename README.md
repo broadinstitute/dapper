@@ -27,7 +27,7 @@ schema/
   claims.yaml               # scientific reasoning: propositions, claims, evidence, accounts
   genesets.yaml             # GeneSet, GeneSetCollection
   cell_programs.yaml        # GeneProgram, CellState
-  mechanisms.yaml           # MechanisticModel, CausalStep, Mechanism
+  mechanisms.yaml           # MechanisticModel (a CausalGraph), MechanisticLink, Mechanism
   nanopub.yaml              # nanopublications
   dismech.yaml              # DISMECH cross-walk edge
   replay.yaml               # AgenticWorkspace
@@ -84,12 +84,15 @@ imports them. Tools and validation always start from `dapper.yaml`, and every
 module is linted on its own.
 
 Scientific assessments use `Claim`, reusable `Proposition` records, and typed
-`ClaimScore` values. `ScientificAccount` organizes a question, hypothesis role,
-context, claims, and optional conclusions. Its question references `Question`
-or the `KnowledgeGap` subclass. `EvidenceItem` records how source
-claims bear on a target proposition; `MechanisticModel` supplies optional
-biological structure. `Paragraph` saves a textual expression of an account.
-See the [Scientific Claims design](docs/guides/claims.md) and the
+`ClaimScore` values. `ScientificAccount` organizes its framing (one or more
+`Question`, `KnowledgeGap` or `Hypothesis` records), context, claims, and
+optional conclusions. `EvidenceItem` records how source claims or result
+values bear on a target proposition. Causal content is interventionist:
+`CausalLink` propositions relate `CausalVariable`s, and a `CausalGraph` (or
+its biological kind, `MechanisticModel`) organizes them, acyclic unless it
+declares feedback. `Paragraph` saves a textual expression of an account.
+See the [Scientific Claims design](docs/guides/claims.md), the
+[causality guide](docs/guides/causality.md) and the
 [fictional account example](examples/example_scientific_account.yaml).
 Questions and gaps can carry entity context; gaps can specify `gap_kind`.
 Paragraph citations pin exact scientific objects and citation metadata revisions.

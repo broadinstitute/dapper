@@ -18,22 +18,22 @@ description: >-
 
     claims.yaml. Scientific reasoning: `Proposition`, `Claim` and its scores,
       `EvidenceItem`, the framings (`Question`, `KnowledgeGap`,
-      `Hypothesis`), `ScientificAccount`,
-      `Paragraph`, and the abstract `ExplanatoryModel` that domain models
-      specialize. Conceptually aligned with SEPIO's Proposition and
-      Statement model.
+      `Hypothesis`), `ScientificAccount`, `Paragraph`, the abstract
+      `ExplanatoryModel`, and interventionist causal content
+      (`CausalVariable`, `CausalLink`, `CausalGraph`). Conceptually aligned
+      with SEPIO's Proposition and Statement model.
 
     genesets.yaml. `GeneSet` and `GeneSetCollection` (dig.geneset).
 
     cell_programs.yaml. `GeneProgram` and `CellState`.
 
-    mechanisms.yaml. `MechanisticModel` (an `ExplanatoryModel`), `CausalStep`
+    mechanisms.yaml. `MechanisticModel` (a `CausalGraph`), `MechanisticLink`
       and `Mechanism`.
 
     nanopub.yaml. The nanopublication quad, signature and lifecycle.
 
     dismech.yaml. `CorrespondsToDismech`, the instance-level DISMECH
-      cross-walk.
+      cross-walk, and how a DISMECH pathograph projects onto causal graphs.
 
     replay.yaml. `AgenticWorkspace`, the agentic replay path for an Activity.
 
@@ -44,7 +44,8 @@ description: >-
 
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, scientific accounts, and nanopublications are Node entities;
-  attribution, provenance, and causal assertions are Edge relationships.
+  attribution and provenance are Edge relationships. Causal content is not an
+  Edge: a CausalLink is a Proposition, so it can be assessed and evidenced.
 license: https://opensource.org/license/mit
 version: 0.3.0-a1
 

@@ -83,8 +83,8 @@ def build_site() -> None:
             text = text.replace(repo_link, site_link)
         (guides / name).write_text(text)
 
-    for name in ("files-and-drs.md", "claims.md", "citations.md", "bottom-line-results.md",
-                 "ancestry.md", "geneset-authoring.md", "embeddings.md"):
+    for name in ("files-and-drs.md", "claims.md", "causality.md", "citations.md",
+                 "bottom-line-results.md", "ancestry.md", "geneset-authoring.md", "embeddings.md"):
         publish(ROOT / "docs" / "guides" / name, name)
     for name in ("result-collections.md", "croissant.md"):
         publish(ROOT / "docs" / "guides" / name, name,
@@ -117,6 +117,7 @@ def build_site() -> None:
                     {"Bottom-line results": "guides/bottom-line-results.md"},
                     {"Genetic ancestry": "guides/ancestry.md"},
                     {"Scientific claims and accounts": "guides/claims.md"},
+                    {"Causality": "guides/causality.md"},
                     {"Result collections and value locators": "guides/result-collections.md"},
                     {"Croissant and DAPPER": "guides/croissant.md"},
                     {"Scientific object citations": "guides/citations.md"},

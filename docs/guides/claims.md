@@ -34,7 +34,7 @@ flowchart LR
     C -->|evidence| E[EvidenceItem]
     E -->|source assessments| S[Other Claims]
     E -->|target| P
-    P -->|optional structure| M[MechanisticModel]
+    P -->|optional structure| M[CausalGraph / MechanisticModel]
     T[Paragraph] -->|expresses| A
 ```
 
@@ -134,12 +134,15 @@ frames, and framing a proposition never changes the proposition's identity.
 This is not the Hypothesis class retired in 0.2.0, which bundled content,
 assessment and mechanism together.
 
-### MechanisticModel (optional)
+### Causal graphs and MechanisticModel (optional)
 
-A **MechanisticModel** provides biological structure when a proposition needs
-more than text and entity references. It carries a description, optional scope,
-and optional CausalSteps connecting entities through Mechanisms. A Proposition
-can reference it through `mechanistic_model`.
+A **CausalGraph** provides causal structure when a proposition needs more than
+text and entity references: a set of variables and the CausalLinks between
+them, read interventionally. A **MechanisticModel** is a CausalGraph proposed
+as a biological mechanism; its links may name the Mechanisms carrying them
+out. A Proposition can reference either through `mechanistic_model`. Each
+CausalLink is itself a Proposition, so Claims and evidence can address one
+link at a time. See the [causality guide](causality.md).
 
 The model holds content. Scores, review status, and evidence of support belong
 to Claims assessing that content. An account can also reference a model as shared
@@ -394,11 +397,12 @@ shared base classes in `schema/core.yaml`. `EvidenceItem` lives in claims.
 The `mechanistic_model` slots of `Proposition`, `ScientificAccount` and
 `EvidenceItem` range over the abstract `ExplanatoryModel`; the concrete
 `MechanisticModel` lives in `schema/mechanisms.yaml`, so claims does not
-depend on any domain module. Scientific records
+depend on any domain module. The general causal classes (`CausalVariable`,
+`CausalLink`, `CausalGraph`) live in claims. Scientific records
 use the document groups `propositions`, `claims`, `claim_scores`,
 `scientific_accounts`, `questions`, `knowledge_gaps`, `hypotheses`, `paragraphs`, `evidence_items`,
 and optional
-`mechanistic_models`, `causal_steps`, and `mechanisms`.
+`causal_variables`, `causal_links`, `causal_graphs`, `mechanistic_models`, and `mechanisms`.
 
 The [fictional study](../../examples/example_scientific_account.yaml) demonstrates
 an account framed by a KnowledgeGap and a Hypothesis, whose Proposition is
@@ -449,8 +453,10 @@ re-minted, retaining old published versions as historical records.
   `from_nanopub`, a target Proposition, and the appropriate direction. The
   separate SupportedByNanopub edge class is removed. `Claim.asserted_in`
   continues to identify where the Claim itself was published.
-- `CausalStep` holds structural content. An assessment of a particular step can
-  target a Proposition referring to that step; evidence belongs to the Claim.
+- 0.3.0 replaces `CausalStep` with `CausalLink`, a Proposition between two
+  `CausalVariable`s that Claims and evidence can target directly; its
+  directness moves to its entry in a graph. See the
+  [causality guide](causality.md).
 - Evidence directions share one enum: SUPPORTS, DISPUTES, NEUTRAL, MIXED, UNKNOWN.
   The former lower-case `refutes` maps to DISPUTES; missing evidence does not
   become NEUTRAL.
