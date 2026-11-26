@@ -122,9 +122,12 @@ A causal graph is a DAG unless it says otherwise. `has_feedback: true`
 declares that the graph contains a directed cycle; a cycle in a graph without
 it is an error, and `has_feedback` on an acyclic graph is also an error. Tools
 that need a DAG (most causal-effect identification does) can rely on any graph
-without `has_feedback`. Feedback is real biology: 43 of the 2,948 DISMECH
-pathographs checked have a loop inside one hypothesis group, such as amyloid
-plaque formation and neuroinflammation reinforcing each other.
+without `has_feedback`. Feedback is real biology. In a local DISMECH
+checkout (2,864 disease files with causal edges), 50 pathographs contain a
+loop when all their edges are taken together. Projected as one model per
+hypothesis group plus one for edges in no group, 43 diseases have at least
+one model with a loop, such as plaque formation and neuroinflammation
+reinforcing each other in the amyloid cascade model of Alzheimer disease.
 
 ## Evidence design
 

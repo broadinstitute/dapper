@@ -381,8 +381,11 @@ classes:
       structure and contexts support it).
     slot_usage:
       relation_kind:
+        required: true
         equals_string: CAUSATION
-        description: Always CAUSATION for a CausalLink; may be omitted.
+        description: >-
+          Always CAUSATION for a CausalLink. Required, so a link has one
+          spelling and one identifier.
     attributes:
       cause:
         is_a: relationship

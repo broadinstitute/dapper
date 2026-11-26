@@ -34,6 +34,7 @@ def _variable(name):
 def _link(cause, effect, direction="INCREASES"):
     return {"id": f"dapper:CausalLink.{cause}_{effect}",
             "statement": f"{cause} level {direction.lower()} {effect} level.",
+            "relation_kind": "CAUSATION",
             "cause": f"dapper:CausalVariable.{cause}", "effect": f"dapper:CausalVariable.{effect}",
             "effect_direction": direction}
 
@@ -91,11 +92,11 @@ def test_general_causal_classes_carry_no_dismech_mappings(sv):
 
 
 def test_a_causal_link_is_always_causation(json_schema):
+    """relation_kind is required and fixed, so one link has one spelling and one id."""
     link = _link("a", "b")
     assert not errors(json_schema, "CausalLink", link)
-    assert not errors(json_schema, "CausalLink", {**link, "relation_kind": "CAUSATION"})
     assert errors(json_schema, "CausalLink", {**link, "relation_kind": "ASSOCIATION"})
-    for required in ("cause", "effect", "statement"):
+    for required in ("cause", "effect", "statement", "relation_kind"):
         assert errors(json_schema, "CausalLink", {k: v for k, v in link.items() if k != required})
 
 
@@ -244,3 +245,53 @@ def test_portal_draws_graph_link_and_variable_edges(dent):
         assert (link["id"], "dapper:link", model) in edges
         assert (link["cause"], "dapper:cause", link["id"]) in edges
         assert (link["id"], "dapper:effect", link["effect"]) in edges
+
+
+def test_a_link_takes_typed_contexts_end_to_end(json_schema, sv, tmp_path):
+    """Contexts on a CausalLink validate, are prefix-checked inside the typed
+    context, and fall under the linter's one-per-kind rule."""
+    from document_prefixes import transform_identifiers
+    link = {**_link("a", "b"), "contexts": [{"context_type": "TraitContext", "trait": "KPN.TRAIT:0000096"}]}
+    assert not errors(json_schema, "CausalLink", link)
+    assert errors(json_schema, "CausalLink", {**link, "contexts": [{"context_type": "TraitContext"}]})
+    bad = {**link, "contexts": [{"context_type": "TraitContext", "trait": "NOPE:1"}]}
+    _, problems_found = transform_identifiers({"causal_links": [bad]}, sv, {"causal_links": "CausalLink"})
+    assert [where for where, _ in problems_found] == ["causal_links[0].contexts[0].trait"]
+    twice = {**link, "contexts": link["contexts"] * 2}
+    path = tmp_path / "doc.yaml"
+    path.write_text(yaml.safe_dump({"causal_links": [twice]}))
+    vocab = lp.Vocabulary.build(sv, yaml.safe_load(lp.PROFILES_PATH.read_text()))
+    report = lp.Report(path=path)
+    lp.check_contexts(lp.Document.load(path, vocab), report)
+    assert [f.check for f in report.errors] == ["contexts"]
+
+
+def test_a_claim_on_one_link_lints_clean_inside_an_account(sv, tmp_path):
+    """Steps are propositions, end to end: a minted Claim with experimental
+    evidence assesses one link of the Dent graph inside the account."""
+    doc = yaml.safe_load(DENT.read_text())
+    link = doc["causal_links"][0]["id"]
+    existing = doc["claims"][0]
+    doc["evidence_items"].append({
+        "id": "dapper:EvidenceItem.link_evidence", "target_proposition": link,
+        "evidence_design": "EXPERIMENTAL_INTERVENTION",
+        "snippet": "Illustrative: endosomal acidification was reduced in Clcn5-knockout proximal tubule cells.",
+        "explanation": "A knockout sets CLCN5 activity low and shows the effect on acidification.",
+        "was_attributed_to": existing["was_attributed_to"],
+        "was_generated_by": existing["was_generated_by"]})
+    doc["claims"].append({
+        "id": "dapper:Claim.link_claim", "name": "CLCN5 activity raises endosomal acidification",
+        "proposition": link, "direction": "SUPPORTS",
+        "has_evidence": ["dapper:EvidenceItem.link_evidence"],
+        "was_attributed_to": existing["was_attributed_to"],
+        "was_generated_by": existing["was_generated_by"]})
+    doc["_illustrative"] += ["dapper:EvidenceItem.link_evidence", "dapper:Claim.link_claim"]
+    doc["scientific_accounts"][0]["component_claims"].insert(0, "dapper:Claim.link_claim")
+    assign_ids(doc, sv)
+    assert verify(doc, sv) == []
+    assert problems(doc) == []
+    path = tmp_path / "dent_link_claim.yaml"
+    path.write_text(yaml.safe_dump(doc, sort_keys=False))
+    vocab = lp.Vocabulary.build(sv, yaml.safe_load(lp.PROFILES_PATH.read_text()))
+    report = lp.lint(path, vocab, sv, lp.build_validator(SCHEMA))
+    assert not report.findings, report.findings
