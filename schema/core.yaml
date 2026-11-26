@@ -99,6 +99,8 @@ prefixes:
   # DISMECH's own declared prefix for the same namespace.
   skos: http://www.w3.org/2004/02/skos/core#
   MONDO: http://purl.obolibrary.org/obo/MONDO_
+  HP: http://purl.obolibrary.org/obo/HP_
+  GO: http://purl.obolibrary.org/obo/GO_
   CL: http://purl.obolibrary.org/obo/CL_
   HGNC: http://identifiers.org/hgnc/
   PMID: http://identifiers.org/pubmed/

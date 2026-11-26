@@ -21,9 +21,8 @@ rules:
     level: error
   standard_naming:
     level: warning
-    # CausalLinkTypeEnum's values (schema/mechanisms.yaml) match DISMECH's
-    # and appear in minted causal steps; renaming them is a modelling decision,
-    # not a lint fix.
+    # CausalLinkTypeEnum's values (schema/claims.yaml) match DISMECH's
+    # causal_link_type values, so a projection copies them unchanged.
     exclude:
       - DIRECT
       - INDIRECT_KNOWN_INTERMEDIATES
@@ -55,5 +54,19 @@ rules:
       - RESULT
       - BIOLOGICAL_INTERPRETATION
       - UNSPECIFIED
+      # Causal vocabularies added in 0.3.0-a1, in the same style.
+      - ASSOCIATION
+      - PREDICTION
+      - MEASUREMENT
+      - CONSTITUTION
+      - CAUSATION
+      - INCREASES
+      - DECREASES
+      - CHANGES
+      - EXPERIMENTAL_INTERVENTION
+      - NATURAL_EXPERIMENT
+      - OBSERVATIONAL
+      - MECHANISTIC
+      - COMPUTATIONAL
   canonical_prefixes:
     level: warning

@@ -4,12 +4,16 @@ version: 0.3.0-a1
 title: DAPPER scientific claims
 description: >-
   Scientific reasoning: propositions, attributed assessments and their
-  evidence, and paragraph-oriented scientific accounts. core.yaml supplies
+  evidence, paragraph-oriented scientific accounts, and causal content
+  (CausalVariable, CausalLink, CausalGraph). Causation here is interventionist:
+  a CausalLink says that, in its contexts, intervening on the cause variable
+  would change the effect variable. core.yaml supplies
   HashableNode, ProvenancedResource, ValueLocator, and the
   literal/relationship and identity slot mixins. Claims stays independent
   of any domain: a proposition, account or piece of evidence that draws on
-  explicit structure points at the abstract ExplanatoryModel, which domain
-  modules specialize (mechanisms.yaml's MechanisticModel).
+  explicit structure points at the abstract ExplanatoryModel. CausalGraph is
+  the general causal kind; domain modules specialize it (mechanisms.yaml's
+  MechanisticModel) and map it to resources such as DISMECH (dismech.yaml).
 license: https://creativecommons.org/licenses/by/4.0/
 default_prefix: dapper
 default_range: string
@@ -21,6 +25,7 @@ prefixes:
   dapper_type: https://broadinstitute.github.io/dapper/model/reference/types/
   linkml: https://w3id.org/linkml/
   dismech: https://w3id.org/monarch-initiative/dismech/
+  RO: http://purl.obolibrary.org/obo/RO_
 imports:
   - linkml:types
   - core
@@ -75,6 +80,95 @@ enums:
         description: Content about the biological system that results are used to understand.
       UNSPECIFIED:
         description: The scope has not been classified.
+  RelationKindEnum:
+    description: >-
+      What kind of dependence a proposition's content asserts, independent of
+      the evidence for it. Only CAUSATION carries the interventionist reading;
+      an association supported by a natural experiment is still an
+      ASSOCIATION until a proposition says more.
+    permissible_values:
+      ASSOCIATION:
+        description: >-
+          Co-variation in a population or dataset, with no claim about what
+          an intervention would do.
+      PREDICTION:
+        description: >-
+          One quantity predicts another under a stated model; predictive
+          success alone is not causal or mechanistic content.
+      MEASUREMENT:
+        description: >-
+          One quantity reads out, indicates or measures another (a marker, a
+          factor readout, an assay of a state).
+      CONSTITUTION:
+        description: >-
+          Part-whole relevance: the subject is a component or activity of the
+          mechanism that makes up the object. Parts do not cause the wholes
+          they compose.
+      CAUSATION:
+        description: >-
+          Interventionist dependence: in the proposition's contexts, some
+          intervention on the subject would change the object. General
+          (population-level) unless the proposition says otherwise.
+        close_mappings:
+          - RO:0002410
+  EffectDirectionEnum:
+    description: >-
+      How raising the cause variable changes the effect variable, for a
+      binary state, from absent to present.
+    permissible_values:
+      INCREASES:
+        description: Raising the cause raises the effect.
+        close_mappings:
+          - RO:0002304
+      DECREASES:
+        description: Raising the cause lowers the effect.
+        close_mappings:
+          - RO:0002305
+      CHANGES:
+        description: >-
+          The effect changes without a single sign (non-monotone,
+          qualitative, or sign depends on context).
+  CausalLinkTypeEnum:
+    description: >-
+      How a CausalLink sits in one CausalGraph. A link in a graph is direct
+      relative to that graph's variables: no other variable in the graph lies
+      between cause and effect. These values say whether the graph knowingly
+      leaves intermediates out, so the same link can be DIRECT in a coarse
+      graph and INDIRECT in a finer one.
+    permissible_values:
+      DIRECT:
+        description: >-
+          Direct at this graph's granularity; the graph claims no omitted
+          intermediates.
+      INDIRECT_KNOWN_INTERMEDIATES:
+        description: >-
+          The graph omits intermediates that are known; list them in
+          `intermediates`.
+      INDIRECT_UNKNOWN_INTERMEDIATES:
+        description: The graph omits intermediates that are not known.
+      UNKNOWN:
+        description: Directness has not been determined.
+  EvidenceDesignEnum:
+    description: >-
+      How close the evidence comes to the intervention that a causal
+      proposition is about. Describes the evidence, never the proposition.
+    permissible_values:
+      EXPERIMENTAL_INTERVENTION:
+        description: >-
+          The cause was set by the investigator (knockout, knockdown, CRISPR
+          perturbation, drug exposure, randomized trial).
+      NATURAL_EXPERIMENT:
+        description: >-
+          Nature or circumstance set the cause, as-if at random (Mendelian
+          randomization, loss-of-function carriers, other quasi-experiments).
+      OBSERVATIONAL:
+        description: Co-variation observed without an intervention.
+      MECHANISTIC:
+        description: >-
+          Evidence that a mechanism linking cause and effect exists and
+          operates, rather than evidence of the dependence itself.
+      COMPUTATIONAL:
+        description: Output of a computational model or prediction method.
   ClaimStatusEnum:
     description: An assessor's review status; not a change to the proposition or a hypothesis type.
     permissible_values:
@@ -131,6 +225,8 @@ classes:
       an identifier.
   Proposition:
     is_a: HashableNode
+    mixins:
+      - Contextual
     description: >-
       The content being asserted or evaluated, independent of a particular
       assessment, score, or execution. A text statement is required; a structured
@@ -159,6 +255,15 @@ classes:
         mixins: [hashable]
         range: uriorcurie
         description: Predicate of the optional structured proposition; does not itself assert truth.
+      relation_kind:
+        is_a: literal
+        mixins: [hashable]
+        range: RelationKindEnum
+        slot_uri: dapper:relation_kind
+        description: >-
+          Kind of dependence the content asserts (association, prediction,
+          measurement, constitution or causation). Renderings use causal
+          language only for CAUSATION. Omission means not classified.
       object_entity:
         is_a: relationship
         mixins: [hashable]
@@ -169,8 +274,11 @@ classes:
         mixins: [hashable]
         description: >-
           Conditions that constrain the proposition's meaning (trait, population,
-          tissue, or fitted-factor context). Input provenance alone does not imply
-          that the conclusion is restricted to the input's biological context.
+          tissue, or fitted-factor context), in words. Use `contexts` for the
+          typed ones (ancestry, trait); for a causal proposition they are the
+          range over which the dependence is claimed to hold. Input provenance
+          alone does not imply that the conclusion is restricted to the input's
+          biological context.
       negated:
         is_a: literal
         mixins: [hashable]
@@ -220,6 +328,169 @@ classes:
               required: true
             relation:
               required: true
+
+  # ---- causal content -----------------------------------------------------
+  # Interventionist throughout: X causes Y in a context when some intervention
+  # on X would change Y there. The relata are variables, not bare entities;
+  # links are Propositions so Claims and evidence can assess each one; a
+  # graph's directness is relative to the graph's own variables. Mappings to
+  # specific resources (DISMECH) live in mechanisms.yaml and dismech.yaml.
+
+  CausalVariable:
+    is_a: HashableNode
+    description: >-
+      Something that can take different values and so can be intervened on:
+      an entity together with the aspect of it that varies (CLCN5 + activity,
+      endosomal acidification + rate), or a named state that can be present
+      or absent. The relata of a CausalLink and the nodes of a CausalGraph. A
+      bare gene or disease identifier is not a variable; say which aspect
+      varies.
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        pattern: '\S'
+        description: The variable in words, including where it is measured or holds.
+      entity:
+        is_a: relationship
+        mixins: [hashable]
+        range: uriorcurie
+        slot_uri: dapper:entity
+        description: >-
+          Optional identifier of the entity the variable is about (gene,
+          process, cell type, phenotype, disease). Omit rather than invent one.
+      aspect:
+        is_a: literal
+        mixins: [hashable]
+        slot_uri: dapper:aspect
+        description: >-
+          What about the entity varies: activity, abundance, expression,
+          rate, presence, severity, ... For a disease or phenotype, presence.
+
+  CausalLink:
+    is_a: Proposition
+    description: >-
+      A causal Proposition: in its contexts, some intervention on the cause
+      variable would change the effect variable, in the stated direction.
+      General (population-level) by default. Being a Proposition, a link is
+      content only; Claims assess it and EvidenceItems target it, one link at
+      a time. A link does not record its directness, which depends on the
+      graph it appears in (see CausalGraphLink). The statement must not say
+      more than the structure (no "directly" or "necessary" unless the
+      structure and contexts support it).
+    slot_usage:
+      relation_kind:
+        equals_string: CAUSATION
+        description: Always CAUSATION for a CausalLink; may be omitted.
+    attributes:
+      cause:
+        is_a: relationship
+        mixins: [hashable]
+        range: CausalVariable
+        inlined: false
+        required: true
+        slot_uri: dapper:cause
+        description: The variable intervened on.
+      effect:
+        is_a: relationship
+        mixins: [hashable]
+        range: CausalVariable
+        inlined: false
+        required: true
+        slot_uri: dapper:effect
+        description: The variable whose value the intervention would change.
+      effect_direction:
+        is_a: literal
+        mixins: [hashable]
+        range: EffectDirectionEnum
+        slot_uri: dapper:effect_direction
+        description: >-
+          How raising the cause changes the effect. Omission means the
+          direction is not stated.
+
+  CausalGraphLink:
+    description: >-
+      A CausalLink's place in one CausalGraph: the link, and whether the
+      graph leaves intermediates out between its cause and effect. An inline
+      value with no identifier of its own; the link keeps one identifier
+      however many graphs use it.
+    attributes:
+      link:
+        is_a: relationship
+        range: CausalLink
+        required: true
+        slot_uri: dapper:link
+        description: The CausalLink this entry places in the graph.
+      link_type:
+        is_a: literal
+        range: CausalLinkTypeEnum
+        slot_uri: dapper:link_type
+        description: >-
+          Directness of the link relative to this graph's variables.
+          Omission means not recorded.
+      intermediates:
+        is_a: literal
+        multivalued: true
+        slot_uri: dapper:intermediates
+        description: >-
+          Known intermediates this graph leaves out, in words; expected when
+          link_type is INDIRECT_KNOWN_INTERMEDIATES.
+
+  CausalGraph:
+    is_a: ExplanatoryModel
+    mixins:
+      - ProvenancedResource
+      - Contextual
+    description: >-
+      A causal model as a directed graph over an explicit set of variables.
+      Each entry in `links` places a CausalLink in the graph; an edge means
+      the cause is a direct cause of the effect relative to `variables`.
+      Acyclic (a causal DAG) unless `has_feedback` declares a feedback loop,
+      so tools that need a DAG can rely on it. A graph is content, not an
+      assessment: Claims assess the Proposition that references it, or its
+      links one at a time. Domain modules specialize it (mechanisms.yaml:
+      MechanisticModel).
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+        description: What the graph models, in words.
+      variables:
+        is_a: relationship
+        mixins: [hashable]
+        range: CausalVariable
+        inlined: false
+        multivalued: true
+        required: true
+        slot_uri: dapper:variables
+        description: >-
+          The variable set the graph is over. Directness is relative to it,
+          so it is explicit rather than read off the links. Every link's
+          cause and effect must be listed.
+      links:
+        is_a: literal
+        mixins: [hashable]
+        range: CausalGraphLink
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        slot_uri: dapper:links
+        description: >-
+          The graph's edges, each a CausalLink with its directness here. A
+          link appears at most once. Order is part of identity.
+      has_feedback:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+        slot_uri: dapper:has_feedback
+        description: >-
+          True when the graph contains a feedback loop (a directed cycle).
+          A cycle in a graph without it is an error.
+      scope:
+        is_a: literal
+        mixins: [hashable]
+        description: Conditions under which the graph is proposed to hold, in words.
 
   ClaimScore:
     is_a: HashableNode
@@ -692,6 +963,14 @@ classes:
         description: Direction of this evidence use relative to target_proposition.
         close_mappings:
           - dismech:supports
+      evidence_design:
+        is_a: literal
+        mixins: [hashable]
+        range: EvidenceDesignEnum
+        slot_uri: dapper:evidence_design
+        description: >-
+          How the evidence was obtained relative to the intervention a causal
+          target proposition is about. Omission means not classified.
       evidence_source:
         is_a: literal
         mixins: [hashable]

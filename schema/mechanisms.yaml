@@ -2,14 +2,13 @@ id: https://broadinstitute.github.io/dapper/model/schema/mechanisms.yaml
 name: dapper_mechanisms
 title: DAPPER mechanistic models
 description: >-
-  Optional biological structure: `MechanisticModel` (an `ExplanatoryModel`
-  from claims.yaml), its ordered
-  `CausalStep`s, and the `Mechanism`s they invoke. A model holds structure and
-  scope, not an assessment; confidence, review status and evidence live on
-  Claim (claims.yaml), and a ScientificAccount proposes it through a
-  Hypothesis framing. CausalStep and CausalLinkTypeEnum currently match
-  DISMECH's CausalEdge (recorded as close mappings); what a causal step means
-  is DAPPER's to define, and the two may diverge.
+  Biological mechanisms on top of the general causal classes in claims.yaml.
+  A `MechanisticModel` is a `CausalGraph` whose links can each name the
+  `Mechanism`s that carry them out. Causal meaning (variables, links,
+  directness, feedback) is defined once in claims.yaml; this module adds
+  mechanism content and records DISMECH parity as close mappings. A model
+  holds structure and scope, not an assessment: Claims assess the
+  Proposition that references it, or its links one at a time.
 license: https://opensource.org/license/mit
 version: 0.3.0-a1
 
@@ -31,150 +30,62 @@ imports:
   - claims
 
 # ===========================================================================
-# ENUMS
-# ===========================================================================
-enums:
-  CausalLinkTypeEnum:
-    description: >-
-      Directness of a causal step. The values currently match DISMECH's
-      `CausalLinkTypeEnum`; DAPPER owns them and may extend or revise them.
-    close_mappings:
-      - dismech:CausalLinkTypeEnum
-    permissible_values:
-      DIRECT:
-        description: The subject acts directly on the object; no intermediates.
-      INDIRECT_KNOWN_INTERMEDIATES:
-        description: >-
-          Indirect, and the intervening mechanisms are known and should be
-          listed in `intermediate_mechanisms`.
-      INDIRECT_UNKNOWN_INTERMEDIATES:
-        description: Indirect, but the intervening mechanisms are not known.
-      UNKNOWN:
-        description: Directness has not been determined.
-
-# ===========================================================================
 # CLASSES
 # ===========================================================================
 classes:
-# ===========================================================================
-# BLOCK — HYPOTHESIS (the REVEAL output)
-#
-# Mechanistic structure is optional content. Hypothesis is a Proposition's
-# role in a ScientificAccount; attribution and assessment live on Claim.
-# DISMECH alignments here are conceptual, not assertions of complete equivalence.
 
   MechanisticModel:
-    is_a: ExplanatoryModel
-    mixins:
-      - ProvenancedResource
+    is_a: CausalGraph
     description: >-
-      Optional biological model elaborating one or more causal relationships.
-      Contains structure and scope, not an assessment, confidence, or review
-      status. A Proposition may reference this model and Claims assess that
-      proposition. An account proposes it for investigation with a Hypothesis framing.
+      A CausalGraph proposed as a biological mechanism, whose links can name
+      the Mechanisms that carry them out. Contains structure and scope, not
+      an assessment, confidence, or review status. A Proposition may
+      reference this model and Claims assess that proposition; an account
+      proposes it for investigation with a Hypothesis framing. Corresponds to
+      a DISMECH mechanistic hypothesis: one model per DISMECH hypothesis
+      group (see dismech.yaml for the projection).
     close_mappings:
       - dismech:MechanisticHypothesis
-    attributes:
+    slot_usage:
       description:
-        is_a: literal
-        mixins: [hashable]
         required: true
         description: Description of the proposed biological structure.
-      subject_entity:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: Optional upstream entity in the mechanistic model.
-      object_entity:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: Optional downstream entity in the mechanistic model.
-      has_causal_step:
-        is_a: relationship
-        mixins: [hashable]
-        range: CausalStep
-        inlined: false
-        multivalued: true
-        description: Causal steps, ordered by each step's step_index.
-      scope:
-        is_a: literal
-        mixins: [hashable]
-        description: Biological conditions under which the model is proposed to apply.
+      links:
+        range: MechanisticLink
+    attributes:
       applies_to_subtypes:
         is_a: literal
         mixins: [hashable]
         multivalued: true
         description: Disease subtypes to which this model applies.
 
-  CausalStep:
-    is_a: HashableNode
+  MechanisticLink:
+    is_a: CausalGraphLink
     description: >-
-      One ordered link in a mechanistic model's causal chain: subject -> object, with
-      a directness classification and optional intermediates. Its fields
-      currently match DISMECH's `CausalEdge`; DAPPER owns the definition.
+      A CausalLink's place in a MechanisticModel, optionally naming the
+      Mechanisms that carry the link out. "Carried out by" is a part-whole
+      relation, not a further causal step. Together with its CausalLink it
+      corresponds to a DISMECH CausalEdge.
     close_mappings:
       - dismech:CausalEdge
     attributes:
-      step_index:
-        is_a: literal
-        mixins: [hashable]
-        range: integer
-        minimum_value: 0
-        description: >-
-          0-based position in the chain. Carries the ordering explicitly
-          because RDF graphs are unordered.
-      step_subject:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: Upstream end of this step (gene, variant, mechanism, phenotype, ...).
-      step_object:
-        is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
-        description: >-
-          Downstream end of this step. Corresponds to DISMECH `CausalEdge.target`.
-        close_mappings:
-          - dismech:target
-      causal_link_type:
-        is_a: literal
-        mixins: [hashable]
-        range: CausalLinkTypeEnum
-        description: >-
-          Directness of the step.
-        close_mappings:
-          - dismech:causal_link_type
-      intermediate_mechanisms:
-        is_a: literal
-        mixins: [hashable]
-        multivalued: true
-        description: >-
-          Known intervening mechanisms, required in spirit when
-          `causal_link_type` is INDIRECT_KNOWN_INTERMEDIATES.
-        close_mappings:
-          - dismech:intermediate_mechanisms
       via_mechanism:
         is_a: relationship
-        mixins: [hashable]
-        range: uriorcurie
+        range: Mechanism
         multivalued: true
-        description: Mechanism node ids for this step (structured counterpart of the above).
-      description:
-        is_a: literal
-        mixins: [hashable]
+        slot_uri: dapper:via_mechanism
+        description: Mechanisms that carry out this link in this model.
 
   Mechanism:
     is_a: HashableNode
     description: >-
-      A biological mechanism invoked by a causal step. Intentionally thin: a
-      name, a description and an optional GO process. Richer pathophysiology
-      (cell types, pathways, locations) can be linked from an external
-      resource with a CorrespondsTo edge (e.g. CorrespondsToDismech) rather
-      than copied here.
+      A biological mechanism that carries out a causal link. Intentionally
+      thin: a name, a description and an optional GO process. Richer
+      pathophysiology (cell types, pathways, locations) can be linked from an
+      external resource with a CorrespondsTo edge (e.g. CorrespondsToDismech)
+      rather than copied here.
     close_mappings:
       - dismech:Mechanism
-      - dismech:Pathophysiology
     attributes:
       description:
         is_a: literal
@@ -185,10 +96,3 @@ classes:
         range: uriorcurie
         multivalued: true
         description: GO biological process CURIE(s), e.g. `obo:GO_0006629`.
-
-  HasCausalStep:
-    is_a: Edge
-    description: MechanisticModel → CausalStep.
-    slot_usage:
-      predicate:
-        ifabsent: string(dapper:hasCausalStep)

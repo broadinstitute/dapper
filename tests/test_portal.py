@@ -61,3 +61,5 @@ def test_portal_preserves_original_statements_independently_of_layout(spec):
 def test_inline_predicate_labels_agree_with_schema(sv):
     for name, (predicate, _) in portal.INLINE_LINKS.items():
         assert sv.get_uri(sv.get_slot(name)) == predicate, name
+    for name, predicate in portal.NESTED_LINKS.items():
+        assert sv.get_uri(sv.get_slot(name)) == predicate, name

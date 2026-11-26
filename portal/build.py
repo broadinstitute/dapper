@@ -93,8 +93,9 @@ INLINE_LINKS = {
     "framing": ("dapper:framing", "in"),
     "about_entities": ("dapper:about_entities", "in"),
     "mechanistic_model": ("dapper:mechanistic_model", "in"),
-    "has_causal_step": ("dapper:has_causal_step", "in"),
-    "via_mechanism": ("dapper:via_mechanism", "in"),
+    # A causal link runs cause -> link -> effect.
+    "cause": ("dapper:cause", "in"),
+    "effect": ("dapper:effect", "out"),
     "has_evidence": ("dapper:has_evidence", "in"),
     "source_claims": ("dapper:source_claims", "in"),
     "target_proposition": ("dapper:target_proposition", "in"),
@@ -126,6 +127,9 @@ INLINE_LINKS = {
     "file": ("dapper:file", "in"),
 }
 
+# Predicates of references nested inside a causal graph's inline `links`.
+NESTED_LINKS = {"link": "dapper:link", "via_mechanism": "dapper:via_mechanism"}
+
 # Visual family: the narrative arc data -> process -> claim -> publication.
 FAMILY = {
     "File": "data",
@@ -151,7 +155,9 @@ FAMILY = {
     "Mechanism": "claim",
     "Proposition": "claim",
     "ClaimScore": "data",
-    "CausalStep": "claim",
+    "CausalVariable": "claim",
+    "CausalLink": "claim",
+    "CausalGraph": "claim",
     "Nanopublication": "publication",
     "NanopubAssertion": "part",
     "NanopubProvenance": "part",
@@ -189,7 +195,7 @@ GRAPH_DOCS = [
             "not real PIGEAN/EAGGL outputs. Follow both the GWAS and gene-set "
             "generation branches to their input files."
         ),
-        "start": "dapper:ScientificAccount.8AePya9C1SyzkZpAEpJ1pC_hHNqVpqyj",
+        "start": "dapper:ScientificAccount.GLLg8gMF_rDIm--SoBXcwZo3yxILwQnJ",
     },
     {
         "file": "example_result_collection.yaml",
@@ -212,7 +218,7 @@ GRAPH_DOCS = [
             "evidence names the exact bytes of the score in that file, so it can be "
             "re-read and compared against the file's sha256."
         ),
-        "start": "dapper:Claim.Vf_uxxl6WZBtqWNUrNzKinfs2p2S5km1",
+        "start": "dapper:Claim.iuV3U53Wq3o6usxJ7W6NjKV2F1DMgOXa",
     },
     {
         "file": "example_file_graph.yaml",
@@ -233,7 +239,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:ScientificAccount.IK4OOMaU5RRi5UVxad7xoTLQGmTpiXum",
+        "start": "dapper:ScientificAccount.NZa3Rv-jczG4aH9bBiQgP4YerzT3MzAJ",
     },
     {
         "file": "example_geneset_graph.yaml",
@@ -469,6 +475,24 @@ def build_graph(spec: dict, defaults: dict | None = None) -> dict:
                 edges.append({"source": src, "target": dst, "cls": "(inline)",
                               "subject": node["id"], "object": target,
                               "predicate": predicate})
+
+    # A causal graph's `links` are inline entries, not nodes: each places a
+    # CausalLink in the graph (link -> graph) and, in a MechanisticModel, may
+    # name the Mechanisms carrying it out (mechanism -> link).
+    for node in nodes:
+        for entry in node["fields"].get("links") or []:
+            if not isinstance(entry, dict) or entry.get("link") not in ids:
+                continue
+            link = entry["link"]
+            nested = [(link, node["id"], node["id"], NESTED_LINKS["link"], link)]
+            nested += [(m, link, link, NESTED_LINKS["via_mechanism"], m)
+                       for m in entry.get("via_mechanism") or [] if m in ids]
+            for src, dst, subject, predicate, obj in nested:
+                if (subject, predicate, obj) in seen:
+                    continue
+                seen.add((subject, predicate, obj))
+                edges.append({"source": src, "target": dst, "cls": "(inline)",
+                              "subject": subject, "object": obj, "predicate": predicate})
 
     # drop edges pointing at nodes this document does not define
     edges = [e for e in edges if e["source"] in ids and e["target"] in ids]

@@ -1,7 +1,21 @@
 # Extracted from example_claim_provenance_trace.yaml; assessment is on Claim.
-id: dapper:MechanisticModel.jDq9IM7tTPaV4Skvb4uw8a5rf_oGOE4O
-name: CLCN5 LOF -> PT dysfunction -> Dent disease
-description: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial
-  cells, causing the proximal tubule dysfunction that manifests as Dent disease.
-subject_entity: HGNC:2023
-object_entity: MONDO:0015612
+# The variables and links it references are defined there.
+id: dapper:MechanisticModel.FT6lNNuQflsZMvxRJ_bG8APWOs455Y44
+name: CLCN5 activity -> endosomal acidification -> PT reabsorption -> LMW proteinuria
+description: Loss-of-function variants in CLCN5 impair endosomal acidification in proximal tubule epithelial cells,
+  causing the proximal tubule dysfunction that manifests as Dent disease.
+scope: Proximal tubule epithelial cells (CL:0002306) in Dent disease (MONDO:0015612).
+variables:
+- dapper:CausalVariable.W7_5lYWWoXYjvO1pD3m5MM6pPXux-FSH
+- dapper:CausalVariable.WBttThHiUlPugMFdBq5cC21tKyjLEElQ
+- dapper:CausalVariable.2pogp7VwN1rNU_KULzJQae-mWinKLnGb
+- dapper:CausalVariable.tFYMBBP5rbFfhFHoMDRPClvKOE1LbxKd
+links:
+- link: dapper:CausalLink.wJX-bDNtVKLwlIXli_ohu_9J9lm7HKOU
+  link_type: DIRECT
+- link: dapper:CausalLink.rZSBmKgMXwHv6bCf6AKI2RjVRZTi61Il
+  link_type: INDIRECT_KNOWN_INTERMEDIATES
+  intermediates:
+  - endocytic receptor (megalin/cubilin) recycling to the apical membrane
+- link: dapper:CausalLink.c_OxwHYP1PYDEfrs_Ea5oCcfK6ZbXP0v
+  link_type: DIRECT

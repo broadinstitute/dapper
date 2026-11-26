@@ -41,11 +41,12 @@ value_locators:
     selector: gene=GENE_A; key=combined
     media_type: application/jsonlines
 propositions:
-  - id: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+  - id: dapper:Proposition.9HS1BtxizVPErV4iui5kOmBqhnvjiavu
     name: GENE_A and Trait T1
     statement: The gene GENE_A is associated with Trait T1.
     subject_entity: EXGENE:GENE_A
     relation: urn:example:associatedWith
+    relation_kind: ASSOCIATION
     object_entity: EXTRAIT:T1
     scope: ExampleMethod gene-level assessment; gene-set library example-library-v1.
     proposition_kind: RESULT
@@ -57,22 +58,22 @@ claim_scores:
     metric: combined
     interpretation: Synthetic combined score on a log-odds-like scale; higher means stronger association. Not a probability.
 evidence_items:
-  - id: dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
+  - id: dapper:EvidenceItem.9HJKLGaWNxs709KgZ_fNTxpoSM06kGjE
     name: 'combined evidence: GENE_A, Trait T1'
     value_locators:
       - dapper:ValueLocator.P6375rpoo3IkkcIOfk3xeQybzK9m1V_e
-    target_proposition: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+    target_proposition: dapper:Proposition.9HS1BtxizVPErV4iui5kOmBqhnvjiavu
     explanation: ExampleMethod reported combined = 3.41 for GENE_A in the Trait T1 gene_stats file; the locator pins the serialized number's bytes.
     evidence_source: Trait T1 gene_stats.ndjson
 claims:
-  - id: dapper:Claim.Vf_uxxl6WZBtqWNUrNzKinfs2p2S5km1
+  - id: dapper:Claim.iuV3U53Wq3o6usxJ7W6NjKV2F1DMgOXa
     name: 'Measurement: GENE_A, Trait T1'
-    proposition: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+    proposition: dapper:Proposition.9HS1BtxizVPErV4iui5kOmBqhnvjiavu
     statement: The gene GENE_A is associated with Trait T1 (combined 3.41).
     has_score:
       - dapper:ClaimScore.2U3swjC4Q-8xZfzvDvcRpIpHmm-iHxJu
     has_evidence:
-      - dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
+      - dapper:EvidenceItem.9HJKLGaWNxs709KgZ_fNTxpoSM06kGjE
     was_generated_by: dapper:Activity.VBPg4ipCxgFqaw0ZHij-LXDaBUuzdari
     was_attributed_to:
       - urn:example:software:example-claims-minter
@@ -91,7 +92,7 @@ _illustrative:
   - dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
   - dapper:Activity.VBPg4ipCxgFqaw0ZHij-LXDaBUuzdari
   - dapper:ValueLocator.P6375rpoo3IkkcIOfk3xeQybzK9m1V_e
-  - dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+  - dapper:Proposition.9HS1BtxizVPErV4iui5kOmBqhnvjiavu
   - dapper:ClaimScore.2U3swjC4Q-8xZfzvDvcRpIpHmm-iHxJu
-  - dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
-  - dapper:Claim.Vf_uxxl6WZBtqWNUrNzKinfs2p2S5km1
+  - dapper:EvidenceItem.9HJKLGaWNxs709KgZ_fNTxpoSM06kGjE
+  - dapper:Claim.iuV3U53Wq3o6usxJ7W6NjKV2F1DMgOXa

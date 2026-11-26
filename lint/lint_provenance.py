@@ -163,6 +163,9 @@ class Vocabulary:
     relationship_slots: dict[str, dict[str, str]] # class -> slot -> predicate URI
     predicate_uris: dict[str, str]               # schema CURIE -> expanded URI
     schema: Any = field(repr=False)
+    # class -> inline slot -> field -> predicate URI: references held inside
+    # inline value objects (a citation's target_id, a causal graph entry's link)
+    inline_relationship_slots: dict[str, dict[str, dict[str, str]]] = field(default_factory=dict)
 
     def predicate_uri(self, value: Any) -> str | None:
         return self.predicate_uris.get(value, value) if isinstance(value, str) else None
@@ -195,16 +198,27 @@ class Vocabulary:
                 edge_predicates[class_name] = match.group(1)
 
         relationship_slots = {}
+        inline_relationship_slots: dict[str, dict[str, dict[str, str]]] = {}
         predicate_uris = {p: sv.expand_curie(p) for p in edge_predicates.values()}
+        classes = sv.all_classes()
+
+        def uri(slot) -> str:
+            predicate = str(slot.slot_uri or sv.get_uri(slot))
+            predicate_uris[predicate] = sv.expand_curie(predicate)
+            return predicate_uris[predicate]
+
         for class_name in DOC_GROUPS.values():
-            if class_name not in sv.all_classes():
+            if class_name not in classes:
                 continue
             relationship_slots[class_name] = {}
             for slot in sv.class_induced_slots(class_name):
                 if slot.is_a == "relationship":
-                    predicate = str(slot.slot_uri or sv.get_uri(slot))
-                    predicate_uris[predicate] = sv.expand_curie(predicate)
-                    relationship_slots[class_name][slot.name] = predicate_uris[predicate]
+                    relationship_slots[class_name][slot.name] = uri(slot)
+                elif slot.range in classes and (slot.inlined or slot.inlined_as_list):
+                    inner = {s.name: uri(s) for s in sv.class_induced_slots(slot.range)
+                             if s.is_a == "relationship"}
+                    if inner:
+                        inline_relationship_slots.setdefault(class_name, {})[slot.name] = inner
 
         return cls(
             node_groups=dict(DOC_GROUPS),
@@ -215,6 +229,7 @@ class Vocabulary:
             relationship_slots=relationship_slots,
             predicate_uris=predicate_uris,
             schema=sv,
+            inline_relationship_slots=inline_relationship_slots,
         )
 
 
@@ -304,16 +319,20 @@ class Document:
                     if isinstance(obj, str):
                         links.append(Relationship(node_id, predicate, obj,
                                                   f"{group}[{node_id}].{slot}", False))
-            # A citation target is a relationship inside an inline value object.
-            # Follow it for reference checks and reachability, never as evidence.
-            if class_name == "Paragraph":
-                slot = vocab.schema.induced_slot("target_id", "CitationOccurrence")
-                predicate = vocab.schema.expand_curie(str(slot.slot_uri or vocab.schema.get_uri(slot)))
-                for i, citation in enumerate(node.get("citations") or []):
-                    target = citation.get("target_id") if isinstance(citation, dict) else None
-                    if isinstance(target, str):
-                        links.append(Relationship(node_id, predicate, target,
-                            f"{group}[{node_id}].citations[{i}].target_id", False))
+            # References inside inline value objects: a citation's target_id, a
+            # causal graph entry's link and via_mechanism. Followed for
+            # reference checks and reachability, never as evidence.
+            for slot, inner in vocab.inline_relationship_slots.get(class_name, {}).items():
+                items = node.get(slot)
+                for i, item in enumerate(items if isinstance(items, list) else [items]):
+                    if not isinstance(item, dict):
+                        continue
+                    for field_name, predicate in inner.items():
+                        value = item.get(field_name)
+                        for obj in value if isinstance(value, list) else [value]:
+                            if isinstance(obj, str):
+                                links.append(Relationship(node_id, predicate, obj,
+                                    f"{group}[{node_id}].{slot}[{i}].{field_name}", False))
         return links
 
     def class_of(self, node_id: str) -> str | None:

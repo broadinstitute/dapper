@@ -14,10 +14,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "identity"))
-from dapper_identity import DOC_GROUPS
+from dapper_identity import DOC_GROUPS, load_schema
 
 
 def index_document(document: dict) -> dict[str, tuple[str, dict]]:
@@ -32,22 +33,100 @@ def _refs(node: dict, field: str) -> list[str]:
     return [v for v in (value if isinstance(value, list) else [value]) if isinstance(v, str)]
 
 
-# Concrete Framing classes an account's `framing` may reference.
-FRAMINGS = {"Question", "KnowledgeGap", "Hypothesis"}
+@lru_cache(maxsize=None)
+def _schema():
+    return load_schema()
+
+
+@lru_cache(maxsize=None)
+def _accepts(expected: str, actual: str | None) -> bool:
+    """A reference to `expected` accepts it or any subclass (a CausalLink is a
+    Proposition; a MechanisticModel is an ExplanatoryModel)."""
+    if actual is None:
+        return False
+    if actual == expected:
+        return True
+    return expected in _schema().class_ancestors(actual)
+
+
+def _find_cycle(edges: dict[str, set[str]]) -> list[str] | None:
+    """One directed cycle as a node list (first node repeated), or None."""
+    state: dict[str, int] = {}
+    stack: list[str] = []
+
+    def visit(u: str) -> list[str] | None:
+        state[u] = 1
+        stack.append(u)
+        for v in sorted(edges.get(u, ())):
+            if state.get(v) == 1:
+                return stack[stack.index(v):] + [v]
+            if not state.get(v):
+                found = visit(v)
+                if found:
+                    return found
+        state[u] = 2
+        stack.pop()
+        return None
+
+    for u in sorted(edges):
+        if not state.get(u):
+            found = visit(u)
+            if found:
+                return found
+    return None
+
+
+def check_causal_graph(nid: str, graph: dict,
+                       nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """A graph's links stay inside its variable set, appear once, and form a
+    DAG unless the graph declares feedback."""
+    problems = []
+    variables = set(_refs(graph, "variables"))
+    edges: dict[str, set[str]] = {}
+    seen = set()
+    for i, entry in enumerate(graph.get("links") or []):
+        if not isinstance(entry, dict) or not isinstance(entry.get("link"), str):
+            continue
+        where, ref = f"{nid}.links[{i}]", entry["link"]
+        if ref in seen:
+            problems.append((where, f"{ref} appears more than once in this graph"))
+        seen.add(ref)
+        cls, link = nodes.get(ref, (None, {}))
+        if not _accepts("CausalLink", cls):
+            problems.append((where, f"{ref} must resolve to CausalLink; found {cls or 'no local record'}"))
+            continue
+        for mechanism in _refs(entry, "via_mechanism"):
+            if not _accepts("Mechanism", nodes.get(mechanism, (None, {}))[0]):
+                problems.append((where, f"via_mechanism {mechanism} must resolve to Mechanism"))
+        cause, effect = link.get("cause"), link.get("effect")
+        for end in (cause, effect):
+            if isinstance(end, str) and end not in variables:
+                problems.append((where, f"{end} is not in this graph's variables"))
+        if isinstance(cause, str) and isinstance(effect, str):
+            edges.setdefault(cause, set()).add(effect)
+    cycle = _find_cycle(edges)
+    if cycle and graph.get("has_feedback") is not True:
+        problems.append((nid, "directed cycle without has_feedback: " + " -> ".join(cycle)))
+    if not cycle and graph.get("has_feedback") is True:
+        problems.append((nid, "has_feedback is true but the graph has no directed cycle"))
+    return problems
 
 
 def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
     """Return (location, problem) pairs; schema validation checks record shapes."""
     problems = []
     targets = {
-        "Proposition": {"mechanistic_model": "MechanisticModel"},
+        "Proposition": {"mechanistic_model": "ExplanatoryModel"},
+        "CausalLink": {"mechanistic_model": "ExplanatoryModel",
+                       "cause": "CausalVariable", "effect": "CausalVariable"},
+        "CausalGraph": {"variables": "CausalVariable"},
+        "MechanisticModel": {"variables": "CausalVariable"},
         "Claim": {"proposition": "Proposition", "has_score": "ClaimScore", "has_evidence": "EvidenceItem"},
         "ScientificAccount": {"framing": "Framing", "component_claims": "Claim",
-                              "conclusion_claims": "Claim", "mechanistic_model": "MechanisticModel"},
+                              "conclusion_claims": "Claim", "mechanistic_model": "ExplanatoryModel"},
         "Hypothesis": {"proposition": "Proposition"},
         "EvidenceItem": {"source_claims": "Claim", "target_proposition": "Proposition",
-                         "mechanistic_model": "MechanisticModel"},
-        "MechanisticModel": {"has_causal_step": "CausalStep"},
+                         "mechanistic_model": "ExplanatoryModel"},
         "Paragraph": {"scientific_account": "ScientificAccount"},
     }
     for nid, (cls, node) in nodes.items():
@@ -57,7 +136,7 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
                 problems.append((f"{nid}.{field}", "references must be distinct"))
             for ref in refs:
                 actual = nodes.get(ref, (None, {}))[0]
-                if actual != expected and not (expected == "Framing" and actual in FRAMINGS):
+                if not _accepts(expected, actual):
                     problems.append((f"{nid}.{field}", f"{ref} must resolve to {expected}; found {actual or 'no local record'}"))
         if cls == "ScientificAccount":
             if not _refs(node, "framing"):
@@ -76,6 +155,8 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
                     problems.append((nid, f"evidence {ref} targets a different proposition"))
         if cls == "Paragraph":
             problems.extend(check_citation_occurrences(nid, node, nodes))
+        if _accepts("CausalGraph", cls):
+            problems.extend(check_causal_graph(nid, node, nodes))
 
     # Evidence uses must not make a Claim depend on itself, directly or indirectly.
     dependencies = {nid: {source for e in _refs(node, "has_evidence")
