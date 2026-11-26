@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["linkml==1.11.1", "mkdocs==1.6.1", "mkdocs-material==9.7.7"]
+# dependencies = ["linkml==1.11.1", "linkml-runtime==1.11.1", "mkdocs==1.6.1", "mkdocs-material==9.7.7"]
 # ///
 """Build LinkML documentation and the provenance portal into one Pages artifact.
 
