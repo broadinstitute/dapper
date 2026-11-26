@@ -402,7 +402,8 @@ depend on any domain module. The general causal classes (`CausalVariable`,
 use the document groups `propositions`, `claims`, `claim_scores`,
 `scientific_accounts`, `questions`, `knowledge_gaps`, `hypotheses`, `paragraphs`, `evidence_items`,
 and optional
-`causal_variables`, `causal_links`, `causal_graphs`, `mechanistic_models`, and `mechanisms`.
+`causal_variables`, `causal_links`, `causal_graphs`, `mechanistic_models`, `mechanisms`,
+`structural_causal_models`, and `causal_estimands`.
 
 The [fictional study](../../examples/example_scientific_account.yaml) demonstrates
 an account framed by a KnowledgeGap and a Hypothesis, whose Proposition is

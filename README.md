@@ -28,6 +28,7 @@ schema/
   genesets.yaml             # GeneSet, GeneSetCollection
   cell_programs.yaml        # GeneProgram, CellState
   mechanisms.yaml           # MechanisticModel (a CausalGraph), MechanisticLink, Mechanism
+  scm.yaml                  # StructuralCausalModel, CausalEstimand
   nanopub.yaml              # nanopublications
   dismech.yaml              # DISMECH cross-walk edge
   replay.yaml               # AgenticWorkspace

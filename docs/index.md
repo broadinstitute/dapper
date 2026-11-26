@@ -19,6 +19,7 @@ ontology mappings. Search by a class or field name to jump straight to its defin
 - **[Proposition](reference/classes/Proposition.md)** — reusable content that claims assess; a Hypothesis puts one forward.
 - **[CausalLink](reference/classes/CausalLink.md)** and **[CausalGraph](reference/classes/CausalGraph.md)** — interventionist causal content: links between variables, organized as graphs ([guide](guides/causality.md)).
 - **[MechanisticModel](reference/classes/MechanisticModel.md)** — a causal graph proposed as a biological mechanism, assessed through Claims.
+- **[StructuralCausalModel](reference/classes/StructuralCausalModel.md)** and **[CausalEstimand](reference/classes/CausalEstimand.md)** — a causal graph with variable domains, distributions and structural equations, and the causal quantities defined in it.
 
 ## Browse the reference
 
