@@ -80,8 +80,13 @@ enums:
         description: Given by data rather than a parametric family; say where in `description`.
   EstimandKindEnum:
     description: >-
-      The causal quantity a CausalEstimand names. All are defined by
-      interventions on the model; none is a single-case counterfactual.
+      The causal quantity a CausalEstimand names, always a population
+      average. Average and controlled direct effects are defined by
+      interventions alone. Natural direct and indirect effects are nested
+      counterfactuals: they hold the mediator at the value it would take
+      under the other treatment, which a structural causal model defines but
+      experiments on the treatment and mediator cannot identify by
+      themselves.
     permissible_values:
       AVERAGE_EFFECT:
         description: >-

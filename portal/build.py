@@ -391,6 +391,10 @@ def load_schema(schema: dict | None = None) -> dict:
                 # A mirror must never rewrite these (see the mirroring invariant in schema/core.yaml).
                 "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
+            # Inline value objects without a type designator (a causal graph's
+            # link entries) are documented through their declared range.
+            if slot.get("range") in schema["classes"] and (slot.get("inlined") or slot.get("inlined_as_list")):
+                attrs[slot_name]["inlineClass"] = slot["range"]
             enum_name = slot.get("range")
             if enum_name in schema["enums"]:
                 enum = schema["enums"][enum_name] or {}
@@ -1140,17 +1144,18 @@ function mappingsHtml(items) {
 // An inline object that names its own class through a type designator (a
 // Context's `context_type`) is shown with that class's field metadata, so a
 // nested ancestry code still links its enum and a trait its catalog.
-function inlineClass(obj) {
+function inlineClass(obj, meta = {}) {
   for (const [key, value] of Object.entries(obj))
     if (key.endsWith("_type") && typeof value === "string" && own(DATA.schema, value)) return DATA.schema[value];
-  return null;
+  // No type designator: fall back to the slot's declared range.
+  return meta.inlineClass && own(DATA.schema, meta.inlineClass) ? DATA.schema[meta.inlineClass] : null;
 }
 
 function valueHtml(v, ids, meta = {}) {
   if (Array.isArray(v))
     return `<span class="list-item">${v.map(x => valueHtml(x, ids, meta)).join('</span><span class="list-item">')}</span>`;
   if (v && typeof v === "object") {
-    const nested = inlineClass(v);
+    const nested = inlineClass(v, meta);
     return `<dl class="nested-fields">${Object.entries(v).map(([k, value]) =>
       `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids, (nested && own(nested.attributes, k)) || {})}</dd>`).join("")}</dl>`;
   }
@@ -1211,7 +1216,7 @@ function modelFieldsHtml(cls, fields) {
       }
     }
     for (const item of Array.isArray(value) ? value : [value]) {
-      const nested = item && typeof item === "object" ? inlineClass(item) : null;
+      const nested = item && typeof item === "object" ? inlineClass(item, meta) : null;
       if (nested) html += modelFieldsHtml(nested, item);
     }
     html += `</dd></div>`;

@@ -133,3 +133,41 @@ def test_estimates_are_claims_with_effect_scores(doc):
     assert claim["proposition"] == doc["causal_estimands"][0]["id"]
     score = next(s for s in doc["claim_scores"] if s["id"] in claim["has_score"])
     assert score["score_kind"] == "EFFECT_ESTIMATE"
+
+
+def test_the_example_estimate_follows_from_the_model(doc):
+    """The natural indirect effect the example reports is what its own
+    parameters give: X set to 1 vs 0, M moves by b, Y's other inputs stay."""
+    import math
+    scm = doc["structural_causal_models"][0]
+    params = {p["symbol"]: p["value"] for e in scm["equations"] for p in e.get("parameters") or []}
+    sd = math.hypot(params["c1"], params["c3"])  # c1 * e_M + c3 * U, both standard normal
+
+    def mean_risk(shift, n=4001):
+        lo, step = -10 * sd, 20 * sd / (n - 1)
+        total = 0.0
+        for i in range(n):
+            z = lo + i * step
+            weight = math.exp(-z * z / (2 * sd * sd)) / (sd * math.sqrt(2 * math.pi))
+            total += (0.5 if i in (0, n - 1) else 1.0) * weight / (1 + math.exp(-(shift + z)))
+        return total * step
+
+    nie = mean_risk(params["c0"] + params["c1"] * params["b"]) - mean_risk(params["c0"])
+    claim = doc["claims"][0]
+    score = next(s for s in doc["claim_scores"] if s["id"] in claim["has_score"])
+    assert score["value"] == pytest.approx(nie, abs=5e-4)
+
+
+@pytest.mark.parametrize("name", ["example_claim_provenance_trace.yaml", "example_structural_causal_model.yaml"])
+def test_causal_examples_lint_clean_with_full_uris(name, sv, tmp_path):
+    """References nested in graph entries, specifications and equations
+    survive URI expansion like any other reference."""
+    from document_prefixes import expand_document
+    expanded = expand_document(yaml.safe_load((EXAMPLES / name).read_text()), sv)
+    assert verify(expanded, sv) == []
+    assert problems(expanded) == []
+    path = tmp_path / name
+    path.write_text(yaml.safe_dump(expanded, sort_keys=False))
+    vocab = lp.Vocabulary.build(sv, yaml.safe_load(lp.PROFILES_PATH.read_text()))
+    report = lp.lint(path, vocab, sv, lp.build_validator(SCHEMA))
+    assert not report.findings, report.findings

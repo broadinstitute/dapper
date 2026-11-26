@@ -143,6 +143,8 @@ enums:
         description: Transcript or gene-product expression level.
       LOCALIZATION:
         description: Where the entity is (subcellular compartment, tissue).
+      STABILITY:
+        description: Stability or turnover (degradation rate, half-life).
       STRUCTURE:
         description: Structural integrity or morphology (of a molecule, cell or tissue).
       RATE:

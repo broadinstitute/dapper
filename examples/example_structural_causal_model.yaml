@@ -1,8 +1,8 @@
 # Synthetic structural causal model: no data, analysis or biology is asserted.
 # X affects Y directly and through M; an unmeasured U causes both X and Y, so
 # it is an explicit latent variable with ordinary causal links. The estimand
-# is the natural indirect effect of X on Y through M; one Claim gives an
-# illustrative value for it, computed from the model as written.
+# is the natural indirect effect of X on Y through M; one Claim gives its
+# value, computed from the model as written (tests/test_scm.py recomputes it).
 _illustrative:
   - dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
   - dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
@@ -15,11 +15,11 @@ _illustrative:
   - dapper:CausalLink.Ry4A2p95EN3oneszdyt_LE1-u8R63mfR
   - dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
   - dapper:CausalEstimand.SknsOOQXIYcgrEuzpNBraK2airDUPAPs
-  - dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
-  - dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
+  - dapper:ClaimScore.BqLSbdE-5KFQhEmY_hGLUNHOYyu537l2
+  - dapper:Claim.iNr55qm9UknGpUjlX0ktQ6AYpWP4TnFO
   - dapper:Question.1qmvIaIqRYriy-L-81x3eka1zVkuZLyn
-  - dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
-  - dapper:ScientificAccount.xGEQyq7Tun7gH54pEiMQskv1D1T-Y76n
+  - dapper:Activity.f7A5EANViGQ-0d3E26Dv_NTdE-zfDkME
+  - dapper:ScientificAccount.di5PfdNIX2pkPQEvjSzwnr5f1iO7qIoC
 causal_variables:
   - id: dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
     name: U
@@ -175,26 +175,26 @@ causal_estimands:
         reference_value: '0'
     effect_scale: DIFFERENCE
 claim_scores:
-  - id: dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
+  - id: dapper:ClaimScore.BqLSbdE-5KFQhEmY_hGLUNHOYyu537l2
     score_kind: EFFECT_ESTIMATE
-    value: 0.1
+    value: 0.096
     metric: risk_difference
-    interpretation: Illustrative natural indirect effect on the risk-difference scale, as if computed from the model as written; no computation is asserted.
+    interpretation: Natural indirect effect of setting X to 1 rather than 0, on the risk-difference scale, computed by numerical integration from the model as written. With X set, 0.6 * e_M + 0.4 * U is normal with variance 0.52, so the effect is E[expit(-0.52 + Z)] - E[expit(-1 + Z)].
 claims:
-  - id: dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
+  - id: dapper:Claim.iNr55qm9UknGpUjlX0ktQ6AYpWP4TnFO
     name: Indirect effect estimate
     proposition: dapper:CausalEstimand.SknsOOQXIYcgrEuzpNBraK2airDUPAPs
     has_score:
-      - dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
-    was_generated_by: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+      - dapper:ClaimScore.BqLSbdE-5KFQhEmY_hGLUNHOYyu537l2
+    was_generated_by: dapper:Activity.f7A5EANViGQ-0d3E26Dv_NTdE-zfDkME
     was_attributed_to:
       - urn:example:research-team
 activities:
-  - id: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+  - id: dapper:Activity.f7A5EANViGQ-0d3E26Dv_NTdE-zfDkME
     name: Illustrative effect computation
-    description: Illustrative computation of the estimand from the stated model; not executed.
+    description: Numerical integration of the estimand from the stated model.
 used_edges:
-  - subject: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+  - subject: dapper:Activity.f7A5EANViGQ-0d3E26Dv_NTdE-zfDkME
     predicate: prov:used
     object: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
 questions:
@@ -202,14 +202,14 @@ questions:
     name: How much of X's effect on Y runs through M?
     text: How much of the effect of X on Y is transmitted through M?
 scientific_accounts:
-  - id: dapper:ScientificAccount.xGEQyq7Tun7gH54pEiMQskv1D1T-Y76n
+  - id: dapper:ScientificAccount.di5PfdNIX2pkPQEvjSzwnr5f1iO7qIoC
     name: Synthetic mediation account
     framing:
       - dapper:Question.1qmvIaIqRYriy-L-81x3eka1zVkuZLyn
     context: A synthetic structural causal model with a latent confounder of X and Y; the estimate is illustrative.
     explanatory_model: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
     component_claims:
-      - dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
-    was_generated_by: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+      - dapper:Claim.iNr55qm9UknGpUjlX0ktQ6AYpWP4TnFO
+    was_generated_by: dapper:Activity.f7A5EANViGQ-0d3E26Dv_NTdE-zfDkME
     was_attributed_to:
       - urn:example:research-team

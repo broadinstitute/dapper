@@ -280,3 +280,16 @@ test('a Dataset shows its contexts with the ancestry enum and trait catalog link
   assert.match(details, /Vocabulary: .*AncestryEnum/);
   assert.match(details, /AA — Meaning: .*HANCESTRO_0016/);
 });
+
+test('a mechanistic model shows its graph entries with directness and link targets', () => {
+  const { run } = runtime();
+  const model = `(() => { const g = DATA.graphs.find(g => g.source === "example_claim_provenance_trace.yaml");
+                            return g.nodes.find(n => n.cls === "MechanisticModel"); })()`;
+  const values = run(`fieldsHtml(${model}.fields, DATA.schema.MechanisticModel, new Set())`);
+  assert.match(values, /INDIRECT_KNOWN_INTERMEDIATES/);
+  assert.match(values, /megalin\/cubilin/);
+  assert.match(values, /CausalLink\./);
+  const details = run(`modelDetailsHtml(DATA.schema.MechanisticModel, ${model}.fields)`);
+  assert.match(details, /href="model\/reference\/slots\/link_type\/"/);
+  assert.match(details, /CausalLinkTypeEnum/);
+});

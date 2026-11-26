@@ -81,7 +81,7 @@ flowchart LR
 - **`CausalVariable`**: `description` (required), optional `entity` (a gene,
   process, cell type, phenotype or disease identifier) and `aspect` (what
   varies, from `AspectEnum`: `ACTIVITY`, `ABUNDANCE`, `EXPRESSION`,
-  `LOCALIZATION`, `STRUCTURE`, `RATE`, `PRESENCE`, `SEVERITY`).
+  `LOCALIZATION`, `STABILITY`, `STRUCTURE`, `RATE`, `PRESENCE`, `SEVERITY`).
 - **`CausalLink`**, a kind of `Proposition`: `cause`, `effect`, and three
   controlled fields: `causal_relation` (which dependence), `effect_direction`
   (which way) and the inherited `relation_kind`, always `CAUSATION`. It also
@@ -175,7 +175,11 @@ its `estimand_kind` (`AVERAGE_EFFECT`, `CONDITIONAL_AVERAGE_EFFECT`,
 `CONTROLLED_DIRECT_EFFECT`, `NATURAL_DIRECT_EFFECT`,
 `NATURAL_INDIRECT_EFFECT`), `treatment`, `outcome`, optional `mediator`, the
 `interventions` that define the contrast (`do(X = 1)` against `do(X = 0)`),
-and the `effect_scale`. Its model is the inherited `explanatory_model`. An
+and the `effect_scale`. Its model is the inherited `explanatory_model`.
+Average and controlled direct effects are defined by interventions alone;
+natural direct and indirect effects are nested counterfactuals (the mediator
+is held at the value it would take under the other treatment), which the SCM
+defines but experiments alone cannot identify. All are population averages. An
 estimate is a Claim on the estimand with an `EFFECT_ESTIMATE` score, so
 estimates from different data or methods assess the same estimand.
 `examples/example_structural_causal_model.yaml` is a synthetic mediation
