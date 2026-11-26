@@ -173,7 +173,7 @@ def test_retired_classes_are_replaced_and_models_do_not_assess(sv):
     # and causal chain.
     assert "Framing" in sv.class_ancestors("Hypothesis")
     hypothesis_slots = {s.name for s in sv.class_induced_slots("Hypothesis")}
-    assert not (assessment | {"statement", "has_causal_step", "mechanistic_model"}) & hypothesis_slots
+    assert not (assessment | {"statement", "has_causal_step", "explanatory_model"}) & hypothesis_slots
 
 
 @pytest.mark.parametrize("index", [0, 1])

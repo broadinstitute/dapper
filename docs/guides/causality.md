@@ -96,7 +96,7 @@ flowchart LR
   further causal step.
 
 A Proposition, ScientificAccount or EvidenceItem refers to a graph through its
-`mechanistic_model` slot, which accepts any `ExplanatoryModel`.
+`explanatory_model` slot, which accepts any `ExplanatoryModel`.
 
 ## Directness is relative to a graph
 

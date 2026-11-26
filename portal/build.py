@@ -92,7 +92,7 @@ INLINE_LINKS = {
     "conclusion_claims": ("dapper:conclusion_claims", "in"),
     "framing": ("dapper:framing", "in"),
     "about_entities": ("dapper:about_entities", "in"),
-    "mechanistic_model": ("dapper:mechanistic_model", "in"),
+    "explanatory_model": ("dapper:explanatory_model", "in"),
     # A causal link runs cause -> link -> effect.
     "cause": ("dapper:cause", "in"),
     "effect": ("dapper:effect", "out"),
@@ -239,7 +239,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:ScientificAccount.NZa3Rv-jczG4aH9bBiQgP4YerzT3MzAJ",
+        "start": "dapper:ScientificAccount.syVM7Z3BIAVzATdzyOr26S9jyR-Ltvvg",
     },
     {
         "file": "example_geneset_graph.yaml",

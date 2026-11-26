@@ -197,7 +197,7 @@ def test_claims_and_evidence_can_target_a_single_link():
                       "has_evidence": ["dapper:EvidenceItem.e"]}]
     doc["propositions"] = [{"id": "dapper:Proposition.p", "statement": "A raises B via the graph.",
                             "relation_kind": "CAUSATION",
-                            "mechanistic_model": "dapper:CausalGraph.g"}]
+                            "explanatory_model": "dapper:CausalGraph.g"}]
     assert problems(doc) == []
 
 
@@ -220,7 +220,7 @@ def test_dent_model_relates_variables_not_bare_entities(dent):
     # Dent disease defines the dysfunction, so it is not a causal variable.
     assert "MONDO:0015612" not in {v.get("entity") for v in variables.values()}
     assert "has_feedback" not in model
-    proposition = next(p for p in dent["propositions"] if p.get("mechanistic_model") == model["id"])
+    proposition = next(p for p in dent["propositions"] if p.get("explanatory_model") == model["id"])
     assert proposition["relation_kind"] == "CAUSATION"
 
 

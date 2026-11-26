@@ -189,9 +189,9 @@ enums:
 # them as attributes (with its own hashability and wording); the shared
 # declaration gives each one a single URI.
 slots:
-  mechanistic_model:
+  explanatory_model:
     is_a: relationship
-    slot_uri: dapper:mechanistic_model
+    slot_uri: dapper:explanatory_model
     range: ExplanatoryModel
     description: Optional explanatory model an assessment, proposition or account draws on.
   subject_entity:
@@ -291,12 +291,14 @@ classes:
         mixins: [hashable]
         range: PropositionKindEnum
         description: Result or biological interpretation; independent of whether a Hypothesis frames it.
-      mechanistic_model:
+      explanatory_model:
         is_a: relationship
         mixins: [hashable]
         range: ExplanatoryModel
         inlined: false
-        description: Optional mechanistic structure elaborating this proposition's content.
+        description: >-
+          Optional explanatory model (a causal graph, mechanistic model or
+          structural causal model) elaborating this proposition's content.
     rules:
       - preconditions:
           slot_conditions:
@@ -767,12 +769,12 @@ classes:
         mixins: [hashable]
         multivalued: true
         description: Assumptions taken as given here, not claims assessed by this work.
-      mechanistic_model:
+      explanatory_model:
         is_a: relationship
         mixins: [hashable]
         range: ExplanatoryModel
         inlined: false
-        description: Optional biological model being considered; distinct from the analytical method.
+        description: Optional explanatory model being considered; distinct from the analytical method.
       component_claims:
         is_a: relationship
         mixins: [hashable]
@@ -938,12 +940,12 @@ classes:
         mixins: [hashable]
         multivalued: true
         description: Assumptions licensing this interpretation; not claims assessed by this work.
-      mechanistic_model:
+      explanatory_model:
         is_a: relationship
         mixins: [hashable]
         range: ExplanatoryModel
         inlined: false
-        description: Optional biological structure used in the interpretation.
+        description: Optional explanatory model used in the interpretation.
       reference:
         is_a: relationship
         mixins: [hashable]

@@ -140,7 +140,7 @@ A **CausalGraph** provides causal structure when a proposition needs more than
 text and entity references: a set of variables and the CausalLinks between
 them, read interventionally. A **MechanisticModel** is a CausalGraph proposed
 as a biological mechanism; its links may name the Mechanisms carrying them
-out. A Proposition can reference either through `mechanistic_model`. Each
+out. A Proposition can reference either through `explanatory_model`. Each
 CausalLink is itself a Proposition, so Claims and evidence can address one
 link at a time. See the [causality guide](causality.md).
 
@@ -210,7 +210,7 @@ assessed result and biological content, separate the propositions where practica
 
 **Context** records what is needed to understand the work and its interpretation.
 For the demo, use `context` text, an optional `assumptions` list, and an optional
-`mechanistic_model` reference on the account. These cover:
+`explanatory_model` reference on the account. These cover:
 
 - The inquiry's scope and relevant study or data setting.
 - The analytical approach and statistical or computational model.
@@ -240,7 +240,7 @@ new parallel Interpretation class:
 - `target_proposition` identifies the content being evaluated.
 - `direction` records SUPPORTS, DISPUTES, NEUTRAL, MIXED, or UNKNOWN.
 - `explanation` supplies the rationale, and `context` states the applicable model
-  or setting. `assumptions` and `mechanistic_model` add detail where applicable.
+  or setting. `assumptions` and `explanatory_model` add detail where applicable.
 - Attribution and generation fields identify who made the interpretation and how.
 
 A target Claim references this evidence use through `has_evidence`. Its
@@ -394,7 +394,7 @@ claims standard.
 
 The root `schema/dapper.yaml` imports `schema/claims.yaml`, which builds on the
 shared base classes in `schema/core.yaml`. `EvidenceItem` lives in claims.
-The `mechanistic_model` slots of `Proposition`, `ScientificAccount` and
+The `explanatory_model` slots of `Proposition`, `ScientificAccount` and
 `EvidenceItem` range over the abstract `ExplanatoryModel`; the concrete
 `MechanisticModel` lives in `schema/mechanisms.yaml`, so claims does not
 depend on any domain module. The general causal classes (`CausalVariable`,

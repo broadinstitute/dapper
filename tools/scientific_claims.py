@@ -116,17 +116,17 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
     """Return (location, problem) pairs; schema validation checks record shapes."""
     problems = []
     targets = {
-        "Proposition": {"mechanistic_model": "ExplanatoryModel"},
-        "CausalLink": {"mechanistic_model": "ExplanatoryModel",
+        "Proposition": {"explanatory_model": "ExplanatoryModel"},
+        "CausalLink": {"explanatory_model": "ExplanatoryModel",
                        "cause": "CausalVariable", "effect": "CausalVariable"},
         "CausalGraph": {"variables": "CausalVariable"},
         "MechanisticModel": {"variables": "CausalVariable"},
         "Claim": {"proposition": "Proposition", "has_score": "ClaimScore", "has_evidence": "EvidenceItem"},
         "ScientificAccount": {"framing": "Framing", "component_claims": "Claim",
-                              "conclusion_claims": "Claim", "mechanistic_model": "ExplanatoryModel"},
+                              "conclusion_claims": "Claim", "explanatory_model": "ExplanatoryModel"},
         "Hypothesis": {"proposition": "Proposition"},
         "EvidenceItem": {"source_claims": "Claim", "target_proposition": "Proposition",
-                         "mechanistic_model": "ExplanatoryModel"},
+                         "explanatory_model": "ExplanatoryModel"},
         "Paragraph": {"scientific_account": "ScientificAccount"},
     }
     for nid, (cls, node) in nodes.items():
