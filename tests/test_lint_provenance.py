@@ -609,15 +609,18 @@ def _correspondence_doc(object_id):
     }
 
 
+DISMECH_PAGE = "https://dismech.monarchinitiative.org/pages/disorders/Alzheimer_Disease.html"
+
+
 def test_correspondence_object_may_be_external(tmp_path, vocab, sv, validator):
     """An `external` end need not resolve to a node in the document."""
-    report = lint_doc(_correspondence_doc("MONDO:0015612"), tmp_path, vocab, sv, validator)
+    report = lint_doc(_correspondence_doc(DISMECH_PAGE), tmp_path, vocab, sv, validator)
     assert "endpoints" not in checks_firing(report), report.findings
 
 
 def test_correspondence_subject_must_still_resolve(tmp_path, vocab, sv, validator):
     """Only the object is external; the subject must be a node here."""
-    doc = _correspondence_doc("MONDO:0015612")
+    doc = _correspondence_doc(DISMECH_PAGE)
     doc["corresponds_to_dismech_edges"][0]["subject"] = "EXAMPLE:not-here"
     report = lint_doc(doc, tmp_path, vocab, sv, validator)
     assert "endpoints" in checks_firing(report, "error"), report.findings
