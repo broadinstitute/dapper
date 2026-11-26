@@ -113,6 +113,8 @@ DOC_GROUPS = {
     "causal_variables": "CausalVariable",
     "causal_links": "CausalLink",
     "causal_graphs": "CausalGraph",
+    "structural_causal_models": "StructuralCausalModel",
+    "causal_estimands": "CausalEstimand",
     "mechanisms": "Mechanism",
     "evidence_items": "EvidenceItem",
     "value_locators": "ValueLocator",

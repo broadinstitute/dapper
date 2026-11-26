@@ -30,6 +30,9 @@ description: >-
     mechanisms.yaml. `MechanisticModel` (a `CausalGraph`), `MechanisticLink`
       and `Mechanism`.
 
+    scm.yaml. `StructuralCausalModel` (a `CausalGraph` with variable
+      domains, distributions and structural equations) and `CausalEstimand`.
+
     nanopub.yaml. The nanopublication quad, signature and lifecycle.
 
     dismech.yaml. `CorrespondsToDismech`, the instance-level DISMECH
@@ -69,6 +72,7 @@ imports:
   - genesets
   - cell_programs
   - mechanisms
+  - scm
   - nanopub
   - dismech
   - replay

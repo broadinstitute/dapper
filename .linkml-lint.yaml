@@ -80,5 +80,29 @@ rules:
       - CONTRIBUTES_TO
       - ENABLES
       - REGULATES
+      - BINARY
+      - CATEGORICAL
+      - ORDINAL
+      - CONTINUOUS
+      - COUNT
+      - LINEAR
+      - LOGISTIC
+      - LOG_LINEAR
+      - NONPARAMETRIC
+      - CUSTOM
+      - NORMAL
+      - BERNOULLI
+      - POISSON
+      - UNIFORM
+      - EMPIRICAL
+      - AVERAGE_EFFECT
+      - CONDITIONAL_AVERAGE_EFFECT
+      - CONTROLLED_DIRECT_EFFECT
+      - NATURAL_DIRECT_EFFECT
+      - NATURAL_INDIRECT_EFFECT
+      - DIFFERENCE
+      - RATIO
+      - ODDS_RATIO
+      - HAZARD_RATIO
   canonical_prefixes:
     level: warning

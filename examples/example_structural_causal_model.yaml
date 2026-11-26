@@ -1,0 +1,215 @@
+# Synthetic structural causal model: no data, analysis or biology is asserted.
+# X affects Y directly and through M; an unmeasured U causes both X and Y, so
+# it is an explicit latent variable with ordinary causal links. The estimand
+# is the natural indirect effect of X on Y through M; one Claim gives an
+# illustrative value for it, computed from the model as written.
+_illustrative:
+  - dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+  - dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+  - dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+  - dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+  - dapper:CausalLink.cQUt5qJ-UXt8Gt-gyr7OsXYpiCqQyabT
+  - dapper:CausalLink.GOVKSoVP2QwR-CkSqy5dQ7Je1jBzwSSo
+  - dapper:CausalLink.ydsT-FLGWHfDFRlLT2CZ4s2fXORTa_mw
+  - dapper:CausalLink.gZbse76wZ-s7UFegfyYcLaGsoHl3-tJR
+  - dapper:CausalLink.Ry4A2p95EN3oneszdyt_LE1-u8R63mfR
+  - dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
+  - dapper:CausalEstimand.SknsOOQXIYcgrEuzpNBraK2airDUPAPs
+  - dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
+  - dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
+  - dapper:Question.1qmvIaIqRYriy-L-81x3eka1zVkuZLyn
+  - dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+  - dapper:ScientificAccount.xGEQyq7Tun7gH54pEiMQskv1D1T-Y76n
+causal_variables:
+  - id: dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+    name: U
+    description: Unmeasured common cause of X and Y.
+    aspect: ABUNDANCE
+  - id: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+    name: X
+    description: Level of exposure X.
+    aspect: ABUNDANCE
+  - id: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+    name: M
+    description: Activity of mediator M.
+    aspect: ACTIVITY
+  - id: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    name: Y
+    description: Presence of outcome Y.
+    aspect: PRESENCE
+causal_links:
+  - id: dapper:CausalLink.cQUt5qJ-UXt8Gt-gyr7OsXYpiCqQyabT
+    name: U -> X
+    statement: In the synthetic population, U increases X.
+    relation_kind: CAUSATION
+    causal_relation: CONTRIBUTES_TO
+    cause: dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+    effect: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+    effect_direction: INCREASES
+  - id: dapper:CausalLink.GOVKSoVP2QwR-CkSqy5dQ7Je1jBzwSSo
+    name: U -> Y
+    statement: In the synthetic population, U increases the probability of Y.
+    relation_kind: CAUSATION
+    causal_relation: CONTRIBUTES_TO
+    cause: dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+    effect: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    effect_direction: INCREASES
+  - id: dapper:CausalLink.ydsT-FLGWHfDFRlLT2CZ4s2fXORTa_mw
+    name: X -> M
+    statement: In the synthetic population, X regulates the activity of M.
+    relation_kind: CAUSATION
+    causal_relation: REGULATES
+    cause: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+    effect: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+    effect_direction: INCREASES
+  - id: dapper:CausalLink.gZbse76wZ-s7UFegfyYcLaGsoHl3-tJR
+    name: M -> Y
+    statement: In the synthetic population, M activity increases the probability of Y.
+    relation_kind: CAUSATION
+    causal_relation: CONTRIBUTES_TO
+    cause: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+    effect: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    effect_direction: INCREASES
+  - id: dapper:CausalLink.Ry4A2p95EN3oneszdyt_LE1-u8R63mfR
+    name: X -> Y
+    statement: In the synthetic population, X increases the probability of Y other than through M.
+    relation_kind: CAUSATION
+    causal_relation: CONTRIBUTES_TO
+    cause: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+    effect: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    effect_direction: INCREASES
+structural_causal_models:
+  - id: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
+    name: Synthetic mediation model with a latent confounder
+    description: X affects Y directly and through M; latent U causes X and Y.
+    scope: A synthetic population; no real system is modeled.
+    variables:
+      - dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+      - dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+      - dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+      - dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    links:
+      - link: dapper:CausalLink.cQUt5qJ-UXt8Gt-gyr7OsXYpiCqQyabT
+        link_type: DIRECT
+      - link: dapper:CausalLink.GOVKSoVP2QwR-CkSqy5dQ7Je1jBzwSSo
+        link_type: DIRECT
+      - link: dapper:CausalLink.ydsT-FLGWHfDFRlLT2CZ4s2fXORTa_mw
+        link_type: DIRECT
+      - link: dapper:CausalLink.gZbse76wZ-s7UFegfyYcLaGsoHl3-tJR
+        link_type: DIRECT
+      - link: dapper:CausalLink.Ry4A2p95EN3oneszdyt_LE1-u8R63mfR
+        link_type: DIRECT
+    variable_specifications:
+      - variable: dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk
+        domain: CONTINUOUS
+        observed: false
+        distribution:
+          family: NORMAL
+          parameters:
+            - symbol: mean
+              value: 0.0
+            - symbol: sd
+              value: 1.0
+      - variable: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+        domain: CONTINUOUS
+      - variable: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+        domain: CONTINUOUS
+      - variable: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+        domain: BINARY
+        levels: [absent, present]
+    equations:
+      - outcome: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+        inputs: [dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk]
+        functional_form: LINEAR
+        expression: X = a * U + e_X
+        parameters:
+          - symbol: a
+            value: 0.5
+        noise:
+          family: NORMAL
+          parameters:
+            - symbol: mean
+              value: 0.0
+            - symbol: sd
+              value: 1.0
+      - outcome: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+        inputs: [dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI]
+        functional_form: LINEAR
+        expression: M = b * X + e_M
+        parameters:
+          - symbol: b
+            value: 0.8
+        noise:
+          family: NORMAL
+          parameters:
+            - symbol: mean
+              value: 0.0
+            - symbol: sd
+              value: 1.0
+      - outcome: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+        inputs: [dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY, dapper:CausalVariable.jsaYiun3syKloXm4eNT6SWGPlZ9bwzGk, dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI]
+        functional_form: LOGISTIC
+        expression: logit P(Y = present) = c0 + c1 * M + c2 * X + c3 * U
+        parameters:
+          - symbol: c0
+            value: -1.0
+          - symbol: c1
+            value: 0.6
+          - symbol: c2
+            value: 0.3
+          - symbol: c3
+            value: 0.4
+causal_estimands:
+  - id: dapper:CausalEstimand.SknsOOQXIYcgrEuzpNBraK2airDUPAPs
+    name: Natural indirect effect of X on Y through M
+    statement: In the synthetic model, the natural indirect effect of setting X to 1 rather than 0 on the probability of Y through M, as a risk difference.
+    relation_kind: CAUSATION
+    explanatory_model: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
+    estimand_kind: NATURAL_INDIRECT_EFFECT
+    treatment: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+    outcome: dapper:CausalVariable.Jm9PYapccyVUOLSxv4R1SWTxl-EhXI0x
+    mediator: dapper:CausalVariable.hVDVBGFKMeMIACJY0Aws_UzPWuWLR1jY
+    interventions:
+      - variable: dapper:CausalVariable.yg2iRvShA_GPx9WUJL6fIunFnneoLsKI
+        value: '1'
+        reference_value: '0'
+    effect_scale: DIFFERENCE
+claim_scores:
+  - id: dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
+    score_kind: EFFECT_ESTIMATE
+    value: 0.1
+    metric: risk_difference
+    interpretation: Illustrative natural indirect effect on the risk-difference scale, as if computed from the model as written; no computation is asserted.
+claims:
+  - id: dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
+    name: Indirect effect estimate
+    proposition: dapper:CausalEstimand.SknsOOQXIYcgrEuzpNBraK2airDUPAPs
+    has_score:
+      - dapper:ClaimScore.5phb5h4HyG5l9tlbBiZNVDpig_bLWMg5
+    was_generated_by: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+    was_attributed_to:
+      - urn:example:research-team
+activities:
+  - id: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+    name: Illustrative effect computation
+    description: Illustrative computation of the estimand from the stated model; not executed.
+used_edges:
+  - subject: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+    predicate: prov:used
+    object: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
+questions:
+  - id: dapper:Question.1qmvIaIqRYriy-L-81x3eka1zVkuZLyn
+    name: How much of X's effect on Y runs through M?
+    text: How much of the effect of X on Y is transmitted through M?
+scientific_accounts:
+  - id: dapper:ScientificAccount.xGEQyq7Tun7gH54pEiMQskv1D1T-Y76n
+    name: Synthetic mediation account
+    framing:
+      - dapper:Question.1qmvIaIqRYriy-L-81x3eka1zVkuZLyn
+    context: A synthetic structural causal model with a latent confounder of X and Y; the estimate is illustrative.
+    explanatory_model: dapper:StructuralCausalModel.b500wFLFC-OzQQOEgePVVyWG0A8ImAJq
+    component_claims:
+      - dapper:Claim.oH664bB8HOFQodBJ9vxvN4Jl0pxe8lLq
+    was_generated_by: dapper:Activity.gUXhPgz0p_dYbt5JU_0_rGLIV5nbeZYv
+    was_attributed_to:
+      - urn:example:research-team

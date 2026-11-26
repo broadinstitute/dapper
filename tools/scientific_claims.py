@@ -76,6 +76,77 @@ def _find_cycle(edges: dict[str, set[str]]) -> list[str] | None:
     return None
 
 
+def _graph_parents(graph: dict, nodes: dict[str, tuple[str, dict]]) -> dict[str, set[str]]:
+    """Each variable's causes in a graph, from its links."""
+    parents: dict[str, set[str]] = {}
+    for entry in graph.get("links") or []:
+        link = nodes.get(entry.get("link") if isinstance(entry, dict) else None, (None, {}))[1]
+        if isinstance(link.get("cause"), str) and isinstance(link.get("effect"), str):
+            parents.setdefault(link["effect"], set()).add(link["cause"])
+    return parents
+
+
+def check_structural_causal_model(nid: str, scm: dict,
+                                  nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """Specifications and equations agree with the SCM's own graph."""
+    problems = []
+    if scm.get("has_feedback") is True:
+        problems.append((nid, "a StructuralCausalModel must be acyclic; has_feedback must not be true"))
+    variables = set(_refs(scm, "variables"))
+    parents = _graph_parents(scm, nodes)
+    specified = set()
+    for i, spec in enumerate(scm.get("variable_specifications") or []):
+        if not isinstance(spec, dict):
+            continue
+        where, var = f"{nid}.variable_specifications[{i}]", spec.get("variable")
+        if var not in variables:
+            problems.append((where, f"{var} is not in this model's variables"))
+        if var in specified:
+            problems.append((where, f"{var} is specified more than once"))
+        specified.add(var)
+        if spec.get("distribution") and parents.get(var):
+            problems.append((where, f"{var} has causes in the model; give it an equation, not a distribution"))
+    explained = set()
+    for i, equation in enumerate(scm.get("equations") or []):
+        if not isinstance(equation, dict):
+            continue
+        where, outcome = f"{nid}.equations[{i}]", equation.get("outcome")
+        if outcome not in variables:
+            problems.append((where, f"{outcome} is not in this model's variables"))
+        if outcome in explained:
+            problems.append((where, f"{outcome} has more than one equation"))
+        explained.add(outcome)
+        inputs, causes = set(_refs(equation, "inputs")), parents.get(outcome, set())
+        if inputs != causes:
+            problems.append((where, f"inputs must be exactly {outcome}'s causes in the graph: "
+                             f"missing {sorted(causes - inputs)}, extra {sorted(inputs - causes)}"))
+    return problems
+
+
+MEDIATED = {"CONTROLLED_DIRECT_EFFECT", "NATURAL_DIRECT_EFFECT", "NATURAL_INDIRECT_EFFECT"}
+
+
+def check_causal_estimand(nid: str, estimand: dict,
+                          nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """An estimand's variables are distinct and belong to its model."""
+    problems = []
+    treatment, outcome, mediator = (estimand.get(k) for k in ("treatment", "outcome", "mediator"))
+    if treatment is not None and treatment == outcome:
+        problems.append((nid, "treatment and outcome must differ"))
+    if estimand.get("estimand_kind") in MEDIATED and not mediator:
+        problems.append((nid, f"{estimand['estimand_kind']} needs a mediator"))
+    model_cls, model = nodes.get(estimand.get("explanatory_model"), (None, {}))
+    if _accepts("CausalGraph", model_cls):
+        variables = set(_refs(model, "variables"))
+        named = [("treatment", treatment), ("outcome", outcome), ("mediator", mediator)]
+        named += [(f"interventions[{i}]", e.get("variable"))
+                  for i, e in enumerate(estimand.get("interventions") or []) if isinstance(e, dict)]
+        for field, var in named:
+            if isinstance(var, str) and var not in variables:
+                problems.append((f"{nid}.{field}", f"{var} is not in the model's variables"))
+    return problems
+
+
 def check_causal_graph(nid: str, graph: dict,
                        nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
     """A graph's links stay inside its variable set, appear once, and form a
@@ -120,6 +191,9 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
         "CausalLink": {"explanatory_model": "ExplanatoryModel",
                        "cause": "CausalVariable", "effect": "CausalVariable"},
         "CausalGraph": {"variables": "CausalVariable"},
+        "StructuralCausalModel": {"variables": "CausalVariable"},
+        "CausalEstimand": {"explanatory_model": "ExplanatoryModel", "treatment": "CausalVariable",
+                           "outcome": "CausalVariable", "mediator": "CausalVariable"},
         "MechanisticModel": {"variables": "CausalVariable"},
         "Claim": {"proposition": "Proposition", "has_score": "ClaimScore", "has_evidence": "EvidenceItem"},
         "ScientificAccount": {"framing": "Framing", "component_claims": "Claim",
@@ -157,11 +231,15 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
             problems.extend(check_citation_occurrences(nid, node, nodes))
         if _accepts("CausalGraph", cls):
             problems.extend(check_causal_graph(nid, node, nodes))
-        if cls == "CausalLink":
+        if _accepts("StructuralCausalModel", cls):
+            problems.extend(check_structural_causal_model(nid, node, nodes))
+        if cls in {"CausalLink", "CausalEstimand"}:
             for field in ("relation", "subject_entity", "object_entity"):
                 if field in node:
-                    problems.append((f"{nid}.{field}", "a CausalLink states its structure with "
-                                     "cause, effect and causal_relation, not " + field))
+                    problems.append((f"{nid}.{field}", f"a {cls} states its structure with its own "
+                                     f"variables, not {field}"))
+        if cls == "CausalEstimand":
+            problems.extend(check_causal_estimand(nid, node, nodes))
 
     # Evidence uses must not make a Claim depend on itself, directly or indirectly.
     dependencies = {nid: {source for e in _refs(node, "has_evidence")

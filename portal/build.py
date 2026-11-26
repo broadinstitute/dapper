@@ -96,6 +96,9 @@ INLINE_LINKS = {
     # A causal link runs cause -> link -> effect.
     "cause": ("dapper:cause", "in"),
     "effect": ("dapper:effect", "out"),
+    # An estimand runs treatment -> estimand -> outcome.
+    "treatment": ("dapper:treatment", "in"),
+    "outcome": ("dapper:outcome", "out"),
     "has_evidence": ("dapper:has_evidence", "in"),
     "source_claims": ("dapper:source_claims", "in"),
     "target_proposition": ("dapper:target_proposition", "in"),
@@ -158,6 +161,8 @@ FAMILY = {
     "CausalVariable": "claim",
     "CausalLink": "claim",
     "CausalGraph": "claim",
+    "StructuralCausalModel": "claim",
+    "CausalEstimand": "claim",
     "Nanopublication": "publication",
     "NanopubAssertion": "part",
     "NanopubProvenance": "part",
