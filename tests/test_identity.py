@@ -133,6 +133,19 @@ def test_compute_id_is_prefix_class_digest(sv):
     assert len(digest) == 32
 
 
+def test_a_record_with_many_members_mints(sv):
+    """DAPPER-ID-1 has no size limit: a release of 20,000 Datasets mints.
+
+    A 10,000-triple cap once refused the pigean-cfde release (20,253 member
+    Datasets, 20,274 triples). Every member stays part of the identity.
+    """
+    members = [f"dapper:Dataset.{i:032d}" for i in range(20_000)]
+    rc = {"name": "big", "collection_key": "big", "version": "1", "methods": ["m"], "members": members}
+    got = compute_id(rc, "ResultCollection", sv)
+    assert got.startswith(f"{CURIE_PREFIX}:ResultCollection.")
+    assert compute_id({**rc, "members": members[:-1]}, "ResultCollection", sv) != got
+
+
 def test_class_name_is_part_of_the_identity(sv):
     """Identical content under a different class is a different thing.
 

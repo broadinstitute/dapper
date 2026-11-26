@@ -120,7 +120,7 @@ content integrity for a *published nanopublication package*; a `dapper:` id name
 | **Nested references** | a `dapper:` reference contributes its **bare digest**, as GA4GH VRS requires |
 | **List order** | preserved — the index is part of the predicate |
 | **Blank nodes** | none emitted; the canonicalizer is a safety net |
-| **Complexity limit** | 10,000 triples |
+| **Size limit** | none: no blank nodes, so canonicalizing is a sort |
 | **Verification** | `verify` recomputes and compares; `verify-vectors` replays permanent vectors |
 | **Successors** | a changed artifact gets a new id; link the old one with `Supersedes` |
 
