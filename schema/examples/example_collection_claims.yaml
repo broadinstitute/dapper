@@ -1,0 +1,99 @@
+# A measurement claim minted from the collection's Trait T1 file, grounded by a ValueLocator.
+# Entirely synthetic: the traits, genes, methods and numbers are made up, and no
+# analysis was run. Only the NDJSON result files under data/result-collection/ are real bytes, so
+# their checksums and any ValueLocator spans can be verified.
+# See ../docs/result-collections.md. Re-mint with:
+#   uv run schema/identity/dapper_identity.py assign <this-file>
+prefixes:
+  EXTRAIT: 'urn:example:trait:'
+  EXGENE: 'urn:example:gene:'
+files:
+- id: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  name: Gene statistics for Trait T1
+  description: Synthetic per-gene result file for Trait T1; one NDJSON row per gene.
+  filename: gene_stats.ndjson
+  mime_type: application/jsonlines
+  sha256: b60d4e02c05fb880625cd6537723c94826a6517431a23f94c71b4e62bb3a584b
+  size_in_bytes: 222
+  location: data/result-collection/trait-t1/gene_stats.ndjson
+- id: dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+  name: Measurement claim template
+  description: 'Illustrative claim template: one measurement claim per gene_stats row, with one ClaimScore
+    and one value-grounded EvidenceItem per metric.'
+  filename: measurement.yaml
+  mime_type: application/yaml
+activities:
+- id: dapper:Activity.hyytZxGuKuoYQbw7FCwsUn6aFapejhUX
+  name: Mint measurement claims for Trait T1
+  description: Rendered the measurement template over every gene_stats row of the Trait T1 dataset. Same
+    template bytes and same file bytes give the same claims, whichever collection version lists them.
+  activity_type: ClaimMinting
+  software_name: example-claims-minter
+  code_version: illustrative-only
+  trait: EXTRAIT:T1
+value_locators:
+- id: dapper:ValueLocator.P6375rpoo3IkkcIOfk3xeQybzK9m1V_e
+  name: GENE_A combined in Trait T1 gene_stats
+  file: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  byte_start: 41
+  byte_length: 4
+  value_text: '3.41'
+  selector: gene=GENE_A; key=combined
+  media_type: application/jsonlines
+propositions:
+- id: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+  name: GENE_A and Trait T1
+  statement: The gene GENE_A is associated with Trait T1.
+  subject_entity: EXGENE:GENE_A
+  relation: urn:example:associatedWith
+  object_entity: EXTRAIT:T1
+  scope: ExampleMethod gene-level assessment; gene-set library example-library-v1.
+  proposition_kind: RESULT
+claim_scores:
+- id: dapper:ClaimScore.2U3swjC4Q-8xZfzvDvcRpIpHmm-iHxJu
+  name: combined
+  score_kind: SCORE
+  value: 3.41
+  metric: combined
+  interpretation: Synthetic combined score on a log-odds-like scale; higher means stronger association.
+    Not a probability.
+evidence_items:
+- id: dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
+  name: 'combined evidence: GENE_A, Trait T1'
+  value_locators:
+  - dapper:ValueLocator.P6375rpoo3IkkcIOfk3xeQybzK9m1V_e
+  target_proposition: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+  explanation: ExampleMethod reported combined = 3.41 for GENE_A in the Trait T1 gene_stats file; the
+    locator pins the serialized number's bytes.
+  evidence_source: Trait T1 gene_stats.ndjson
+claims:
+- id: dapper:Claim.hu-9iCQsBHfKCuMIUn_tVUc_EKgcl6a6
+  name: 'Measurement: GENE_A, Trait T1'
+  proposition: dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+  statement: The gene GENE_A is associated with Trait T1 (combined 3.41).
+  has_score:
+  - dapper:ClaimScore.2U3swjC4Q-8xZfzvDvcRpIpHmm-iHxJu
+  has_evidence:
+  - dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
+  was_generated_by: dapper:Activity.hyytZxGuKuoYQbw7FCwsUn6aFapejhUX
+  was_attributed_to:
+  - urn:example:software:example-claims-minter
+  was_derived_from:
+  - dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+  source_locator: gene_stats.ndjson#gene=GENE_A
+used_edges:
+- subject: dapper:Activity.hyytZxGuKuoYQbw7FCwsUn6aFapejhUX
+  predicate: prov:used
+  object: dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+- subject: dapper:Activity.hyytZxGuKuoYQbw7FCwsUn6aFapejhUX
+  predicate: prov:used
+  object: dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+_illustrative:
+- dapper:File.Swg5Qy1CoEXU4wP2KwVPFMMwkpmvUxes
+- dapper:File.omkjR7OP-Y6wEOP8O4mJLYRLFq318V4u
+- dapper:Activity.hyytZxGuKuoYQbw7FCwsUn6aFapejhUX
+- dapper:ValueLocator.P6375rpoo3IkkcIOfk3xeQybzK9m1V_e
+- dapper:Proposition.dXHmlUblzP1zRQx6F9EJauMvLC_9By6I
+- dapper:ClaimScore.2U3swjC4Q-8xZfzvDvcRpIpHmm-iHxJu
+- dapper:EvidenceItem.cP9CIqZe3HpVaosFFY9y8W0stME30xFi
+- dapper:Claim.hu-9iCQsBHfKCuMIUn_tVUc_EKgcl6a6

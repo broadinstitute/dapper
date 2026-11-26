@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["pyyaml", "rdflib", "linkml-runtime", "linkml==1.11.1"]
+# dependencies = ["pyyaml", "rdflib", "linkml-runtime==1.11.1", "linkml==1.11.1"]
 # ///
 """Validate DAPPER, then check DIG export folders against declared ancestry.
 

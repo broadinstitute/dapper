@@ -111,7 +111,7 @@ content integrity for a *published nanopublication package*; a `dapper:` id name
 | **Profile name** | `DAPPER-ID-1` (recorded on `HashableNode` as `dapper:id_profile`) |
 | **Identifier form** | `dapper:{ClassName}.{digest}` — the full LinkML class name |
 | **Semantic scope** | one DAPPER Node instance — not a publication package, graph, or file's bytes |
-| **Input model** | `schema/dapper.yaml` and its imports; pin the schema release (currently `0.2.0-a1`) |
+| **Input model** | `schema/dapper.yaml` and its imports; pin the schema release (currently `0.2.1-a1`) |
 | **Included** | slots marked `mixins: [hashable]`, plus the class name |
 | **Excluded** | slots marked `mixins: [unhashable]`, `id`, and nulls |
 | **Canonicalization** | RDF → `rdflib.compare.to_canonical_graph` → N-Triples → **sorted lines** → `\n`-joined → UTF-8 |

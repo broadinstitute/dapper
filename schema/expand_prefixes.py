@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["pyyaml", "rdflib", "linkml-runtime", "linkml==1.11.1"]
+# dependencies = ["pyyaml", "rdflib", "linkml-runtime==1.11.1", "linkml==1.11.1"]
 # ///
 """Export a DAPPER graph with absolute URIs and consistent content identifiers."""
 from __future__ import annotations

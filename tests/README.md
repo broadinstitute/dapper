@@ -30,6 +30,8 @@ isolation between scientific objects, paragraphs, and citation metadata.
 | `test_document_prefixes.py` | document namespace declarations, unresolved CURIE failures, mixed URI/CURIE graphs, GMT file references, and validated URI export with rewritten content IDs |
 | `test_gene_set_collections.py` | collection membership, GMT row selectors, distinct gene counts, location expansion, and converter library detection |
 | `test_examples.py` | every `schema/examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
+| `test_croissant.py` | the Croissant example: every FileObject matches a DAPPER File by sha256, location and media type; the record is kept and used by the publication; declared columns exist |
+| `test_result_collections.py` | result-collection versions, dimension and file-role checks, the mixed-method warning, claim identity independent of the collection, and byte-exact value locators |
 | `test_claims.py` | scientific accounts, hypothesis roles, Question/KnowledgeGap inheritance, evidence targets, paragraph rendering, and content identity |
 | `test_files.py` | generic intermediate files, stable IDs across relocation and DRS registration, converter provenance, and portal inheritance |
 | `test_ancestry.py` | ancestry validation and identity, qualified ontology mappings, example scope, and optional DIG folder consistency checks |

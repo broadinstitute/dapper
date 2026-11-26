@@ -566,6 +566,119 @@ def check_gene_set_membership(doc: Document, rep: Report) -> None:
                         f"names {gene_id}, whose supplied in_gene_set_collection list omits this collection")
 
 
+def check_result_collections(doc: Document, vocab: Vocabulary, rep: Report) -> None:
+    """Member Datasets fit the dimensions and roles their collection declares.
+
+    The schema can say a Dataset has dimension values and file roles, but not
+    that they agree with the collection listing it, and file references inside
+    inline FileRole objects are not seen by check_refs. A dataset missing a
+    dimension, or two datasets with the same dimension values, make "which
+    slice is this?" unanswerable, and a role naming a file the dataset does
+    not list breaks the trace from claim to file.
+    """
+    generated_by = vocab.predicate_uri("prov:wasGeneratedBy")
+    software_of: dict[str, set[str]] = {}
+    for link in doc.relationships(vocab):
+        if link.predicate == generated_by and doc.class_of(link.object) == "Activity":
+            name = doc.nodes[link.object][2].get("software_name")
+            if isinstance(name, str):
+                software_of.setdefault(link.subject, set()).add(name)
+
+    for collection_id, collection in doc.nodes_of_class("ResultCollection"):
+        methods = collection.get("methods")
+        if isinstance(methods, list) and len(set(methods)) > 1:
+            rep.add("warning", "result-collection", f"{collection_id}.methods",
+                    f"mixes {len(set(methods))} methods ({', '.join(sorted(set(methods)))})",
+                    "Usually an anti-pattern: keep one collection per method and combine "
+                    "claims in a ScientificAccount. See schema/docs/result-collections.md.")
+        dimensions = collection.get("dataset_dimensions")
+        if not isinstance(dimensions, list) or not all(isinstance(d, str) for d in dimensions):
+            continue
+        if len(set(dimensions)) != len(dimensions):
+            rep.add("error", "result-collection", f"{collection_id}.dataset_dimensions",
+                    "dimension names must be distinct")
+        members = collection.get("members") or []
+        if isinstance(collection.get("n_members"), int) and \
+                collection["n_members"] != len(set(members)):
+            rep.add("error", "result-collection", f"{collection_id}.n_members",
+                    f"reports {collection['n_members']}, but members lists {len(set(members))}")
+        seen: dict[tuple, str] = {}
+        for dataset_id in members:
+            entry = doc.nodes.get(dataset_id) if isinstance(dataset_id, str) else None
+            if not entry or entry[1] != "Dataset":
+                continue  # Reference and range checks report missing/mistyped members.
+            dataset = entry[2]
+            where = f"{dataset_id}.dimension_values"
+            values = [v for v in dataset.get("dimension_values") or [] if isinstance(v, dict)]
+            names = [v.get("dimension") for v in values]
+            if names != dimensions:
+                rep.add("error", "result-collection", where,
+                        f"gives dimensions {names}, but {collection_id} declares {dimensions}",
+                        "List exactly one value per collection dimension, in the collection's order.")
+            else:
+                key = tuple(v.get("dimension_value") for v in values)
+                if key in seen:
+                    rep.add("error", "result-collection", where,
+                            f"has the same dimension values as {seen[key]}")
+                seen.setdefault(key, dataset_id)
+                trait = dataset.get("trait")
+                listed = dict(zip(names, key)).get("trait")
+                # `trait` was resolved through the document's prefixes; the
+                # dimension value is a literal, so expand it the same way.
+                prefix, colon, local = str(listed).partition(":")
+                declared = doc.raw.get("prefixes") or {}
+                expanded = declared[prefix] + local if colon and prefix in declared else listed
+                if isinstance(trait, str) and listed is not None and trait not in (listed, expanded):
+                    rep.add("error", "result-collection", where,
+                            f"trait dimension {listed!r} disagrees with the Dataset's trait {trait!r}")
+
+            files = dataset.get("has_file") or []
+            roles = [r for r in dataset.get("file_roles") or [] if isinstance(r, dict)]
+            role_names = [r.get("role") for r in roles]
+            if len(set(role_names)) != len(role_names):
+                rep.add("error", "result-collection", f"{dataset_id}.file_roles",
+                        "role names must be distinct within a dataset")
+            for role in roles:
+                file_id = role.get("file")
+                if file_id not in files:
+                    rep.add("error", "result-collection", f"{dataset_id}.file_roles",
+                            f"role {role.get('role')!r} names {file_id}, which has_file does not list")
+                if isinstance(file_id, str) and digest_of(file_id) is not None and file_id not in doc.nodes:
+                    rep.add("error", "refs", f"{dataset_id}.file_roles",
+                            f"reference to {file_id} does not resolve to any node in this document")
+                for name in sorted(software_of.get(file_id, set())):
+                    if isinstance(methods, list) and name not in methods:
+                        rep.add("warning", "result-collection", f"{dataset_id}.file_roles",
+                                f"{file_id} was generated by {name!r}, which {collection_id}.methods "
+                                "does not list")
+
+
+def check_collection_versions(doc: Document, sv, rep: Report) -> None:
+    """A collection version revises an earlier version of the same collection.
+
+    `was_revision_of` is typed only as another Collection, so the schema
+    accepts a ResultCollection "revising" a gene-set library, or a release of
+    one collection revising another's. Either would splice two histories into
+    one chain. A version without a collection_key has no history to join.
+    """
+    classes = set(sv.class_descendants("Collection", reflexive=False))
+    for node_id, (_, class_name, node) in doc.nodes.items():
+        previous = node.get("was_revision_of")
+        if class_name not in classes or not isinstance(previous, str):
+            continue
+        where = f"{node_id}.was_revision_of"
+        if not node.get("collection_key"):
+            rep.add("error", "collection-version", where,
+                    "a revision must carry the collection_key it continues")
+        entry = doc.nodes.get(previous)
+        if not entry:
+            continue  # Reference checks report a missing previous version.
+        if entry[1] != class_name or entry[2].get("collection_key") != node.get("collection_key"):
+            rep.add("error", "collection-version", where,
+                    f"names {previous}, a version of a different collection "
+                    f"({entry[1]} {entry[2].get('collection_key')!r})")
+
+
 def check_refs(doc: Document, vocab: Vocabulary, rep: Report) -> None:
     """DAPPER identifiers in relationship positions must resolve locally.
 
@@ -672,8 +785,10 @@ def check_ids_match_content(doc: Document, sv, rep: Report) -> None:
 # ---------------------------------------------------------------------------
 def _terminal_ids(doc: Document, profile: dict, vocab: Vocabulary) -> list[str]:
     """End results exclude resources consumed or derived from in this graph."""
+    # prov:wasRevisionOf is a kind of derivation: an earlier collection version
+    # in the same document is upstream of the version that revises it.
     upstream_predicates = {vocab.predicate_uri(p) for p in (
-        "prov:used", "prov:wasDerivedFrom", "prov:hadMember")}
+        "prov:used", "prov:wasDerivedFrom", "prov:wasRevisionOf", "prov:hadMember")}
     upstream = {link.object for link in doc.relationships(vocab)
                 if link.predicate in upstream_predicates}
     # Inverse membership also identifies contained sets, even when the
@@ -874,6 +989,8 @@ def lint(path: Path, vocab: Vocabulary, sv, validator,
     check_gmt_files(doc, rep)
     check_gene_set_counts(doc, rep)
     check_gene_set_membership(doc, rep)
+    check_result_collections(doc, vocab, rep)
+    check_collection_versions(doc, sv, rep)
     check_refs(doc, vocab, rep)
     for where, problem in check_scientific_content(
             {nid: (cls, node) for nid, (_, cls, node) in doc.nodes.items()}):

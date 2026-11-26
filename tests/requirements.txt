@@ -8,7 +8,8 @@
 pytest>=8
 pyyaml
 rdflib
-linkml-runtime
+# linkml-runtime 1.12 drops the dapper: routes of the LinkML types DocGenerator merges in; keep it with linkml.
+linkml-runtime==1.11.1
 # The full linkml package validates graph nodes and builds schema documentation.
 linkml==1.11.1
 jsonschema[format]>=4.18,<5

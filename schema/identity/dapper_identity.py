@@ -112,6 +112,8 @@ DOC_GROUPS = {
     "causal_steps": "CausalStep",
     "mechanisms": "Mechanism",
     "evidence_items": "EvidenceItem",
+    "value_locators": "ValueLocator",
+    "result_collections": "ResultCollection",
     "nanopublications": "Nanopublication",
     "nanopub_assertions": "NanopubAssertion",
     "nanopub_provenances": "NanopubProvenance",

@@ -206,7 +206,8 @@ def test_inline_and_reified_forms_do_not_double_count(tmp_path, vocab, sv, valid
 # ---------------------------------------------------------------------------
 # 1. the canonical examples are clean
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize("profile_name", ["bottom-line-result", "geneset", "scientific-account"])
+@pytest.mark.parametrize("profile_name", ["bottom-line-result", "geneset", "scientific-account",
+                                          "result-collection"])
 def test_canonical_example_lints_clean(profile_name, vocab, sv, validator):
     """Each profile's canonical example passes its own linter.
 

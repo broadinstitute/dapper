@@ -52,11 +52,20 @@ description: >-
       Cell Ontology class), which is what lineage a cell belongs to rather
       than what functional state it is in.
 
+    COLLECTIONS. `Collection` (abstract) is a Set whose members are other
+      DAPPER records, with optional versioning. `GeneSetCollection` holds
+      GeneSets. `ResultCollection` is one immutable version of a named
+      collection of analysis results: Datasets of result files identified by
+      declared dimensions, the claim templates that mint Claims from them, and
+      the query templates that read them. `ValueLocator` pins
+      the exact bytes of a value in a result file so an EvidenceItem can
+      ground there.
+
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, scientific accounts, and nanopublications are Node entities;
   attribution, provenance, and causal assertions are Edge relationships.
 license: https://opensource.org/license/mit
-version: 0.2.0
+version: 0.2.1-a1
 
 # ---------------------------------------------------------------------------
 # MIRRORING INVARIANT (NIH/OD — the profile's hard rule)
@@ -988,6 +997,27 @@ classes:
         range: uriorcurie
         multivalued: true
         description: BioComputeObject CURIEs describing the workflow(s) that produced this dataset.
+      dimension_values:
+        is_a: literal
+        mixins: [hashable]
+        range: DimensionValue
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          This Dataset's value along each of the dataset_dimensions of the
+          ResultCollection that lists it, in that order. When a dimension
+          also has a dedicated slot (trait, ancestry), the two must agree.
+      file_roles:
+        is_a: literal
+        mixins: [hashable]
+        range: FileRole
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        description: >-
+          The role each of this Dataset's files plays in its ResultCollection,
+          e.g. `gene_stats`. Every role's file is also listed in has_file.
 
   # ======================================================================
   # SET — a collection of members (prov:Collection). Distinct from Dataset
@@ -1003,7 +1033,6 @@ classes:
     close_mappings:
       - schema:Collection
     aliases:
-      - collection
       - member set
     description: >-
       A collection of members — "an entity that provides a structure to some
@@ -1013,7 +1042,8 @@ classes:
       Members are referenced via `prov:hadMember`. Set carries the same
       attribution/provenance/mirror slots (ProvenancedResource) as Dataset, so
       a returned set is citable and its authoritative provenance is
-      mirror-protected identically.
+      mirror-protected identically. A Set whose members are other DAPPER
+      records (gene sets, datasets) is a Collection.
     attributes:
       description:
         is_a: literal
@@ -1173,8 +1203,58 @@ classes:
             in_gmt_file:
               required: true
 
-  GeneSetCollection:
+  # ======================================================================
+  # COLLECTION — abstract (0.2.1-a1). A Set whose members are other DAPPER
+  # records, with optional versioning. GeneSetCollection (members: GeneSet)
+  # and ResultCollection (members: Dataset) specialize it.
+  # ======================================================================
+  Collection:
     is_a: Set
+    abstract: true
+    aliases:
+      - collection
+    description: >-
+      A Set whose members are other DAPPER records rather than biological
+      entities: the GeneSets of a GeneSetCollection or the Datasets of a
+      ResultCollection. Abstract; use a subclass. Adds optional versioning:
+      collection_key names the collection across versions, version labels
+      this one, and was_revision_of points to the previous version. Each
+      version is its own immutable, content-addressed record, so changing the
+      membership makes a new version rather than editing an old one.
+    slot_usage:
+      members:
+        description: >-
+          DAPPER identifiers of the member records. Membership contributes to
+          the collection's identity; members do not point back in a hashed field,
+          so adding a record to a collection never changes the record's own id.
+    attributes:
+      collection_key:
+        is_a: literal
+        mixins: [hashable]
+        pattern: '^[a-z0-9][a-z0-9._-]*$'
+        description: >-
+          Stable short name shared by every version of the collection, e.g.
+          `pigean` or `cfde-inc`. The version's own id changes with its content;
+          this does not.
+      version:
+        is_a: literal
+        mixins: [hashable]
+        pattern: '\S'
+        slot_uri: schema:version
+        description: Version label of this version of the collection, e.g. "2026.11.0" or "v2".
+      was_revision_of:
+        is_a: relationship
+        mixins: [hashable]
+        range: Collection
+        inlined: false
+        slot_uri: prov:wasRevisionOf
+        description: >-
+          The previous version of the same collection: same class and same
+          collection_key. Omitted for the first version. Hashable, so versions
+          form a chain that cannot be rewritten.
+
+  GeneSetCollection:
+    is_a: Collection
     aliases:
       - gene set library
     description: >-
@@ -1204,6 +1284,9 @@ classes:
       n_members:
         minimum_value: 0
         description: Number of member GeneSets; when supplied agrees with n_sets.
+      was_revision_of:
+        range: GeneSetCollection
+        description: The previous version of this gene-set library (same collection_key).
     attributes:
       n_sets:
         is_a: literal
@@ -1369,6 +1452,149 @@ classes:
           slot_conditions:
             has_vector_file:
               required: true
+
+  # ======================================================================
+  # BLOCK — RESULT COLLECTIONS (0.2.1-a1). A ResultCollection (a Collection)
+  # is one immutable version of a named collection of analysis results: the
+  # Datasets of result files, the claim templates that turn their rows into
+  # Claims, and the query templates that read them. Claims never point at
+  # the collection, so publishing a new version re-addresses only the claims
+  # whose template or source file changed. See schema/docs/result-collections.md.
+  # ======================================================================
+
+  ResultCollection:
+    is_a: Collection
+    close_mappings:
+      - dcat:DatasetSeries
+    aliases:
+      - collection release
+      - claims collection
+    description: >-
+      One version of a named collection of analysis results: its member
+      Datasets of result files (each identified by the collection's
+      dataset_dimensions, such as trait and gene-set library), the claim
+      templates that mint Claims from rows of those files, the query templates
+      that read them, and the manifest file the version was built from.
+      collection_key and version are required. Claims do not reference the
+      collection: a Claim's identity depends on its template and source file,
+      not on which versions list them. A collection usually holds the results
+      of one method; see methods.
+    slot_usage:
+      collection_key:
+        required: true
+      version:
+        required: true
+        description: Version label of this release of the collection, e.g. "2026.11.0".
+      was_revision_of:
+        range: ResultCollection
+        description: The previous release of this collection (same collection_key).
+      members:
+        range: Dataset
+        inlined: false
+        required: true
+        minimum_cardinality: 1
+        description: >-
+          The Datasets in this version, each a slice of the results identified
+          by its dimension_values, with its files assigned roles by file_roles.
+      member_type:
+        ifabsent: string(dataset)
+        equals_string: dataset
+      n_members:
+        minimum_value: 1
+        description: Number of member Datasets; when supplied agrees with members.
+    attributes:
+      methods:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        multivalued: true
+        minimum_cardinality: 1
+        description: >-
+          Analysis methods whose results this version holds, named as the
+          software_name of the Activities that generated its result files (e.g.
+          PIGEAN). One method is the norm. More than one is allowed but is
+          usually an anti-pattern: scores from different methods have different
+          meanings and must not be compared, ranked or combined. Prefer one
+          collection per method and combine their claims in a ScientificAccount.
+          See schema/docs/result-collections.md.
+      dataset_dimensions:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        multivalued: true
+        minimum_cardinality: 1
+        description: >-
+          Ordered names of the dimensions that identify each Dataset in the
+          collection, e.g. [trait, library]. Every member Dataset gives exactly
+          one dimension_value for each, and no two members share all of them.
+      has_claim_template:
+        is_a: relationship
+        mixins: [hashable]
+        range: File
+        inlined: false
+        multivalued: true
+        description: >-
+          Files holding the claim templates that mint Claims from rows of the
+          member Datasets' files. A minting Activity `used` the template File
+          and the result File, and each Claim it generates names that Activity
+          in was_generated_by, so a claim traces to its exact template bytes.
+      has_query_template:
+        is_a: relationship
+        mixins: [hashable]
+        range: File
+        inlined: false
+        multivalued: true
+        description: >-
+          Files holding query templates that read this collection (parameters,
+          a bounded plan and a runnable example), so the collection can describe
+          how to query it.
+      has_manifest_file:
+        is_a: relationship
+        mixins: [hashable]
+        range: File
+        inlined: false
+        description: >-
+          The collection manifest this version was built from, declaring
+          method-specific structure DAPPER does not model: row kinds, metrics,
+          file formats and how each file role is parsed.
+
+  DimensionValue:
+    description: >-
+      One Dataset's position along one of its collection's dimensions, e.g.
+      dimension `trait` with dimension_value `KPN.TRAIT:0000505`. A value
+      object without its own identifier; it contributes to the owning
+      Dataset's identity.
+    attributes:
+      dimension:
+        required: true
+        pattern: '^[a-z][a-z0-9_]*$'
+        description: Dimension name, one of the owning collection's dataset_dimensions.
+      dimension_value:
+        required: true
+        pattern: '\S'
+        description: >-
+          The value along that dimension, as a CURIE when one exists (a trait
+          identifier) or the source's own label otherwise (a library name).
+          Identifier schemes are the data's, not the profile's: DAPPER does not
+          normalize them.
+
+  FileRole:
+    description: >-
+      The role a File plays in a Dataset of a ResultCollection, e.g.
+      `gene_stats` or `membership`. Role names, formats and parsing rules are
+      declared in the collection manifest. A value object without its own
+      identifier; it contributes to the owning Dataset's identity.
+    attributes:
+      role:
+        required: true
+        pattern: '^[a-z][a-z0-9_]*$'
+        description: Role name declared by the collection manifest.
+      file:
+        is_a: relationship
+        range: File
+        inlined: false
+        required: true
+        description: The File playing the role; it must also be listed in the Dataset's has_file.
 
   # ======================================================================
   # BLOCK — SINGLE-CELL: GENE PROGRAM / CELL STATE. A
@@ -3514,16 +3740,73 @@ classes:
         multivalued: true
         description: GO biological process CURIE(s), e.g. `obo:GO_0006629`.
 
+  ValueLocator:
+    is_a: HashableNode
+    description: >-
+      A verifiable pointer to one serialized value inside a referenced File:
+      the exact byte span where the value appears, the value as read, and a
+      structured selector. Evidence can then ground directly in the result file
+      that provenance ends at: a verifier re-reads
+      file[byte_start : byte_start + byte_length] and compares it with
+      value_text, and the File's sha256 establishes which bytes those are. The
+      selector is for people and format-aware tools; the byte span is the
+      contract. Added in 0.2.1-a1.
+    attributes:
+      file:
+        is_a: relationship
+        mixins: [hashable]
+        range: File
+        inlined: false
+        required: true
+        description: The File whose bytes the span addresses.
+      byte_start:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        required: true
+        minimum_value: 0
+        description: 0-based offset of the first byte of the serialized value.
+      byte_length:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        required: true
+        minimum_value: 1
+        description: Number of bytes in the serialized value.
+      value_text:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        pattern: '\S'
+        description: >-
+          The span's bytes decoded as UTF-8, exactly as serialized in the file
+          (e.g. '10.5', not '10.50'). Verification is byte equality, not
+          numeric equality.
+      selector:
+        is_a: literal
+        mixins: [hashable]
+        description: >-
+          Structured, human-readable address of the value within the file's
+          format, e.g. 'line=1; gene=CXCR2; key=combined' for NDJSON or a
+          row/column pair for TSV. Advisory; the byte span is authoritative.
+      media_type:
+        is_a: literal
+        mixins: [hashable]
+        description: IANA media type the selector assumes, e.g. application/x-ndjson.
+
   EvidenceItem:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
     description: >-
       Evidence used in an attributed assessment of a target proposition.
-      Can retain a publication passage or use source Claims, with a direction,
-      rationale, and assumptions. The target is a Proposition rather than the
-      owning Claim, so Claim -> EvidenceItem -> Proposition has no back-reference
-      cycle. Reuse across Claims requires the same target and interpretation.
+      Can retain a publication passage, use source Claims, or ground directly
+      in result-file values via value_locators, with a direction, rationale,
+      and assumptions. At least one grounding (source_claims, value_locators,
+      reference, or snippet) should be present. The target is a Proposition
+      rather than the owning Claim, so Claim -> EvidenceItem -> Proposition has
+      no back-reference cycle. Reuse across Claims requires the same target and
+      interpretation.
     close_mappings:
       - dismech:EvidenceItem
     see_also:
@@ -3537,8 +3820,21 @@ classes:
         range: Claim
         inlined: false
         multivalued: true
-        minimum_cardinality: 1
-        description: Source assessments used as evidence; not automatically accepted as true.
+        description: >-
+          Source assessments used as evidence; not automatically accepted as
+          true. Optional since 0.2.1-a1, so evidence read directly from a
+          result file can ground in value_locators without a synthetic
+          intermediate claim.
+      value_locators:
+        is_a: relationship
+        mixins: [hashable]
+        range: ValueLocator
+        inlined: false
+        multivalued: true
+        description: >-
+          Exact file spans grounding this evidence at the result-file boundary;
+          the preferred grounding for evidence read directly from a result
+          file. Added in 0.2.1-a1.
       target_proposition:
         is_a: relationship
         mixins: [hashable]
@@ -3624,6 +3920,19 @@ classes:
             explanation:
               required: true
             context:
+              required: true
+      # Evidence read from a file must still say what it bears on and how.
+      # Direction stays optional: a raw measurement supplies none, and DAPPER
+      # does not infer one by thresholding a value without a declared rule.
+      - preconditions:
+          slot_conditions:
+            value_locators:
+              required: true
+        postconditions:
+          slot_conditions:
+            target_proposition:
+              required: true
+            explanation:
               required: true
 
   # ---- scientific-content edges ----------------------------------------------------
