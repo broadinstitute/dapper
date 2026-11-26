@@ -206,8 +206,10 @@ and never rely on a language runtime's default object serialization.
   required.
 - **Do not confuse hashing with signing.** Anyone can reproduce a content hash.
   A signature binds content to a key; identity-to-key trust needs its own policy.
-- **Set canonicalization complexity limits.** RDFC-1.0 documents pathological
-  blank-node graphs that can cause denial-of-service behavior.
+- **Mind canonicalization complexity.** RDFC-1.0 documents pathological
+  blank-node graphs that can cause denial-of-service behavior. DAPPER-ID-1
+  emits no blank nodes, so it sets no size limit; bound request sizes where
+  documents are accepted instead.
 - **Keep test vectors forever.** Every supported profile needs fixed positive
   and negative vectors so future library upgrades cannot silently change IDs.
 
