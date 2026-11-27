@@ -226,6 +226,71 @@ evidence_items:
 
 (Illustrative ids; real ones are minted.)
 
+### What a claim's direction rests on
+
+A Claim's `direction` says which way the evidence points; its
+`evidence_basis` says how close that evidence comes to the proposition's own
+contexts. They are separate because they fail separately: a link shown in
+mouse colon and a link contradicted in human colon differ in basis, not only
+in sign.
+
+| `evidence_basis` | The direction rests on |
+|---|---|
+| `IN_CONTEXT` | Evidence obtained in the proposition's own contexts. |
+| `BY_ANALOGY` | Direct evidence from other contexts only: another organism, a cell line, another cell type or tissue. |
+| `INDIRECT` | Evidence about neighbouring propositions (an upstream or downstream link, an association). |
+| `UNTESTED` | Nothing. Absence of evidence, recorded as a finding; no direction, or `UNKNOWN`. |
+
+With mixed evidence, the basis is the strongest among the items that carry
+the claim's direction. The evidence items' `contexts` let a reader check it.
+
+## Genetic variants
+
+`genetics.yaml` puts variants into the same causal terms. A
+`GenotypeVariable` is allele dosage at a dbSNP variant: the number of copies
+of its `effect_allele`. A link from it says what adding a copy does, so its
+`effect_direction` and any estimate follow the effect allele.
+
+What a study reports and what an account concludes stay separate:
+
+- a **`GeneticAssociation`** (relation kind `ASSOCIATION`) is the GWAS or
+  QTL result: the genotype co-varies with an `associated_variable` (a
+  disease, or a gene's expression in a tissue) in its contexts. A Claim on it
+  carries a **`GeneticEffectEstimate`**: the estimate on its `effect_scale`
+  (beta as `DIFFERENCE`, log odds ratio, normalized effect size as
+  `STANDARDIZED_DIFFERENCE`), with standard error, p-value and sample size;
+- a **CausalLink from the GenotypeVariable** (genotype → expression) is the
+  causal reading, written only when the account needs that step. Its
+  evidence cites the association Claims, with design `NATURAL_EXPERIMENT`,
+  and says what licenses the causal reading (fine-mapping, colocalization,
+  allele-specific expression, editing). An associated variant may only tag
+  the causal one.
+
+## Rival hypotheses and discriminating experiments
+
+Competing mechanisms are separate Propositions, each with its own model.
+An account frames each as a Hypothesis; a rival names the one it competes
+with in `alternative_to`. Claims then assess each one's links.
+
+A `DiscriminatingExperiment` (scm.yaml), listed in an account's
+`proposed_experiments`, says how to tell rivals apart in interventionist
+terms:
+
+- `estimands`: CausalEstimands, each the effect of setting a treatment
+  (`interventions`: value against reference) on an outcome;
+- `instruments`: variables that shift a treatment the investigator cannot
+  set, such as a GenotypeVariable in Mendelian randomization;
+- `predictions`: for each tested proposition, holding or failing
+  (`proposition_holds`), what each estimand will show: `INCREASES`,
+  `DECREASES`, `NO_CHANGE` or `CHANGES`;
+- `contexts` (the experimental system), `tests` and `addresses_gaps`.
+
+The check requires at least one estimand on which two predictions differ;
+otherwise the experiment does not discriminate.
+`examples/example_genetic_discriminating_account.yaml` shows an eQTL, a
+causal link read from it, two rival hypotheses, an untested link recorded as
+a gap, and a knockout that discriminates the hypotheses.
+
 ## What is not causal
 
 PROV relations (`prov:wasGeneratedBy`, `prov:wasDerivedFrom`, `prov:used`)
@@ -241,7 +306,12 @@ graph's `variables`, that a link appears once per graph, and that cycles
 match `has_feedback`. For an SCM it also checks one specification and one
 equation per variable, equation inputs against the graph, distributions only
 on uncaused variables, and acyclicity; for an estimand, that its variables
-belong to its model and that a direct or indirect effect names a mediator. JSON Schema rejects a CausalLink whose `relation_kind`
+belong to its model and that a direct or indirect effect names a mediator.
+For a DiscriminatingExperiment it checks that predictions use its own
+estimands and tested propositions, that two of them differ on one estimand,
+and that no instrument is an estimand's treatment or outcome. A
+GeneticEffectEstimate must assess a proposition about a GenotypeVariable,
+and an `UNTESTED` claim takes no direction. JSON Schema rejects a CausalLink whose `relation_kind`
 is not `CAUSATION`, and `via_mechanism` outside a MechanisticModel.
 
 ## Worked example: Dent disease

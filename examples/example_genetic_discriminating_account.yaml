@@ -1,0 +1,348 @@
+# Illustrative account, invented to exercise the schema: no data, analysis or
+# biology is asserted, and the variant, estimate and genes are placeholders.
+# A risk allele lowers a gene's expression in colon (a GeneticAssociation from
+# an eQTL study, read causally by a CausalLink from the GenotypeVariable). Two
+# rival hypotheses say how lower expression would raise disease risk: through
+# epithelial barrier integrity, or through immune activation. The barrier step
+# is untested (an UNTESTED claim, an identified gap), and a knockout
+# experiment in colon epithelial cells discriminates the two hypotheses.
+_illustrative:
+- dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+- dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+- dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+- dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+- dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+- dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+- dapper:CausalLink.ptvaPBwVDyYsiPW1yqGyBUGTqowjCUaS
+- dapper:CausalLink.TcWdK2mN2FEevrLgupLiefQpnWkkCEMp
+- dapper:CausalLink.luq6nxqCjNz_s44DCns26OjpBen1J4qd
+- dapper:CausalLink.5lJ1F_kMw9vlSc6e-oAQrA73ipgazyHB
+- dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
+- dapper:MechanisticModel.PVPJzFj7WiVWXyCMEceFXeVcjZX2Zkju
+- dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+- dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+- dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
+- dapper:GeneticEffectEstimate.qM-HRGcuS7cQoLrsKFcmxvQXs2JTt0EI
+- dapper:Claim.5wyJ1cBP11ZFuGzK0b-SPlhmRvYCxWPQ
+- dapper:EvidenceItem.ktar0RdWA5DR_bAqKIKV_u08EZX6Yn70
+- dapper:Claim.F7ZVqnuhlacogacF576MvlFhycPbRMB7
+- dapper:Claim.Jdmb1vdNvEF9ze0Ux4CV9B0gV3KCB0bH
+- dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk
+- dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
+- dapper:CausalEstimand.PXdGmIImm2ftkaEwZ_OKVZHuxqNtaaiM
+- dapper:DiscriminatingExperiment.DftohKoaKHZOPKwDkRNXvz5WYvfKfwx5
+- dapper:Question.bTqGQoPFwhaKMOipPVttRH2OOI1QkKOk
+- dapper:Hypothesis.msWtRRUgkDuQf4L45MgzxX5XD3TW8-Aw
+- dapper:Hypothesis.Zj6LehilWmPywS_HTAOPPgvVqLm5isI7
+- dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+- dapper:ScientificAccount.hgYmljF8qAdp-E_FCprdbeFU-UkKeSMO
+genotype_variables:
+- id: dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  name: rs-risk genotype
+  description: Number of copies of the T allele at the illustrative variant.
+  entity: dbSNP:rs1000001
+  aspect: GENOTYPE
+  effect_allele: T
+  other_allele: C
+causal_variables:
+- id: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  name: Gene G expression in colon
+  description: Expression of gene G in colonic epithelium.
+  aspect: EXPRESSION
+- id: dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+  name: Barrier integrity
+  description: Integrity of the colonic epithelial barrier.
+  aspect: STRUCTURE
+- id: dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+  name: Immune activation
+  description: Activation of mucosal immune cells in the colon.
+  aspect: ACTIVITY
+- id: dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+  name: IBD
+  description: Presence of inflammatory bowel disease.
+  entity: MONDO:0005265
+  aspect: PRESENCE
+causal_links:
+- id: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+  name: genotype -> G expression
+  statement: Each copy of the T allele lowers expression of gene G in colonic epithelium.
+  relation_kind: CAUSATION
+  causal_relation: REGULATES
+  cause: dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  effect: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  effect_direction: DECREASES
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001155
+- id: dapper:CausalLink.ptvaPBwVDyYsiPW1yqGyBUGTqowjCUaS
+  name: G expression -> barrier
+  statement: Expression of gene G in colonic epithelium increases epithelial barrier integrity.
+  relation_kind: CAUSATION
+  causal_relation: CONTRIBUTES_TO
+  cause: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  effect: dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+  effect_direction: INCREASES
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001155
+- id: dapper:CausalLink.TcWdK2mN2FEevrLgupLiefQpnWkkCEMp
+  name: barrier -> IBD
+  statement: Epithelial barrier integrity lowers the risk of inflammatory bowel disease.
+  relation_kind: CAUSATION
+  causal_relation: CONTRIBUTES_TO
+  cause: dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+  effect: dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+  effect_direction: DECREASES
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001155
+- id: dapper:CausalLink.luq6nxqCjNz_s44DCns26OjpBen1J4qd
+  name: G expression -> immune activation
+  statement: Expression of gene G in colon lowers mucosal immune activation.
+  relation_kind: CAUSATION
+  causal_relation: REGULATES
+  cause: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  effect: dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+  effect_direction: DECREASES
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001155
+- id: dapper:CausalLink.5lJ1F_kMw9vlSc6e-oAQrA73ipgazyHB
+  name: immune activation -> IBD
+  statement: Mucosal immune activation raises the risk of inflammatory bowel disease.
+  relation_kind: CAUSATION
+  causal_relation: CONTRIBUTES_TO
+  cause: dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+  effect: dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+  effect_direction: INCREASES
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001155
+mechanistic_models:
+- id: dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
+  name: Barrier route
+  description: The risk allele lowers G, weakening the epithelial barrier and raising IBD risk.
+  variables:
+  - dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  - dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  - dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+  - dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+  links:
+  - link: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+    link_type: DIRECT
+  - link: dapper:CausalLink.ptvaPBwVDyYsiPW1yqGyBUGTqowjCUaS
+    link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+  - link: dapper:CausalLink.TcWdK2mN2FEevrLgupLiefQpnWkkCEMp
+    link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+- id: dapper:MechanisticModel.PVPJzFj7WiVWXyCMEceFXeVcjZX2Zkju
+  name: Immune route
+  description: The risk allele lowers G, releasing mucosal immune activation and raising IBD risk.
+  variables:
+  - dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  - dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  - dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+  - dapper:CausalVariable.8GSFDhpzfPeu8IAB_A9PKF3iSgVuzqkM
+  links:
+  - link: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+    link_type: DIRECT
+  - link: dapper:CausalLink.luq6nxqCjNz_s44DCns26OjpBen1J4qd
+    link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+  - link: dapper:CausalLink.5lJ1F_kMw9vlSc6e-oAQrA73ipgazyHB
+    link_type: INDIRECT_UNKNOWN_INTERMEDIATES
+propositions:
+- id: dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+  name: Barrier hypothesis
+  statement: The T allele raises IBD risk by lowering colonic G expression and so weakening the epithelial barrier.
+  relation_kind: CAUSATION
+  proposition_kind: BIOLOGICAL_INTERPRETATION
+  explanatory_model: dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
+- id: dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+  name: Immune hypothesis
+  statement: The T allele raises IBD risk by lowering colonic G expression and so releasing mucosal immune activation.
+  relation_kind: CAUSATION
+  proposition_kind: BIOLOGICAL_INTERPRETATION
+  explanatory_model: dapper:MechanisticModel.PVPJzFj7WiVWXyCMEceFXeVcjZX2Zkju
+genetic_associations:
+- id: dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
+  name: eQTL of G in colon
+  statement: T-allele dosage at the illustrative variant is associated with lower G expression in transverse colon.
+  relation_kind: ASSOCIATION
+  proposition_kind: RESULT
+  genotype: dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  associated_variable: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  association_kind: EQTL
+  contexts:
+  - context_type: TissueContext
+    tissue: UBERON:0001157
+genetic_effect_estimates:
+- id: dapper:GeneticEffectEstimate.qM-HRGcuS7cQoLrsKFcmxvQXs2JTt0EI
+  score_kind: EFFECT_ESTIMATE
+  value: -0.42
+  metric: normalized_effect_size
+  interpretation: Illustrative eQTL slope per T allele on inverse-normal-transformed expression.
+  effect_scale: STANDARDIZED_DIFFERENCE
+  standard_error: 0.05
+  p_value: 1.0e-12
+  sample_size: 300
+claims:
+- id: dapper:Claim.5wyJ1cBP11ZFuGzK0b-SPlhmRvYCxWPQ
+  name: eQTL claim
+  proposition: dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
+  direction: SUPPORTS
+  evidence_basis: IN_CONTEXT
+  has_score:
+  - dapper:GeneticEffectEstimate.qM-HRGcuS7cQoLrsKFcmxvQXs2JTt0EI
+  was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  was_attributed_to:
+  - urn:example:research-team
+- id: dapper:Claim.F7ZVqnuhlacogacF576MvlFhycPbRMB7
+  name: Genotype lowers G expression
+  proposition: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+  direction: SUPPORTS
+  evidence_basis: IN_CONTEXT
+  has_evidence:
+  - dapper:EvidenceItem.ktar0RdWA5DR_bAqKIKV_u08EZX6Yn70
+  was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  was_attributed_to:
+  - urn:example:research-team
+- id: dapper:Claim.Jdmb1vdNvEF9ze0Ux4CV9B0gV3KCB0bH
+  name: G and the barrier, untested
+  proposition: dapper:CausalLink.ptvaPBwVDyYsiPW1yqGyBUGTqowjCUaS
+  evidence_basis: UNTESTED
+  statement: No evidence was found on whether G expression affects barrier integrity in colon.
+  was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  was_attributed_to:
+  - urn:example:research-team
+evidence_items:
+- id: dapper:EvidenceItem.ktar0RdWA5DR_bAqKIKV_u08EZX6Yn70
+  target_proposition: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
+  source_claims:
+  - dapper:Claim.5wyJ1cBP11ZFuGzK0b-SPlhmRvYCxWPQ
+  direction: SUPPORTS
+  evidence_design: NATURAL_EXPERIMENT
+  context: The eQTL in transverse colon; genotype is fixed at conception, so it is not caused by expression.
+  explanation: The association, with the variant fine-mapped in this illustration, is read as a cis effect of the T allele on G.
+  contexts:
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+  - context_type: TissueContext
+    tissue: UBERON:0001157
+knowledge_gaps:
+- id: dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk
+  name: Does G affect the barrier?
+  text: Does G expression affect epithelial barrier integrity in human colon?
+  gap_description: No experiment has changed G expression in colonic epithelium and measured barrier integrity.
+  gap_kind: KNOWLEDGE_GAP
+  concerns:
+  - dapper:CausalLink.ptvaPBwVDyYsiPW1yqGyBUGTqowjCUaS
+causal_estimands:
+- id: dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
+  name: Effect of G knockout on barrier integrity
+  statement: In human colon organoids, the average effect of knocking out G rather than not on transepithelial electrical resistance.
+  relation_kind: CAUSATION
+  explanatory_model: dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
+  estimand_kind: AVERAGE_EFFECT
+  treatment: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  outcome: dapper:CausalVariable.DeRYqKulKd8ht4B4TcXf91ppEARPYMHs
+  interventions:
+  - variable: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+    value: knocked out
+    reference_value: wild type
+  effect_scale: DIFFERENCE
+- id: dapper:CausalEstimand.PXdGmIImm2ftkaEwZ_OKVZHuxqNtaaiM
+  name: Effect of G knockout on immune activation
+  statement: In human colon organoid and immune-cell co-cultures, the average effect of knocking out G rather than not on immune-cell activation.
+  relation_kind: CAUSATION
+  explanatory_model: dapper:MechanisticModel.PVPJzFj7WiVWXyCMEceFXeVcjZX2Zkju
+  estimand_kind: AVERAGE_EFFECT
+  treatment: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+  outcome: dapper:CausalVariable.q39BFee3JiPJkUgJ2kUeE3L0Bop0ZJg8
+  interventions:
+  - variable: dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
+    value: knocked out
+    reference_value: wild type
+  effect_scale: DIFFERENCE
+discriminating_experiments:
+- id: dapper:DiscriminatingExperiment.DftohKoaKHZOPKwDkRNXvz5WYvfKfwx5
+  name: G knockout in colon organoids
+  description: Knock out G in human colon organoids co-cultured with immune cells; read out transepithelial electrical resistance and immune-cell activation against wild-type controls.
+  tests:
+  - dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+  - dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+  addresses_gaps:
+  - dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk
+  evidence_design: EXPERIMENTAL_INTERVENTION
+  estimands:
+  - dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
+  - dapper:CausalEstimand.PXdGmIImm2ftkaEwZ_OKVZHuxqNtaaiM
+  predictions:
+  - estimand: dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
+    proposition: dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+    predicted_change: DECREASES
+    rationale: Losing G weakens the barrier.
+  - estimand: dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
+    proposition: dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+    predicted_change: NO_CHANGE
+  - estimand: dapper:CausalEstimand.PXdGmIImm2ftkaEwZ_OKVZHuxqNtaaiM
+    proposition: dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+    predicted_change: NO_CHANGE
+  - estimand: dapper:CausalEstimand.PXdGmIImm2ftkaEwZ_OKVZHuxqNtaaiM
+    proposition: dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+    predicted_change: INCREASES
+    rationale: Losing G releases immune activation.
+  contexts:
+  - context_type: CellTypeContext
+    cell_type: CL:0011108
+  - context_type: OrganismContext
+    organism: NCBITaxon:9606
+questions:
+- id: dapper:Question.bTqGQoPFwhaKMOipPVttRH2OOI1QkKOk
+  name: How does the risk allele act?
+  text: Through which mechanism does the T allele raise IBD risk?
+hypotheses:
+- id: dapper:Hypothesis.msWtRRUgkDuQf4L45MgzxX5XD3TW8-Aw
+  name: Barrier hypothesis
+  proposition: dapper:Proposition.tZ49iw78UDf0aNmmJSklI87u5MRKxRtA
+- id: dapper:Hypothesis.Zj6LehilWmPywS_HTAOPPgvVqLm5isI7
+  name: Immune hypothesis
+  proposition: dapper:Proposition.GunKRw2e3pV4ztN8i8xCdSrBSHq8OkNM
+  alternative_to:
+  - dapper:Hypothesis.msWtRRUgkDuQf4L45MgzxX5XD3TW8-Aw
+activities:
+- id: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  name: Illustrative account writing
+  description: Writing an illustrative account.
+used_edges:
+- subject: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  predicate: prov:used
+  object: dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
+scientific_accounts:
+- id: dapper:ScientificAccount.hgYmljF8qAdp-E_FCprdbeFU-UkKeSMO
+  name: Illustrative risk-allele account
+  framing:
+  - dapper:Question.bTqGQoPFwhaKMOipPVttRH2OOI1QkKOk
+  - dapper:Hypothesis.msWtRRUgkDuQf4L45MgzxX5XD3TW8-Aw
+  - dapper:Hypothesis.Zj6LehilWmPywS_HTAOPPgvVqLm5isI7
+  context: An invented eQTL and two rival mechanisms, to show genetics, evidence basis, alternatives and a discriminating experiment.
+  explanatory_model: dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
+  component_claims:
+  - dapper:Claim.5wyJ1cBP11ZFuGzK0b-SPlhmRvYCxWPQ
+  - dapper:Claim.F7ZVqnuhlacogacF576MvlFhycPbRMB7
+  - dapper:Claim.Jdmb1vdNvEF9ze0Ux4CV9B0gV3KCB0bH
+  identified_gaps:
+  - dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk
+  proposed_experiments:
+  - dapper:DiscriminatingExperiment.DftohKoaKHZOPKwDkRNXvz5WYvfKfwx5
+  was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
+  was_attributed_to:
+  - urn:example:research-team

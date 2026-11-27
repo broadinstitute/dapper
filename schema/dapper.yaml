@@ -31,7 +31,13 @@ description: >-
       and `Mechanism`.
 
     scm.yaml. `StructuralCausalModel` (a `CausalGraph` with variable
-      domains, distributions and structural equations) and `CausalEstimand`.
+      domains, distributions and structural equations), `CausalEstimand`,
+      and `DiscriminatingExperiment`, a proposed experiment stated with
+      estimands, instruments and contrasting predictions.
+
+    genetics.yaml. `GenotypeVariable` (allele dosage at a dbSNP variant),
+      `GeneticAssociation` (what a GWAS or QTL study reports) and
+      `GeneticEffectEstimate` (its size per effect-allele copy).
 
     nanopub.yaml. The nanopublication quad, signature and lifecycle.
 
@@ -42,8 +48,8 @@ description: >-
 
     cfde.yaml. `C2M2File`, a File with CFDE C2M2 identifiers.
 
-    biology.yaml. The biological kinds of the core `Context`:
-      `AncestryContext` and `TraitContext`.
+    biology.yaml. The biological kinds of the core `Context`: ancestry,
+      trait, tissue, cell type, cell line and organism.
 
   The schema is shaped as a Dock knowledge graph: NIH resources, agents,
   awards, publications, scientific accounts, and nanopublications are Node entities;
@@ -73,6 +79,7 @@ imports:
   - cell_programs
   - mechanisms
   - scm
+  - genetics
   - nanopub
   - dismech
   - replay

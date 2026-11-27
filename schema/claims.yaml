@@ -153,6 +153,11 @@ enums:
         description: Whether a state, phenotype or disease is present.
       SEVERITY:
         description: Degree of a phenotype or disease when present.
+      GENOTYPE:
+        description: >-
+          Allele dosage at a genetic variant: the number of copies (0, 1 or
+          2) of a stated effect allele. Raising it means adding a copy of
+          that allele (genetics.yaml: GenotypeVariable).
   CausalRelationEnum:
     description: >-
       Which kind of causal dependence a CausalLink asserts, independent of
@@ -225,6 +230,35 @@ enums:
           operates, rather than evidence of the dependence itself.
       COMPUTATIONAL:
         description: Output of a computational model or prediction method.
+  EvidenceBasisEnum:
+    description: >-
+      What a Claim's direction rests on, relative to the proposition's own
+      contexts: evidence obtained there, evidence from elsewhere, evidence
+      about neighbouring propositions only, or none. Independent of
+      direction: a link shown in another organism and a link contradicted
+      in the target tissue differ in basis, not only in sign. When evidence
+      is mixed, the basis is the strongest among the items that carry the
+      claim's direction (IN_CONTEXT, then BY_ANALOGY, then INDIRECT).
+    permissible_values:
+      IN_CONTEXT:
+        description: >-
+          Evidence obtained in the proposition's own contexts (its organism,
+          tissue, cell type) bears directly on the proposition.
+      BY_ANALOGY:
+        description: >-
+          Evidence bears directly on the proposition but was obtained only
+          in other contexts: another organism, a cell line, another cell
+          type or tissue. The proposition is untested where it is claimed.
+      INDIRECT:
+        description: >-
+          Evidence bears only on neighbouring propositions (an upstream or
+          downstream link, an association, a measurement), from which this
+          one is inferred.
+      UNTESTED:
+        description: >-
+          No evidence bearing on the proposition was found. Absence of
+          evidence, recorded as a finding; the direction is omitted or
+          UNKNOWN, never SUPPORTS, DISPUTES, MIXED or NEUTRAL.
   ClaimStatusEnum:
     description: An assessor's review status; not a change to the proposition or a hypothesis type.
     permissible_values:
@@ -233,7 +267,10 @@ enums:
       canonical:
         description: Regarded by the assessor as the accepted explanation in the stated scope.
       alternative:
-        description: Regarded by the assessor as a competing explanation.
+        description: >-
+          Regarded by the assessor as a competing explanation. Which
+          hypothesis it competes with is structure, recorded on the
+          Hypothesis framing (`alternative_to`).
       contested:
         description: Under active dispute.
       refuted:
@@ -663,6 +700,16 @@ classes:
           Assessment direction, when reported. Omit for a simple assertion or
           when the method supplies no directional judgment; do not infer it
           by thresholding a score without a specified interpretation rule.
+      evidence_basis:
+        is_a: literal
+        mixins: [hashable]
+        range: EvidenceBasisEnum
+        slot_uri: dapper:evidence_basis
+        description: >-
+          What the direction rests on relative to the proposition's
+          contexts: in-context evidence, analogy, indirect evidence, or none
+          (UNTESTED). Stated by the assessor; the evidence items' contexts
+          let a reader check it. Omission means not stated.
       status:
         is_a: literal
         mixins: [hashable]
@@ -806,6 +853,19 @@ classes:
         required: true
         pattern: '\S'
         description: The Proposition proposed for investigation.
+      alternative_to:
+        is_a: relationship
+        mixins: [hashable]
+        range: Hypothesis
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:alternative_to
+        description: >-
+          Hypotheses this one competes with as an explanation of the same
+          thing: if one is the whole explanation, the other is not. Each
+          proposition carries its own explanatory model, and Claims assess
+          each separately. Name the relation on the later hypothesis only;
+          identity cannot hold a cycle.
 
   ScientificAccount:
     is_a: HashableNode
@@ -857,6 +917,17 @@ classes:
         range: ExplanatoryModel
         inlined: false
         description: Optional explanatory model being considered; distinct from the analytical method.
+      proposed_experiments:
+        is_a: relationship
+        mixins: [hashable]
+        range: ProposedExperiment
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:proposed_experiments
+        description: >-
+          Experiments this account proposes to test its propositions, such as
+          one that would discriminate its hypothesis from an alternative or
+          close an identified gap.
       identified_gaps:
         is_a: relationship
         mixins: [hashable]
@@ -893,6 +964,55 @@ classes:
         is_a: literal
         mixins: [hashable]
         description: Optional editorial synthesis or limitations; does not create an additional claim.
+
+  ProposedExperiment:
+    is_a: HashableNode
+    abstract: true
+    mixins:
+      - ProvenancedResource
+      - Contextual
+    description: >-
+      An experiment that would bear on propositions, put forward rather than
+      performed: what it tests, which gaps it would close, and the system it
+      would run in (its `contexts`: organism, cell line, tissue). Content,
+      not an assessment. Abstract, like ExplanatoryModel, so the reasoning
+      layer can refer to it while scm.yaml defines the concrete kind
+      (DiscriminatingExperiment, stated with interventions and causal
+      estimands).
+    attributes:
+      description:
+        is_a: literal
+        mixins: [hashable]
+        required: true
+        pattern: '\S'
+        description: The experiment in words; the protocol, controls and readouts.
+      tests:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        multivalued: true
+        required: true
+        minimum_cardinality: 1
+        slot_uri: dapper:tests
+        description: Propositions whose truth the experiment would bear on, such as a hypothesis and its alternative.
+      addresses_gaps:
+        is_a: relationship
+        mixins: [hashable]
+        range: KnowledgeGap
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:addresses_gaps
+        description: KnowledgeGaps the experiment would close.
+      evidence_design:
+        is_a: literal
+        mixins: [hashable]
+        range: EvidenceDesignEnum
+        slot_uri: dapper:evidence_design
+        description: >-
+          The design the experiment's evidence would have, usually
+          EXPERIMENTAL_INTERVENTION, or NATURAL_EXPERIMENT for one that uses
+          an instrument such as genotype.
 
   CitationOccurrence:
     description: >-

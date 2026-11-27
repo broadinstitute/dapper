@@ -102,6 +102,18 @@ INLINE_LINKS = {
     # An estimand runs treatment -> estimand -> outcome.
     "treatment": ("dapper:treatment", "in"),
     "outcome": ("dapper:outcome", "out"),
+    # A genetic association runs genotype -> association -> associated variable.
+    "genotype": ("dapper:genotype", "in"),
+    "associated_variable": ("dapper:associated_variable", "out"),
+    # A rival hypothesis points at the one it competes with.
+    "alternative_to": ("dapper:alternative_to", "out"),
+    # An account proposes experiments; an experiment tests propositions,
+    # measures estimands, may use instruments, and would close gaps.
+    "proposed_experiments": ("dapper:proposed_experiments", "out"),
+    "tests": ("dapper:tests", "out"),
+    "estimands": ("dapper:estimands", "out"),
+    "instruments": ("dapper:instruments", "in"),
+    "addresses_gaps": ("dapper:addresses_gaps", "out"),
     "has_evidence": ("dapper:has_evidence", "in"),
     "source_claims": ("dapper:source_claims", "in"),
     "target_proposition": ("dapper:target_proposition", "in"),

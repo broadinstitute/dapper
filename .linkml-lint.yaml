@@ -105,5 +105,20 @@ rules:
       - RATIO
       - ODDS_RATIO
       - HAZARD_RATIO
+      - LOG_ODDS_RATIO
+      - STANDARDIZED_DIFFERENCE
+      - NO_CHANGE
+      - IN_CONTEXT
+      - BY_ANALOGY
+      - INDIRECT
+      - UNTESTED
+      - GENOTYPE
+      - GWAS
+      - EQTL
+      - PQTL
+      - SQTL
+      - CAQTL
+      - MQTL
+      - OTHER_QTL
   canonical_prefixes:
     level: warning

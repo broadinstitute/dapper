@@ -147,6 +147,62 @@ def check_causal_estimand(nid: str, estimand: dict,
     return problems
 
 
+def check_discriminating_experiment(nid: str, experiment: dict,
+                                    nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """Predictions stay within the experiment's estimands and tested
+    propositions, and at least two of them on one estimand differ."""
+    problems = []
+    estimands, tests = set(_refs(experiment, "estimands")), set(_refs(experiment, "tests"))
+    by_estimand: dict[str, set[tuple]] = {}
+    for i, prediction in enumerate(experiment.get("predictions") or []):
+        if not isinstance(prediction, dict):
+            continue
+        where = f"{nid}.predictions[{i}]"
+        estimand, proposition = prediction.get("estimand"), prediction.get("proposition")
+        if estimand not in estimands:
+            problems.append((where, f"{estimand} is not one of the experiment's estimands"))
+        if proposition not in tests:
+            problems.append((where, f"{proposition} is not one of the propositions the experiment tests"))
+        if not _accepts("CausalEstimand", nodes.get(estimand, (None, {}))[0]):
+            problems.append((where, f"{estimand} must resolve to CausalEstimand"))
+        holds = prediction.get("proposition_holds", True) is not False
+        by_estimand.setdefault(estimand, set()).add((proposition, holds, prediction.get("predicted_change")))
+    if not any(len({(p, h) for p, h, _ in group}) > 1 and len({c for _, _, c in group}) > 1
+               for group in by_estimand.values()):
+        problems.append((nid, "no estimand has differing predictions from two propositions (or one "
+                         "proposition holding and failing), so the experiment does not discriminate"))
+    treated = set()
+    for ref in estimands:
+        estimand = nodes.get(ref, (None, {}))[1]
+        treated |= {estimand.get("treatment"), estimand.get("outcome")}
+    for var in _refs(experiment, "instruments"):
+        if var in treated:
+            problems.append((f"{nid}.instruments", f"{var} is a treatment or outcome of an estimand, "
+                             "not an instrument for one"))
+    return problems
+
+
+GENOTYPE_PROPOSITIONS = {"GeneticAssociation": "genotype", "CausalLink": "cause"}
+
+
+def check_genetic_estimates(nid: str, claim: dict,
+                            nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """A GeneticEffectEstimate's sign follows an effect allele, so the claim's
+    proposition must be about a GenotypeVariable."""
+    estimates = [ref for ref in _refs(claim, "has_score")
+                 if nodes.get(ref, (None, {}))[0] == "GeneticEffectEstimate"]
+    if not estimates:
+        return []
+    cls, proposition = nodes.get(claim.get("proposition"), (None, {}))
+    field = next((f for c, f in GENOTYPE_PROPOSITIONS.items() if _accepts(c, cls)), None)
+    variable = nodes.get(proposition.get(field) if field else None, (None, {}))[0]
+    if variable != "GenotypeVariable":
+        return [(nid, f"GeneticEffectEstimate {ref} needs a proposition about a GenotypeVariable "
+                 "(a GeneticAssociation, or a CausalLink caused by one), whose effect allele "
+                 "gives the estimate its sign") for ref in estimates]
+    return []
+
+
 def check_causal_graph(nid: str, graph: dict,
                        nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
     """A graph's links stay inside its variable set, appear once, and form a
@@ -195,12 +251,17 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
         "CausalEstimand": {"explanatory_model": "ExplanatoryModel", "treatment": "CausalVariable",
                            "outcome": "CausalVariable", "mediator": "CausalVariable"},
         "MechanisticModel": {"variables": "CausalVariable"},
+        "GeneticAssociation": {"explanatory_model": "ExplanatoryModel", "genotype": "GenotypeVariable",
+                               "associated_variable": "CausalVariable"},
+        "DiscriminatingExperiment": {"tests": "Proposition", "addresses_gaps": "KnowledgeGap",
+                                     "estimands": "CausalEstimand", "instruments": "CausalVariable"},
         "Claim": {"proposition": "Proposition", "has_score": "ClaimScore", "has_evidence": "EvidenceItem"},
         "ScientificAccount": {"framing": "Framing", "component_claims": "Claim",
                               "conclusion_claims": "Claim", "explanatory_model": "ExplanatoryModel",
-                              "identified_gaps": "KnowledgeGap"},
+                              "identified_gaps": "KnowledgeGap",
+                              "proposed_experiments": "ProposedExperiment"},
         "KnowledgeGap": {"concerns": "Proposition"},
-        "Hypothesis": {"proposition": "Proposition"},
+        "Hypothesis": {"proposition": "Proposition", "alternative_to": "Hypothesis"},
         "EvidenceItem": {"source_claims": "Claim", "target_proposition": "Proposition",
                          "explanatory_model": "ExplanatoryModel"},
         "Paragraph": {"scientific_account": "ScientificAccount"},
@@ -229,13 +290,21 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
                 target = evidence.get("target_proposition")
                 if target and target != node.get("proposition"):
                     problems.append((nid, f"evidence {ref} targets a different proposition"))
+            if node.get("evidence_basis") == "UNTESTED" and node.get("direction") not in (None, "UNKNOWN"):
+                problems.append((nid, "an UNTESTED claim has no evidence to give it a direction; "
+                                 f"omit direction or use UNKNOWN, not {node['direction']}"))
+            problems.extend(check_genetic_estimates(nid, node, nodes))
+        if cls == "Hypothesis" and nid in _refs(node, "alternative_to"):
+            problems.append((f"{nid}.alternative_to", "a hypothesis is not an alternative to itself"))
+        if cls == "DiscriminatingExperiment":
+            problems.extend(check_discriminating_experiment(nid, node, nodes))
         if cls == "Paragraph":
             problems.extend(check_citation_occurrences(nid, node, nodes))
         if _accepts("CausalGraph", cls):
             problems.extend(check_causal_graph(nid, node, nodes))
         if _accepts("StructuralCausalModel", cls):
             problems.extend(check_structural_causal_model(nid, node, nodes))
-        if cls in {"CausalLink", "CausalEstimand"}:
+        if cls in {"CausalLink", "CausalEstimand", "GeneticAssociation"}:
             for field in ("relation", "subject_entity", "object_entity"):
                 if field in node:
                     problems.append((f"{nid}.{field}", f"a {cls} states its structure with its own "
