@@ -774,6 +774,17 @@ classes:
         required: true
         pattern: '\S'
         description: The specific missing knowledge the gap identifies.
+      concerns:
+        is_a: relationship
+        mixins: [hashable]
+        range: Proposition
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:concerns
+        description: >-
+          Propositions whose truth is the missing knowledge, e.g. the one
+          untested CausalLink a mechanism depends on. The gap does not
+          assess them.
 
   Hypothesis:
     is_a: Framing
@@ -846,6 +857,18 @@ classes:
         range: ExplanatoryModel
         inlined: false
         description: Optional explanatory model being considered; distinct from the analytical method.
+      identified_gaps:
+        is_a: relationship
+        mixins: [hashable]
+        range: KnowledgeGap
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:identified_gaps
+        description: >-
+          KnowledgeGaps this account identifies as a result, such as the
+          critical untested link of its model. Unlike `framing`, which says
+          what the account set out to address, these are findings; a later
+          account can take one as its framing.
       component_claims:
         is_a: relationship
         mixins: [hashable]
@@ -958,8 +981,12 @@ classes:
     is_a: HashableNode
     mixins:
       - ProvenancedResource
+      - Contextual
     description: >-
       Evidence used in an attributed assessment of a target proposition.
+      Its `contexts` say where the evidence was obtained (organism, cell
+      line, cell type, tissue); when they differ from the target
+      proposition's contexts, the evidence bears on it by analogy.
       Can retain a publication passage, use source Claims, or ground directly
       in result-file values via value_locators, with a direction, rationale,
       and assumptions. At least one grounding (source_claims, value_locators,

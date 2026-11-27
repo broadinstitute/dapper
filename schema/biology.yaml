@@ -5,11 +5,15 @@ description: >-
   The biological kinds of the core `Context`: the setting a Dataset
   represents or an Activity targets. `AncestryContext` records a
   source-reported ancestry grouping (`AncestryEnum`, mapped to HANCESTRO) and
-  `TraitContext` the trait measured or analysed, as a catalog CURIE. A record
-  lists its contexts in `contexts`, e.g.
-  `[{context_type: AncestryContext, ancestry: AA}, {context_type:
-  TraitContext, trait: KPN.TRAIT:0000096}]`. New kinds (tissue, cell type,
-  disease, organism) belong here.
+  `TraitContext` the trait measured or analysed, as a catalog CURIE.
+  `TissueContext` (UBERON), `CellTypeContext` (CL), `CellLineContext`
+  (Cellosaurus, CLO or EFO) and `OrganismContext` (NCBITaxon) say where a
+  proposition is claimed to hold or where evidence was obtained. Each names
+  one ontology term rather than an enum value, so the ontology's hierarchy
+  stays usable (a colonic epithelial cell is an epithelial cell); look terms
+  up in an ontology service rather than recalling identifiers. A record lists
+  its contexts in `contexts`, e.g. `[{context_type: AncestryContext,
+  ancestry: AA}, {context_type: TraitContext, trait: KPN.TRAIT:0000096}]`.
 license: https://opensource.org/license/mit
 version: 0.3.0-a1
 
@@ -26,6 +30,11 @@ prefixes:
   schema: http://schema.org/
   HANCESTRO: http://purl.obolibrary.org/obo/HANCESTRO_
   KPN.TRAIT: https://broadinstitute.github.io/kpn-data-models/kpn.trait/
+  EFO: http://identifiers.org/efo/
+  UBERON: http://purl.obolibrary.org/obo/UBERON_
+  NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
+  CLO: http://purl.obolibrary.org/obo/CLO_
+  cellosaurus: https://www.cellosaurus.org/CVCL_
 
 imports:
   - linkml:types
@@ -108,12 +117,72 @@ slots:
       - schema:about
     id_prefixes:
       - KPN.TRAIT
+      - MONDO
+      - EFO
     pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
     description: >-
-      Identifier of the trait measured by a Dataset or targeted by an Activity.
-      Prefer a stable catalog CURIE, such as KPN.TRAIT:0000096 for atrial
-      fibrillation, over a source abbreviation such as AF. External trait
-      definitions remain in their catalog; no local trait node is required.
+      Identifier of the trait or disease measured by a Dataset, targeted by an
+      Activity, or in which a proposition is claimed to hold. Prefer a stable
+      catalog CURIE: KPN.TRAIT:0000096 for atrial fibrillation as the KPN
+      catalog names it, or a MONDO disease or EFO trait term, over a source
+      abbreviation such as AF. External trait definitions remain in their
+      catalog; no local trait node is required.
+
+  tissue:
+    is_a: relationship
+    mixins: [hashable]
+    range: uriorcurie
+    slot_uri: dapper:tissue
+    broad_mappings:
+      - schema:about
+    id_prefixes:
+      - UBERON
+    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
+    description: >-
+      UBERON term for the tissue or anatomical structure, e.g. UBERON:0001155
+      for colon. Use the most specific term the source supports.
+  cell_type:
+    is_a: relationship
+    mixins: [hashable]
+    range: uriorcurie
+    slot_uri: dapper:cell_type
+    broad_mappings:
+      - schema:about
+    id_prefixes:
+      - CL
+    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
+    description: >-
+      Cell Ontology term for a cell type in an organism, e.g. CL:0000066 for
+      epithelial cell. A cultured cell line is a CellLineContext instead.
+  cell_line:
+    is_a: relationship
+    mixins: [hashable]
+    range: uriorcurie
+    slot_uri: dapper:cell_line
+    broad_mappings:
+      - schema:about
+    id_prefixes:
+      - cellosaurus
+      - CLO
+      - EFO
+    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
+    description: >-
+      Identifier of a cultured cell line: a Cellosaurus accession written
+      cellosaurus:<number> (CVCL_0025 is cellosaurus:0025), or a CLO or EFO
+      cell-line term.
+  organism:
+    is_a: relationship
+    mixins: [hashable]
+    range: uriorcurie
+    slot_uri: dapper:organism
+    broad_mappings:
+      - schema:about
+    id_prefixes:
+      - NCBITaxon
+    pattern: '^[A-Za-z][A-Za-z0-9._-]*:\S+$'
+    description: >-
+      NCBI Taxonomy term for the organism, e.g. NCBITaxon:9606 (human) or
+      NCBITaxon:10090 (mouse).
 
 # ===========================================================================
 # CLASSES
@@ -139,4 +208,49 @@ classes:
       - trait
     slot_usage:
       trait:
+        required: true
+
+  TissueContext:
+    is_a: Context
+    description: >-
+      The tissue or anatomical structure a record applies to: where a
+      proposition is claimed to hold, or where evidence was obtained.
+    slots:
+      - tissue
+    slot_usage:
+      tissue:
+        required: true
+
+  CellTypeContext:
+    is_a: Context
+    description: >-
+      The cell type a record applies to, as a Cell Ontology term. Use
+      CellLineContext for a cultured line.
+    slots:
+      - cell_type
+    slot_usage:
+      cell_type:
+        required: true
+
+  CellLineContext:
+    is_a: Context
+    description: >-
+      The cultured cell line a record applies to. Evidence from a cell line
+      supports a proposition about a cell type in an organism only by analogy;
+      the two contexts make that difference explicit.
+    slots:
+      - cell_line
+    slot_usage:
+      cell_line:
+        required: true
+
+  OrganismContext:
+    is_a: Context
+    description: >-
+      The organism a record applies to. Evidence from a mouse model for a
+      proposition about humans differs in this context.
+    slots:
+      - organism
+    slot_usage:
+      organism:
         required: true

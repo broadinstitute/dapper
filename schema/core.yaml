@@ -103,6 +103,10 @@ prefixes:
   GO: http://purl.obolibrary.org/obo/GO_
   CL: http://purl.obolibrary.org/obo/CL_
   HGNC: http://identifiers.org/hgnc/
+  # HGNC.SYMBOL is declared per document (the claims repository maps it to
+  # https://identifiers.org/hgnc.symbol:), not here: the linter's canonical
+  # form is a different URI, and two expansions of one gene CURIE must not exist.
+  biolink: https://w3id.org/biolink/vocab/
   PMID: http://identifiers.org/pubmed/
   # SPAR DataCite Ontology (identifier-focused). NOT the kernel-4 XSD —
   # kernel-4 defines XML elements, not RDF properties.
@@ -385,9 +389,11 @@ slots:
     inlined_as_list: true
     slot_uri: dapper:contexts
     description: >-
-      Typed settings a Dataset represents or an Activity targets, e.g. an
-      AncestryContext and a TraitContext (biology.yaml). At most one context
-      of each kind. Contexts are part of identity, including their order, so
+      Typed settings a record applies to: what a Dataset represents or an
+      Activity targets, where a Proposition is claimed to hold, or where an
+      EvidenceItem's evidence was obtained. Kinds are defined in biology.yaml
+      (ancestry, trait, tissue, cell type, cell line, organism). At most one
+      context of each kind. Contexts are part of identity, including their order, so
       list them sorted by context_type. Omit when none applies.
   has_embedding:
     is_a: relationship
@@ -448,7 +454,8 @@ classes:
       A typed statement of the setting a record applies to, such as the
       ancestry group a dataset represents or the trait an analysis targets.
       Abstract: core says only that records can have contexts, and domain
-      modules define the kinds (biology.yaml: AncestryContext, TraitContext).
+      modules define the kinds (biology.yaml: AncestryContext, TraitContext,
+      TissueContext, CellTypeContext, CellLineContext, OrganismContext).
       A value object without its own identifier; it is part of the owning
       record's identity.
     attributes:

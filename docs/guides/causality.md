@@ -198,6 +198,34 @@ relative to the intervention a causal proposition is about:
 | `MECHANISTIC` | Evidence that a linking mechanism exists and operates. |
 | `COMPUTATIONAL` | Output of a computational model or prediction. |
 
+### Where the evidence was obtained
+
+A causal link holds in its `contexts` (organism, tissue, cell type, trait).
+An EvidenceItem has contexts too: where its evidence was obtained. When they
+match the link's, the evidence bears on the link directly; when they differ
+(a mouse knockout for a human link, Caco-2 cells for colonic epithelium), it
+bears on it by analogy, and that is visible without reading the prose:
+
+```yaml
+causal_links:
+  - id: dapper:CausalLink.fosl2-migration
+    statement: FOSL2 activity increases colonic epithelial cell migration.
+    relation_kind: CAUSATION
+    cause: dapper:CausalVariable.fosl2-activity
+    effect: dapper:CausalVariable.epithelial-migration
+    contexts:
+      - {context_type: CellTypeContext, cell_type: "CL:0011108"}   # colon epithelial cell
+      - {context_type: OrganismContext, organism: "NCBITaxon:9606"}
+evidence_items:
+  - id: dapper:EvidenceItem.caco2-scratch
+    target_proposition: dapper:CausalLink.fosl2-migration
+    evidence_design: EXPERIMENTAL_INTERVENTION
+    contexts:
+      - {context_type: CellLineContext, cell_line: "cellosaurus:0025"}   # Caco-2
+```
+
+(Illustrative ids; real ones are minted.)
+
 ## What is not causal
 
 PROV relations (`prov:wasGeneratedBy`, `prov:wasDerivedFrom`, `prov:used`)

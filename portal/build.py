@@ -91,6 +91,9 @@ INLINE_LINKS = {
     "component_claims": ("dapper:component_claims", "in"),
     "conclusion_claims": ("dapper:conclusion_claims", "in"),
     "framing": ("dapper:framing", "in"),
+    # An account finds gaps; a gap concerns the propositions it leaves open.
+    "identified_gaps": ("dapper:identified_gaps", "out"),
+    "concerns": ("dapper:concerns", "in"),
     "about_entities": ("dapper:about_entities", "in"),
     "explanatory_model": ("dapper:explanatory_model", "in"),
     # A causal link runs cause -> link -> effect.
