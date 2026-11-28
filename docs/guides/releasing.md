@@ -75,11 +75,14 @@ The step converts:
 It notes:
 - `dismech_disease_term`, which has no place on the edge;
 - a model endpoint that is in none of its steps;
-- a CausalStep in no model, which becomes a standalone link.
+- a CausalStep in no model, which becomes a standalone link;
+- a CausalStep with no `step_subject` or `step_object` (0.2 allowed either to be left out). The model's
+  `subject_entity` stands in for its first step's missing subject and its `object_entity` for its last step's
+  missing object; any other missing end becomes a CausalVariable of its own with no entity, described from the
+  step. Nothing is merged: two unnamed ends are never taken to be the same variable.
 
 It refuses:
 - DISMECH fields with no page;
-- a CausalStep missing its subject or object;
 - a model with neither steps nor endpoints;
 - an account with neither a question nor a hypothesis.
 

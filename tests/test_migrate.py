@@ -100,3 +100,30 @@ def test_a_step_from_an_unknown_release_is_refused():
     with pytest.raises(Refusal) as refused:
         migrate({}, "0.1.0")
     assert "must ship one" in refused.value.problems[0]
+
+
+def test_a_step_with_an_unnamed_end_links_an_unnamed_variable():
+    """0.2 let a step leave its subject or object unnamed. The model's own endpoints fill the first step's subject
+    and the last step's object; any other missing end is a CausalVariable with no entity, one per end."""
+    doc = {"mechanistic_models": [{"id": "urn:test:model", "description": "A chain.",
+                                   "subject_entity": "HGNC:1", "object_entity": "MONDO:0000001",
+                                   "has_causal_step": ["urn:test:s0", "urn:test:s1", "urn:test:s2"]}],
+           "causal_steps": [
+               {"id": "urn:test:s0", "step_index": 0, "description": "Gene 1 is expressed in stroma.",
+                "causal_link_type": "DIRECT"},
+               {"id": "urn:test:s1", "step_index": 1, "step_subject": "HGNC:1",
+                "description": "Gene 1 maintains a stromal program.", "causal_link_type": "DIRECT"},
+               {"id": "urn:test:s2", "step_index": 2, "description": "Losing it drives inflammation.",
+                "causal_link_type": "UNKNOWN"}]}
+    out, ids, notes = migrate(doc, "0.2.1-a1")
+    nodes = by_id(out)
+    model = nodes[ids["urn:test:model"]]
+    links = [nodes[e["link"]] for e in model["links"]]
+    first, middle, last = links
+    assert nodes[first["cause"]]["entity"] == "HGNC:1"           # the model's subject
+    assert nodes[last["effect"]]["entity"] == "MONDO:0000001"    # the model's object
+    unnamed = [nodes[v] for v in (first["effect"], middle["effect"], last["cause"])]
+    assert all("entity" not in v and "did not name" in v["description"] for v in unnamed)
+    assert len({v["id"] for v in unnamed}) == 3, "each unnamed end is its own variable"
+    assert sum("unnamed CausalVariable" in n for n in notes) == 3
+    assert any("subject_entity HGNC:1 is its cause" in n for n in notes)
