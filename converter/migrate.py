@@ -124,18 +124,15 @@ def to_0_3_0(doc: dict, dismech_pages: dict[str, str] | None = None) -> list[str
 
     links: dict[str, dict] = {}
 
-    def link(step: dict, subject_default: str | None = None, object_default: str | None = None) -> dict:
-        """The step's CausalLink. A missing subject or object takes the model's own endpoint when the step is the
-        model's first or last (`subject_default`, `object_default`), and is otherwise an unnamed variable."""
+    def link(step: dict) -> dict:
+        """The step's CausalLink. A missing subject or object is an unnamed variable: the model's own endpoints are
+        not assumed to be a step's ends, because a first step need not start from the model's subject (one that
+        begins "Mucosal inflammation lowers oxygen tension" does not start from the gene)."""
         sid = step["id"]
         if sid in links:
             return links[sid]
-        subject = step.get("step_subject") or subject_default
-        obj = step.get("step_object") or object_default
-        if not step.get("step_subject") and subject_default:
-            notes.append(f"{sid}: step_subject was not named; the model's subject_entity {subject_default} is its cause")
-        if not step.get("step_object") and object_default:
-            notes.append(f"{sid}: step_object was not named; the model's object_entity {object_default} is its effect")
+        subject = step.get("step_subject")
+        obj = step.get("step_object")
         cause = variable(subject) if subject else unnamed_variable(sid, step, "cause")
         effect = variable(obj) if obj else unnamed_variable(sid, step, "effect")
         record = {"id": f"{NEW}link-{len(links) + 1}",
@@ -166,7 +163,7 @@ def to_0_3_0(doc: dict, dismech_pages: dict[str, str] | None = None) -> list[str
             continue
         entries, ends = [], []
         for i, s in enumerate(ordered):
-            l = link(s, subject if i == 0 else None, obj if i == len(ordered) - 1 else None)
+            l = link(s)
             entry = {"link": l["id"]}
             if s.get("causal_link_type"):
                 entry["link_type"] = s["causal_link_type"]
@@ -178,9 +175,13 @@ def to_0_3_0(doc: dict, dismech_pages: dict[str, str] | None = None) -> list[str
             ends.append((l["cause"], l["effect"]))
         model["links"] = entries
         model["variables"] = list(dict.fromkeys(v for pair in ends for v in pair))
-        for end in (subject, obj):
-            if end and variable(end) not in model["variables"]:
-                notes.append(f"{mid}: endpoint {end} is in none of its steps and is not carried over")
+        # 0.3 has no model subject or object. An endpoint no step names is kept as a variable of the model, in no
+        # link, so the converted model still says what it is about without asserting a link to it.
+        for role, entity in (("subject_entity", subject), ("object_entity", obj)):
+            if entity and variable(entity) not in model["variables"]:
+                model["variables"].append(variable(entity))
+                notes.append(f"{mid}: its {role} {entity} is the end of no step; it is kept as a model variable, "
+                             "in no link")
         if has_cycle(ends):
             model["has_feedback"] = True
     for sid, s in steps.items():

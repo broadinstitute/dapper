@@ -103,13 +103,14 @@ def test_a_step_from_an_unknown_release_is_refused():
 
 
 def test_a_step_with_an_unnamed_end_links_an_unnamed_variable():
-    """0.2 let a step leave its subject or object unnamed. The model's own endpoints fill the first step's subject
-    and the last step's object; any other missing end is a CausalVariable with no entity, one per end."""
+    """0.2 let a step leave its subject or object unnamed. Every missing end, the first step's and the last step's
+    included, is a CausalVariable with no entity, one per end: a first step need not start from the model's subject.
+    A model endpoint no step names is kept as a model variable in no link."""
     doc = {"mechanistic_models": [{"id": "urn:test:model", "description": "A chain.",
                                    "subject_entity": "HGNC:1", "object_entity": "MONDO:0000001",
                                    "has_causal_step": ["urn:test:s0", "urn:test:s1", "urn:test:s2"]}],
            "causal_steps": [
-               {"id": "urn:test:s0", "step_index": 0, "description": "Gene 1 is expressed in stroma.",
+               {"id": "urn:test:s0", "step_index": 0, "description": "Inflammation lowers oxygen tension.",
                 "causal_link_type": "DIRECT"},
                {"id": "urn:test:s1", "step_index": 1, "step_subject": "HGNC:1",
                 "description": "Gene 1 maintains a stromal program.", "causal_link_type": "DIRECT"},
@@ -120,10 +121,13 @@ def test_a_step_with_an_unnamed_end_links_an_unnamed_variable():
     model = nodes[ids["urn:test:model"]]
     links = [nodes[e["link"]] for e in model["links"]]
     first, middle, last = links
-    assert nodes[first["cause"]]["entity"] == "HGNC:1"           # the model's subject
-    assert nodes[last["effect"]]["entity"] == "MONDO:0000001"    # the model's object
-    unnamed = [nodes[v] for v in (first["effect"], middle["effect"], last["cause"])]
+    assert nodes[middle["cause"]]["entity"] == "HGNC:1"
+    unnamed = [nodes[v] for v in (first["cause"], first["effect"], middle["effect"], last["cause"], last["effect"])]
     assert all("entity" not in v and "did not name" in v["description"] for v in unnamed)
-    assert len({v["id"] for v in unnamed}) == 3, "each unnamed end is its own variable"
-    assert sum("unnamed CausalVariable" in n for n in notes) == 3
-    assert any("subject_entity HGNC:1 is its cause" in n for n in notes)
+    assert len({v["id"] for v in unnamed}) == 5, "each unnamed end is its own variable"
+    assert sum("unnamed CausalVariable" in n for n in notes) == 5
+    # The object no step names stays a variable of the model, in no link; the subject is already a step's end.
+    linked = {v for l in links for v in (l["cause"], l["effect"])}
+    extra = [nodes[v] for v in model["variables"] if v not in linked]
+    assert [v["entity"] for v in extra] == ["MONDO:0000001"]
+    assert any("object_entity MONDO:0000001 is the end of no step" in n for n in notes)
