@@ -10,7 +10,8 @@ description: >-
   trait or a molecular phenotype in stated contexts (ancestry, tissue). A
   `GeneticEffectEstimate` is the ClaimScore that reports the association's
   size per copy of the effect allele, with its scale, standard error,
-  p-value and sample size.
+  p-value and sample size, and how the estimate was obtained: a genome-wide
+  or candidate-gene study, alone or as a meta-analysis of several.
 
   Association and causation stay separate. Record what a study reports as a
   GeneticAssociation with a Claim carrying the estimate. Write a CausalLink
@@ -46,10 +47,15 @@ imports:
 # ===========================================================================
 enums:
   GeneticAssociationKindEnum:
-    description: The kind of study that reports a genotype's association.
+    description: >-
+      What co-varies with the genotype: a disease or trait, or a molecular
+      phenotype (QTL). How the study searched (genome-wide or candidate
+      gene, meta-analysis or not) is on the GeneticEffectEstimate.
     permissible_values:
-      GWAS:
-        description: Genome-wide association with a trait or disease.
+      DISEASE_OR_TRAIT:
+        description: >-
+          Association with a disease or trait, from a genome-wide (GWAS) or
+          candidate-gene study.
       EQTL:
         description: Expression QTL; association with a gene's transcript level.
       PQTL:
@@ -62,6 +68,17 @@ enums:
         description: Methylation QTL.
       OTHER_QTL:
         description: Another molecular QTL; say which in the statement.
+  GeneticStudyScopeEnum:
+    description: How widely the study that produced an estimate searched the genome.
+    permissible_values:
+      GENOME_WIDE:
+        description: >-
+          Variants across the genome were tested, so the estimate survived
+          genome-wide multiple testing (a GWAS, or a genome-wide QTL scan).
+      CANDIDATE_GENE:
+        description: >-
+          Only variants in a gene or region chosen beforehand were tested;
+          the estimate carries no genome-wide multiple-testing correction.
 
 # ===========================================================================
 # CLASSES
@@ -109,7 +126,7 @@ classes:
     is_a: Proposition
     description: >-
       A genotype co-varies with a trait or molecular phenotype, in the
-      proposition's contexts (an ancestry for a GWAS, a tissue for a QTL).
+      proposition's contexts (an ancestry for a disease association, a tissue for a QTL).
       An association, not a causal claim: a Claim assessing it carries the
       study's GeneticEffectEstimate, and a CausalLink from the genotype can
       cite that Claim as evidence.
@@ -149,7 +166,7 @@ classes:
         range: GeneticAssociationKindEnum
         required: true
         slot_uri: dapper:association_kind
-        description: The kind of study (GWAS, eQTL, pQTL, ...).
+        description: What co-varies with the genotype (a disease or trait, or a QTL's molecular phenotype).
 
   GeneticEffectEstimate:
     is_a: ClaimScore
@@ -197,3 +214,38 @@ classes:
         maximum_value: 1
         slot_uri: dapper:effect_allele_frequency
         description: Frequency of the effect allele in the analysed population.
+      study_scope:
+        is_a: literal
+        mixins: [hashable]
+        range: GeneticStudyScopeEnum
+        slot_uri: dapper:study_scope
+        description: Genome-wide or candidate-gene. Omission means not stated.
+      meta_analysis:
+        is_a: literal
+        mixins: [hashable]
+        range: boolean
+        slot_uri: dapper:meta_analysis
+        description: >-
+          True when the estimate combines several studies or cohorts (state
+          how many in `number_of_studies`). Omission means not stated.
+      number_of_studies:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 1
+        slot_uri: dapper:number_of_studies
+        description: Studies or cohorts combined in a meta-analysis.
+      number_of_cases:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+        slot_uri: dapper:number_of_cases
+        description: Cases in a case-control analysis; `sample_size` is their total with controls when given.
+      number_of_controls:
+        is_a: literal
+        mixins: [hashable]
+        range: integer
+        minimum_value: 0
+        slot_uri: dapper:number_of_controls
+        description: Controls in a case-control analysis.

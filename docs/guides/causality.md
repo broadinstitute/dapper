@@ -253,12 +253,15 @@ of its `effect_allele`. A link from it says what adding a copy does, so its
 
 What a study reports and what an account concludes stay separate:
 
-- a **`GeneticAssociation`** (relation kind `ASSOCIATION`) is the GWAS or
-  QTL result: the genotype co-varies with an `associated_variable` (a
-  disease, or a gene's expression in a tissue) in its contexts. A Claim on it
-  carries a **`GeneticEffectEstimate`**: the estimate on its `effect_scale`
-  (beta as `DIFFERENCE`, log odds ratio, normalized effect size as
-  `STANDARDIZED_DIFFERENCE`), with standard error, p-value and sample size;
+- a **`GeneticAssociation`** (relation kind `ASSOCIATION`) is the study's
+  result: the genotype co-varies with an `associated_variable` (a disease or
+  trait, `DISEASE_OR_TRAIT`; or a gene's expression in a tissue, `EQTL`, and
+  the other QTL kinds) in its contexts. A Claim on it carries a
+  **`GeneticEffectEstimate`**: the estimate on its `effect_scale` (beta as
+  `DIFFERENCE`, log odds ratio, normalized effect size as
+  `STANDARDIZED_DIFFERENCE`), with standard error, p-value and sample size,
+  and how it was obtained: `study_scope` (`GENOME_WIDE` or `CANDIDATE_GENE`),
+  `meta_analysis` with `number_of_studies`, and case and control counts;
 - a **CausalLink from the GenotypeVariable** (genotype → expression) is the
   causal reading, written only when the account needs that step. Its
   evidence cites the association Claims, with design `NATURAL_EXPERIMENT`,

@@ -99,6 +99,27 @@ def test_genetic_effect_estimate_needs_a_scale(doc, validator):
     assert validator.validate({**score, "score_kind": "PROBABILITY"}, "GeneticEffectEstimate").results
 
 
+def test_association_kind_and_study_design_are_separate(doc, validator):
+    """A candidate-gene meta-analysis of a disease association is expressible."""
+    association = doc["genetic_associations"][0]
+    assert not validator.validate({**association, "association_kind": "DISEASE_OR_TRAIT"}, "GeneticAssociation").results
+    assert validator.validate({**association, "association_kind": "GWAS"}, "GeneticAssociation").results
+    score = {**doc["genetic_effect_estimates"][0], "study_scope": "CANDIDATE_GENE", "meta_analysis": True,
+             "number_of_studies": 6, "number_of_cases": 8699, "number_of_controls": 13540, "sample_size": 22239}
+    assert not validator.validate(score, "GeneticEffectEstimate").results
+    assert validator.validate({**score, "study_scope": "GWAS"}, "GeneticEffectEstimate").results
+
+
+@pytest.mark.parametrize("change,message", [
+    ({"number_of_studies": 6}, "set meta_analysis: true"),
+    ({"meta_analysis": False, "number_of_studies": 3}, "meta_analysis is false"),
+    ({"number_of_cases": 200, "number_of_controls": 200}, "exceed sample_size"),
+])
+def test_study_counts_agree(doc, change, message):
+    doc["genetic_effect_estimates"][0].update(change)
+    assert any(message in p for p in problems(doc))
+
+
 def test_genetic_effect_estimate_needs_a_genotype_proposition(doc):
     """The estimate's sign follows an effect allele, so the claim must be about one."""
     score = doc["genetic_effect_estimates"][0]["id"]

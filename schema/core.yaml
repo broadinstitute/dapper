@@ -1414,8 +1414,32 @@ classes:
     aliases:
       - institution
       - consortium
-    description: An institution, consortium, or other organizational agent acting as a creator, contributor, or other responsible party.
+    description: >-
+      An institution, consortium, program or other organizational agent
+      acting as a creator, contributor, or other responsible party. An
+      organization can belong to a larger one (`parent_organization`): a
+      laboratory to its institution, a data program to the ecosystem that
+      funds it (GTEx to the Common Fund Data Ecosystem). Following the
+      parents from any organization reaches the top of its hierarchy.
     attributes:
+      parent_organization:
+        is_a: relationship
+        mixins: [hashable]
+        range: Organization
+        inlined: false
+        slot_uri: schema:parentOrganization
+        exact_mappings:
+          - schema:parentOrganization
+        description: >-
+          The larger organization this one is part of. Part of identity: a
+          sub-organization is defined by what it belongs to. Parents form a
+          hierarchy without cycles.
+      url:
+        is_a: literal
+        mixins: [hashable]
+        range: uri
+        slot_uri: schema:url
+        description: The organization's home page.
       ror:
         is_a: literal
         mixins: [hashable]

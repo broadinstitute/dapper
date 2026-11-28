@@ -113,7 +113,9 @@ rules:
       - INDIRECT
       - UNTESTED
       - GENOTYPE
-      - GWAS
+      - DISEASE_OR_TRAIT
+      - GENOME_WIDE
+      - CANDIDATE_GENE
       - EQTL
       - PQTL
       - SQTL

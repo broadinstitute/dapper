@@ -203,6 +203,21 @@ def check_genetic_estimates(nid: str, claim: dict,
     return []
 
 
+def check_genetic_effect_estimate(nid: str, score: dict) -> list[tuple[str, str]]:
+    """Study counts agree with each other."""
+    problems = []
+    studies = score.get("number_of_studies")
+    if isinstance(studies, int) and studies > 1 and score.get("meta_analysis") is not True:
+        problems.append((nid, f"{studies} studies combined is a meta-analysis; set meta_analysis: true"))
+    if score.get("meta_analysis") is False and isinstance(studies, int) and studies != 1:
+        problems.append((nid, "meta_analysis is false but number_of_studies is not 1"))
+    counts = [score.get(k) for k in ("number_of_cases", "number_of_controls")]
+    total = score.get("sample_size")
+    if all(isinstance(c, int) for c in counts) and isinstance(total, int) and sum(counts) > total:
+        problems.append((nid, f"cases and controls ({sum(counts)}) exceed sample_size ({total})"))
+    return problems
+
+
 def check_causal_graph(nid: str, graph: dict,
                        nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
     """A graph's links stay inside its variable set, appear once, and form a
@@ -298,6 +313,8 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
             problems.append((f"{nid}.alternative_to", "a hypothesis is not an alternative to itself"))
         if cls == "DiscriminatingExperiment":
             problems.extend(check_discriminating_experiment(nid, node, nodes))
+        if cls == "GeneticEffectEstimate":
+            problems.extend(check_genetic_effect_estimate(nid, node))
         if cls == "Paragraph":
             problems.extend(check_citation_occurrences(nid, node, nodes))
         if _accepts("CausalGraph", cls):

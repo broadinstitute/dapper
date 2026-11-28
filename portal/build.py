@@ -83,6 +83,8 @@ INLINE_LINKS = {
     "has_gmt_file": ("dapper:hasGmtFile", "in"),
     "in_gmt_file": ("dapper:inGmtFile", "in"),
     "in_gene_set_collection": ("dapper:inGeneSetCollection", "out"),
+    # A sub-organization points at the organization it belongs to.
+    "parent_organization": ("schema:parentOrganization", "out"),
     "members": ("prov:hadMember", "in"),
     "was_generated_by": ("prov:wasGeneratedBy", "in"),
     "was_derived_from": ("prov:wasDerivedFrom", "in"),
