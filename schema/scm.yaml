@@ -126,8 +126,10 @@ enums:
           interpretation.
   PredictedChangeEnum:
     description: >-
-      What an estimand is predicted to show in an experiment: a change in a
-      direction, no change, or a change without a single sign.
+      What an estimand is predicted to show: a change in a direction, no
+      change, or a change without a single sign. A CausalEstimand states what
+      its own model predicts; an experiment's predictions state what each
+      tested proposition predicts.
     permissible_values:
       INCREASES:
         description: The outcome is higher under the intervention than under the reference.
@@ -166,6 +168,12 @@ slots:
     range: EffectScaleEnum
     slot_uri: dapper:effect_scale
     description: The scale an effect is expressed on.
+  predicted_change:
+    is_a: literal
+    mixins: [hashable]
+    range: PredictedChangeEnum
+    slot_uri: dapper:predicted_change
+    description: What the estimand is predicted to show.
 
 # ===========================================================================
 # CLASSES
@@ -342,10 +350,13 @@ classes:
       inline value.
     slots:
       - proposition
+      - predicted_change
     slot_usage:
       proposition:
         required: true
         description: The proposition whose truth or falsity the prediction follows from.
+      predicted_change:
+        required: true
     attributes:
       estimand:
         is_a: relationship
@@ -360,12 +371,6 @@ classes:
         description: >-
           False for what follows if the proposition fails, such as no change
           when a link does not exist. Omission means it holds.
-      predicted_change:
-        is_a: literal
-        range: PredictedChangeEnum
-        required: true
-        slot_uri: dapper:predicted_change
-        description: What the estimand is predicted to show.
       rationale:
         is_a: literal
         description: Why the proposition predicts this, in words.
@@ -429,12 +434,23 @@ classes:
       names the quantity; a Claim with an EFFECT_ESTIMATE score gives its
       value, so estimates from different methods or data assess the same
       estimand. The model is the inherited `explanatory_model`.
+      `predicted_change` says which way the model predicts the outcome moves
+      under the interventions, so a Claim's SUPPORTS or DISPUTES reads
+      against that prediction rather than against prose.
     slots:
       - outcome
       - effect_scale
+      - predicted_change
     slot_usage:
       outcome:
         required: true
+      predicted_change:
+        description: >-
+          The change the estimand's model predicts in the outcome under the
+          interventions, composed from the signs of the links between
+          treatment and outcome. A Claim with a direction on this estimand
+          SUPPORTS it when the evidence shows this change and DISPUTES it when
+          the evidence shows otherwise. Required for such a Claim.
       relation_kind:
         required: true
         equals_string: CAUSATION

@@ -235,3 +235,34 @@ def test_account_proposes_experiments(doc):
     account = doc["scientific_accounts"][0]
     account["proposed_experiments"] = [doc["causal_estimands"][0]["id"]]
     assert any("must resolve to ProposedExperiment" in p for p in problems(doc))
+
+
+# ---- an estimand's predicted change -------------------------------------------
+
+def _claim_on_estimand(doc, direction):
+    estimand = doc["causal_estimands"][0]
+    doc["claims"].append({"id": "urn:test:estimand-claim", "proposition": estimand["id"],
+                          "direction": direction})
+    return estimand
+
+
+@pytest.mark.parametrize("direction,needs", [("SUPPORTS", True), ("DISPUTES", True), ("MIXED", True),
+                                             ("UNKNOWN", False), ("NEUTRAL", False)])
+def test_a_directed_claim_on_an_estimand_needs_its_predicted_change(doc, direction, needs):
+    estimand = _claim_on_estimand(doc, direction)
+    flagged = any("predicted_change" in m for m in problems(doc))
+    assert flagged == needs
+    estimand["predicted_change"] = "DECREASES"
+    assert not any("predicted_change" in m for m in problems(doc))
+
+
+def test_predicted_change_is_part_of_estimand_identity(doc, sv):
+    estimand = doc["causal_estimands"][0]
+    assert compute_id(estimand, "CausalEstimand", sv) != compute_id(
+        {**estimand, "predicted_change": "DECREASES"}, "CausalEstimand", sv)
+
+
+def test_predicted_change_takes_the_prediction_vocabulary(doc, validator):
+    estimand = {**doc["causal_estimands"][0], "predicted_change": "DECREASES"}
+    assert not validator.validate(estimand, "CausalEstimand").results
+    assert validator.validate({**estimand, "predicted_change": "LOWER"}, "CausalEstimand").results

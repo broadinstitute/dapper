@@ -57,7 +57,10 @@ enums:
       MIXED:
         description: The evidence contributes in both directions.
       UNKNOWN:
-        description: The direction was explicitly recorded as unknown.
+        description: >-
+          The direction was explicitly recorded as unknown: the evidence bears
+          on the proposition but leaves which way open, such as a link whose
+          sign the evidence does not settle.
   ClaimScoreKindEnum:
     description: Mathematical meaning of a reported value, independent of its magnitude.
     permissible_values:

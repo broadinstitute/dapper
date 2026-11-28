@@ -123,6 +123,7 @@ def check_structural_causal_model(nid: str, scm: dict,
     return problems
 
 
+DIRECTED = {"SUPPORTS", "DISPUTES", "MIXED"}
 MEDIATED = {"CONTROLLED_DIRECT_EFFECT", "NATURAL_DIRECT_EFFECT", "NATURAL_INDIRECT_EFFECT"}
 
 
@@ -135,6 +136,11 @@ def check_causal_estimand(nid: str, estimand: dict,
         problems.append((nid, "treatment and outcome must differ"))
     if estimand.get("estimand_kind") in MEDIATED and not mediator:
         problems.append((nid, f"{estimand['estimand_kind']} needs a mediator"))
+    directed = sorted(ref for ref, (cls, node) in nodes.items() if cls == "Claim"
+                      and node.get("proposition") == nid and node.get("direction") in DIRECTED)
+    if directed and not estimand.get("predicted_change"):
+        problems.append((nid, f"claim {directed[0]} gives a direction on this estimand; state the change "
+                         "its model predicts in predicted_change, so the direction reads against it"))
     model_cls, model = nodes.get(estimand.get("explanatory_model"), (None, {}))
     if _accepts("CausalGraph", model_cls):
         variables = set(_refs(model, "variables"))

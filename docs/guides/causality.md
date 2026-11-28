@@ -182,6 +182,17 @@ is held at the value it would take under the other treatment), which the SCM
 defines but experiments alone cannot identify. All are population averages. An
 estimate is a Claim on the estimand with an `EFFECT_ESTIMATE` score, so
 estimates from different data or methods assess the same estimand.
+
+An estimand is a quantity, not a claim about which way it moves, so a Claim
+that SUPPORTS or DISPUTES it needs something to read against.
+`predicted_change` (`INCREASES`, `DECREASES`, `NO_CHANGE`, `CHANGES`) states
+the change the estimand's model predicts in the outcome under the
+interventions. For a total effect, compose it from the signs of the links
+between treatment and outcome, not from how the hypothesis is worded. A Claim
+SUPPORTS the estimand when the evidence shows that change and DISPUTES it when
+it shows otherwise; the scientific-content check refuses a Claim with a
+direction on an estimand that has no `predicted_change`. Evidence that bears
+on a proposition but leaves its direction open takes direction `UNKNOWN`.
 `examples/example_structural_causal_model.yaml` is a synthetic mediation
 model with a latent confounder and one illustrative estimate.
 
@@ -256,8 +267,11 @@ items that carry the claim's direction. The items' `contexts` and
 **Whole-system results** (a gene knockout's effect on colitis) skip the
 graph's intermediate steps: they measure the gene's total effect on the
 disease. Record them on a `CausalEstimand` (`AVERAGE_EFFECT`, treatment the
-gene's variable, outcome the disease's) and assess that, rather than
-attaching them to the hypothesis as a whole.
+gene's variable, outcome the disease's, `predicted_change` the sign the
+graph composes) and assess that, rather than attaching them to the hypothesis
+as a whole. An account whose conclusion rests on both the mechanism and the
+total effect names both Claims, the critical link's and the estimand's, and
+says how they combine.
 
 ## Genetic variants
 
