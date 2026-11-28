@@ -1,3 +1,21 @@
+# Converters
+
+| Script | Converts |
+|---|---|
+| `migrate.py` | a DAPPER document from one release to the next, re-minted ([releasing guide](../docs/guides/releasing.md)) |
+| `geneset_to_dapper.py` | `dig.geneset` provenance to DAPPER (below) |
+
+## `migrate.py`: release to release
+
+```bash
+uv run converter/migrate.py old.yaml --from 0.2.1-a1 -o new.yaml --id-map ids.json
+```
+
+It converts the document step by step to this checkout's release, re-mints it, and verifies it. It either
+converts faithfully or refuses with every problem listed. `--id-map` writes `{old id: new id}` for every record,
+so a store can keep old ids resolvable. **Every DAPPER release that changes a shape must add a step here before
+it is tagged**; see [Releasing a DAPPER version](../docs/guides/releasing.md).
+
 # `geneset_to_dapper.py` — dig.geneset → DAPPER converter
 
 Reads the lab's `dig.geneset` provenance (`geneset.provenance.json` + `geneset.meta.json`, from

@@ -15,6 +15,19 @@ framing and ancestry/trait context, so records using those re-mint. See the
 generating or validating its identifiers; the 0.2.0 alphas and 0.1.0 use
 different gene-set and claims models.
 
+Documents written for 0.2.1-a1 convert with `converter/migrate.py`, which
+re-mints them and reports every old id and its new one:
+
+```bash
+uv run converter/migrate.py old.yaml --from 0.2.1-a1 -o new.yaml --id-map ids.json
+```
+
+**Every release ships its own converter.** A release that changes any shape
+must include a step in `converter/migrate.py` from the previous release, with
+fixtures of that release and tests, before it is tagged. DAPPER owns these
+converters; stores that vendor DAPPER run them and never write their own. See
+[Releasing a DAPPER version](docs/guides/releasing.md).
+
 ## Repository layout
 
 `schema/` holds only the LinkML modules. Everything else sits beside it at the
@@ -25,19 +38,20 @@ schema/
   dapper.yaml               # root model: imports every module below, defines nothing
   core.yaml                 # what is tracked: identity, attribution, provenance, files, collections
   claims.yaml               # scientific reasoning: propositions, claims, evidence, accounts
-  genesets.yaml             # GeneSet, GeneSetCollection
+  genesets.yaml             # GeneSet, GeneSetCollection, GeneSetLibrary
   cell_programs.yaml        # GeneProgram, CellState
   mechanisms.yaml           # MechanisticModel (a CausalGraph), MechanisticLink, Mechanism
-  scm.yaml                  # StructuralCausalModel, CausalEstimand
+  scm.yaml                  # StructuralCausalModel, CausalEstimand, DiscriminatingExperiment
+  genetics.yaml             # GenotypeVariable, GeneticAssociation, GeneticEffectEstimate
   nanopub.yaml              # nanopublications
   dismech.yaml              # DISMECH cross-walk edge
   replay.yaml               # AgenticWorkspace
   cfde.yaml                 # C2M2File
-  biology.yaml              # AncestryContext, TraitContext (kinds of the core Context)
+  biology.yaml              # ancestry, trait, tissue, cell type, cell line, organism contexts
 examples/                   # LinkML instance and graph examples
 identity/                   # computed content identifiers (DAPPER-ID-1)
 lint/                       # provenance-graph linter and modality profiles
-converter/                  # source-data to model converters
+converter/                  # source-data converters, and migrate.py: release-to-release document converter
 citations/                  # JSON Schema and example for external citation records
 docs/                       # site landing page, release notes, and guides/
 tools/                      # docs build, prefix expansion, claims and citation checks

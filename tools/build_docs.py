@@ -84,7 +84,8 @@ def build_site() -> None:
         (guides / name).write_text(text)
 
     for name in ("files-and-drs.md", "claims.md", "causality.md", "citations.md",
-                 "bottom-line-results.md", "ancestry.md", "geneset-authoring.md", "embeddings.md"):
+                 "bottom-line-results.md", "ancestry.md", "geneset-authoring.md", "embeddings.md",
+                 "releasing.md"):
         publish(ROOT / "docs" / "guides" / name, name)
     for name in ("result-collections.md", "croissant.md"):
         publish(ROOT / "docs" / "guides" / name, name,
@@ -121,7 +122,8 @@ def build_site() -> None:
                     {"Result collections and value locators": "guides/result-collections.md"},
                     {"Croissant and DAPPER": "guides/croissant.md"},
                     {"Scientific object citations": "guides/citations.md"},
-                    {"Computed identifiers": "guides/identity.md"}]},
+                    {"Computed identifiers": "guides/identity.md"},
+                    {"Releasing a version": "guides/releasing.md"}]},
         {"Full schema": "reference/index.md"},
     ])
     config = load_config(config_file=str(ROOT / "docs" / "mkdocs.yml"), nav=navigation)
