@@ -31,6 +31,10 @@ ROOT = Path(__file__).resolve().parents[1]
 GENERATED = ROOT / ".build" / "model-docs"
 SITE = ROOT / "site"
 
+# The result-collection and Croissant guides link their examples (including
+# the NDJSON and Croissant data files) on GitHub rather than in the site copy.
+GITHUB_EXAMPLES = "https://github.com/broadinstitute/dapper/blob/main/examples/"
+
 
 def build_site() -> None:
     subprocess.run([sys.executable, str(ROOT / "portal" / "build.py"), "--check"], check=True)
@@ -64,24 +68,35 @@ def build_site() -> None:
     shutil.copytree(ROOT / "docs" / "assets", GENERATED / "assets")
     guides = GENERATED / "guides"
     guides.mkdir()
-    guide = (ROOT / "schema" / "docs" / "files-and-drs.md").read_text()
-    (guides / "files-and-drs.md").write_text(guide.replace("../identity/README.md", "identity.md"))
-    shutil.copy2(ROOT / "schema" / "docs" / "claims.md", guides / "claims.md")
-    citation_guide = (ROOT / "schema" / "docs" / "citations.md").read_text()
-    (guides / "citations.md").write_text(citation_guide.replace("../citations/", "../schema/citations/"))
-    shutil.copy2(ROOT / "schema" / "docs" / "bottom-line-results.md", guides / "bottom-line-results.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "ancestry.md", guides / "ancestry.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "geneset-authoring.md", guides / "geneset-authoring.md")
-    shutil.copy2(ROOT / "schema" / "docs" / "embeddings.md", guides / "embeddings.md")
-    identity_guide = (ROOT / "schema" / "identity" / "README.md").read_text()
-    (guides / "identity.md").write_text(
-        identity_guide.replace("../docs/geneset-authoring.md", "geneset-authoring.md"))
-    shutil.copytree(ROOT / "schema" / "examples", GENERATED / "examples",
+    # Source guides link by repository path; the site keeps its own layout
+    # (examples/ beside guides/, citations under schema/), so links are mapped.
+    site_links = {
+        "../../examples/": "../examples/",
+        "../../citations/": "../schema/citations/",
+        "../../identity/README.md": "identity.md",
+        "../docs/guides/geneset-authoring.md": "geneset-authoring.md",
+    }
+
+    def publish(source: Path, name: str, links: dict[str, str] = site_links) -> None:
+        text = source.read_text()
+        for repo_link, site_link in links.items():
+            text = text.replace(repo_link, site_link)
+        (guides / name).write_text(text)
+
+    for name in ("files-and-drs.md", "claims.md", "causality.md", "citations.md",
+                 "bottom-line-results.md", "ancestry.md", "geneset-authoring.md", "embeddings.md",
+                 "releasing.md"):
+        publish(ROOT / "docs" / "guides" / name, name)
+    for name in ("result-collections.md", "croissant.md"):
+        publish(ROOT / "docs" / "guides" / name, name,
+                {**site_links, "../../examples/": GITHUB_EXAMPLES})
+    publish(ROOT / "identity" / "README.md", "identity.md")
+    shutil.copytree(ROOT / "examples", GENERATED / "examples",
                     ignore=shutil.ignore_patterns("*.py", "__pycache__"))
     (GENERATED / "schema").mkdir()
     for module in (ROOT / "schema").glob("*.yaml"):
         shutil.copy2(module, GENERATED / "schema" / module.name)
-    shutil.copytree(ROOT / "schema" / "citations", GENERATED / "schema" / "citations")
+    shutil.copytree(ROOT / "citations", GENERATED / "schema" / "citations")
 
     navigation = [{"Overview": "index.md"}]
     counts = {}
@@ -103,8 +118,12 @@ def build_site() -> None:
                     {"Bottom-line results": "guides/bottom-line-results.md"},
                     {"Genetic ancestry": "guides/ancestry.md"},
                     {"Scientific claims and accounts": "guides/claims.md"},
+                    {"Causality": "guides/causality.md"},
+                    {"Result collections and value locators": "guides/result-collections.md"},
+                    {"Croissant and DAPPER": "guides/croissant.md"},
                     {"Scientific object citations": "guides/citations.md"},
-                    {"Computed identifiers": "guides/identity.md"}]},
+                    {"Computed identifiers": "guides/identity.md"},
+                    {"Releasing a version": "guides/releasing.md"}]},
         {"Full schema": "reference/index.md"},
     ])
     config = load_config(config_file=str(ROOT / "docs" / "mkdocs.yml"), nav=navigation)

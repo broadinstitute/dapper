@@ -31,10 +31,9 @@ import yaml
 
 HERE = Path(__file__).parent
 REPO_ROOT = HERE.parent
-# `schema/` is the model boundary for this repository (see README), so the
-# schema and its examples live under it while the portal sits beside it.
+# `schema/` holds only the LinkML modules; examples sit beside it at the root.
 SCHEMA_DIR = REPO_ROOT / "schema"
-EXAMPLES = SCHEMA_DIR / "examples"
+EXAMPLES = REPO_ROOT / "examples"
 SCHEMA = SCHEMA_DIR / "dapper.yaml"
 LIB = HERE / "lib"
 OUT = HERE / "index.html"
@@ -47,7 +46,7 @@ LIB_FILES = ["cytoscape.min.js", "elk.bundled.js", "cytoscape-elk.js", "js-yaml.
 # so an uploaded document rendered 1 node instead of 18. Read as source rather
 # than imported so the portal keeps its light dependency set (no rdflib).
 def _node_groups() -> dict[str, str]:
-    src = (Path(__file__).parent.parent / "schema" / "identity" / "dapper_identity.py").read_text()
+    src = (REPO_ROOT / "identity" / "dapper_identity.py").read_text()
     block = src[src.index("DOC_GROUPS = {"):]
     block = block[: block.index("}") + 1]
     return dict(re.findall(r'"([^"]+)":\s*"([^"]+)"', block))
@@ -84,6 +83,8 @@ INLINE_LINKS = {
     "has_gmt_file": ("dapper:hasGmtFile", "in"),
     "in_gmt_file": ("dapper:inGmtFile", "in"),
     "in_gene_set_collection": ("dapper:inGeneSetCollection", "out"),
+    # A sub-organization points at the organization it belongs to.
+    "parent_organization": ("schema:parentOrganization", "out"),
     "members": ("prov:hadMember", "in"),
     "was_generated_by": ("prov:wasGeneratedBy", "in"),
     "was_derived_from": ("prov:wasDerivedFrom", "in"),
@@ -91,12 +92,30 @@ INLINE_LINKS = {
     "has_score": ("dapper:has_score", "in"),
     "component_claims": ("dapper:component_claims", "in"),
     "conclusion_claims": ("dapper:conclusion_claims", "in"),
-    "hypothesis": ("dapper:hypothesis", "in"),
-    "question": ("dapper:question", "in"),
+    "framing": ("dapper:framing", "in"),
+    # An account finds gaps; a gap concerns the propositions it leaves open.
+    "identified_gaps": ("dapper:identified_gaps", "out"),
+    "concerns": ("dapper:concerns", "in"),
     "about_entities": ("dapper:about_entities", "in"),
-    "mechanistic_model": ("dapper:mechanistic_model", "in"),
-    "has_causal_step": ("dapper:has_causal_step", "in"),
-    "via_mechanism": ("dapper:via_mechanism", "in"),
+    "explanatory_model": ("dapper:explanatory_model", "in"),
+    # A causal link runs cause -> link -> effect.
+    "cause": ("dapper:cause", "in"),
+    "effect": ("dapper:effect", "out"),
+    # An estimand runs treatment -> estimand -> outcome.
+    "treatment": ("dapper:treatment", "in"),
+    "outcome": ("dapper:outcome", "out"),
+    # A genetic association runs genotype -> association -> associated variable.
+    "genotype": ("dapper:genotype", "in"),
+    "associated_variable": ("dapper:associated_variable", "out"),
+    # A rival hypothesis points at the one it competes with.
+    "alternative_to": ("dapper:alternative_to", "out"),
+    # An account proposes experiments; an experiment tests propositions,
+    # measures estimands, may use instruments, and would close gaps.
+    "proposed_experiments": ("dapper:proposed_experiments", "out"),
+    "tests": ("dapper:tests", "out"),
+    "estimands": ("dapper:estimands", "out"),
+    "instruments": ("dapper:instruments", "in"),
+    "addresses_gaps": ("dapper:addresses_gaps", "out"),
     "has_evidence": ("dapper:has_evidence", "in"),
     "source_claims": ("dapper:source_claims", "in"),
     "target_proposition": ("dapper:target_proposition", "in"),
@@ -117,7 +136,19 @@ INLINE_LINKS = {
     "embedding_of": ("dapper:embeddingOf", "in"),
     "has_embedding": ("dapper:hasEmbedding", "out"),
     "has_vector_file": ("dapper:hasVectorFile", "in"),
+    # Result collections: templates and the manifest flow into the version
+    # (member Datasets use `members`, as for every Collection).
+    "has_claim_template": ("dapper:has_claim_template", "in"),
+    "has_query_template": ("dapper:has_query_template", "in"),
+    "has_manifest_file": ("dapper:has_manifest_file", "in"),
+    "was_revision_of": ("prov:wasRevisionOf", "in"),
+    # Evidence grounded at the file boundary: file -> locator -> evidence.
+    "value_locators": ("dapper:value_locators", "in"),
+    "file": ("dapper:file", "in"),
 }
+
+# Predicates of references nested inside a causal graph's inline `links`.
+NESTED_LINKS = {"link": "dapper:link", "via_mechanism": "dapper:via_mechanism"}
 
 # Visual family: the narrative arc data -> process -> claim -> publication.
 FAMILY = {
@@ -130,18 +161,25 @@ FAMILY = {
     "CellState": "data",
     "Dataset": "data",
     "Embedding": "data",
+    "ResultCollection": "data",
+    "ValueLocator": "data",
     "Activity": "process",
     "MechanisticModel": "claim",
     "Claim": "claim",
     "ScientificAccount": "claim",
     "Question": "claim",
     "KnowledgeGap": "claim",
+    "Hypothesis": "claim",
     "Paragraph": "publication",
     "EvidenceItem": "claim",
     "Mechanism": "claim",
     "Proposition": "claim",
     "ClaimScore": "data",
-    "CausalStep": "claim",
+    "CausalVariable": "claim",
+    "CausalLink": "claim",
+    "CausalGraph": "claim",
+    "StructuralCausalModel": "claim",
+    "CausalEstimand": "claim",
     "Nanopublication": "publication",
     "NanopubAssertion": "part",
     "NanopubProvenance": "part",
@@ -167,7 +205,7 @@ GRAPH_DOCS = [
             "the hypothesis role; separate Claims report a result and assess its biological "
             "meaning. Inspect the evidence use, assumptions, and saved results paragraph."
         ),
-        "start": "dapper:ScientificAccount.4EdFhOCSYboZhnZiHbT3qnyYeqyyvbIs",
+        "start": "dapper:ScientificAccount.964RBhDcGip7cgNGCkXiEIZyFZPHy7IB",
     },
     {
         "file": "example_pigean_claims.yaml",
@@ -179,7 +217,30 @@ GRAPH_DOCS = [
             "not real PIGEAN/EAGGL outputs. Follow both the GWAS and gene-set "
             "generation branches to their input files."
         ),
-        "start": "dapper:ScientificAccount.Ddyw_8CFbVpwdBfXogo2GlOHDJzZpdUw",
+        "start": "dapper:ScientificAccount.GLLg8gMF_rDIm--SoBXcwZo3yxILwQnJ",
+    },
+    {
+        "file": "example_result_collection.yaml",
+        "key": "result_collection",
+        "title": "Result collection version",
+        "blurb": (
+            "Synthetic: one version of a collection holding two trait datasets from one "
+            "method, each with its result file by role, plus the claim template, query "
+            "template and manifest the version was published from. Claims minted from it "
+            "are in the next graph and never point back at the collection."
+        ),
+        "start": "dapper:ResultCollection.eGKSDXSSrrG49bHahck92lSBA9Wiiy0V",
+    },
+    {
+        "file": "example_collection_claims.yaml",
+        "key": "collection_claims",
+        "title": "Claim grounded by a value locator",
+        "blurb": (
+            "Synthetic: a measurement claim minted from the Trait T1 result file. Its "
+            "evidence names the exact bytes of the score in that file, so it can be "
+            "re-read and compared against the file's sha256."
+        ),
+        "start": "dapper:Claim.iuV3U53Wq3o6usxJ7W6NjKV2F1DMgOXa",
     },
     {
         "file": "example_file_graph.yaml",
@@ -200,7 +261,7 @@ GRAPH_DOCS = [
             "nanopublication's provenance graph and the dig.geneset C2M2 graph are the "
             "same graph, so the walk needs no special bridge."
         ),
-        "start": "dapper:ScientificAccount.nq-PjWsCbchEhDTX3ni0VqQ08mS8IRn7",
+        "start": "dapper:ScientificAccount.TP26SivlMom-V6TAeKO1Otvp82fht5QJ",
     },
     {
         "file": "example_geneset_graph.yaml",
@@ -251,7 +312,7 @@ GRAPH_DOCS = [
             "outputs inferred by the source are labeled in their descriptions. "
             "This is a schema-valid mapping, not verified execution provenance."
         ),
-        "start": "dapper:Dataset.CBE87jpWVPa6Xtocr66ztw75eR0CUw53",
+        "start": "dapper:Dataset.f_eG9tG-l9ufCa4zUASJVpTpLwQhxwYl",
     },
 ]
 
@@ -344,9 +405,13 @@ def load_schema(schema: dict | None = None) -> dict:
                 "url": doc_url("slots", slot_name),
                 "mappings": mappings(slot),
                 "description": (slot.get("description") or "").strip(),
-                # A mirror must never rewrite these (see the mirroring invariant in schema/dapper.yaml).
+                # A mirror must never rewrite these (see the mirroring invariant in schema/core.yaml).
                 "authoritative": ann.get("dapper:mirror_mutable") is False,
             }
+            # Inline value objects without a type designator (a causal graph's
+            # link entries) are documented through their declared range.
+            if slot.get("range") in schema["classes"] and (slot.get("inlined") or slot.get("inlined_as_list")):
+                attrs[slot_name]["inlineClass"] = slot["range"]
             enum_name = slot.get("range")
             if enum_name in schema["enums"]:
                 enum = schema["enums"][enum_name] or {}
@@ -436,6 +501,24 @@ def build_graph(spec: dict, defaults: dict | None = None) -> dict:
                 edges.append({"source": src, "target": dst, "cls": "(inline)",
                               "subject": node["id"], "object": target,
                               "predicate": predicate})
+
+    # A causal graph's `links` are inline entries, not nodes: each places a
+    # CausalLink in the graph (link -> graph) and, in a MechanisticModel, may
+    # name the Mechanisms carrying it out (mechanism -> link).
+    for node in nodes:
+        for entry in node["fields"].get("links") or []:
+            if not isinstance(entry, dict) or entry.get("link") not in ids:
+                continue
+            link = entry["link"]
+            nested = [(link, node["id"], node["id"], NESTED_LINKS["link"], link)]
+            nested += [(m, link, link, NESTED_LINKS["via_mechanism"], m)
+                       for m in entry.get("via_mechanism") or [] if m in ids]
+            for src, dst, subject, predicate, obj in nested:
+                if (subject, predicate, obj) in seen:
+                    continue
+                seen.add((subject, predicate, obj))
+                edges.append({"source": src, "target": dst, "cls": "(inline)",
+                              "subject": subject, "object": obj, "predicate": predicate})
 
     # drop edges pointing at nodes this document does not define
     edges = [e for e in edges if e["source"] in ids and e["target"] in ids]
@@ -1075,12 +1158,24 @@ function mappingsHtml(items) {
   return (items || []).map(m => `<span>${esc(m.relation)}: ${referenceHtml(m.target)}</span>`).join("; ");
 }
 
+// An inline object that names its own class through a type designator (a
+// Context's `context_type`) is shown with that class's field metadata, so a
+// nested ancestry code still links its enum and a trait its catalog.
+function inlineClass(obj, meta = {}) {
+  for (const [key, value] of Object.entries(obj))
+    if (key.endsWith("_type") && typeof value === "string" && own(DATA.schema, value)) return DATA.schema[value];
+  // No type designator: fall back to the slot's declared range.
+  return meta.inlineClass && own(DATA.schema, meta.inlineClass) ? DATA.schema[meta.inlineClass] : null;
+}
+
 function valueHtml(v, ids, meta = {}) {
   if (Array.isArray(v))
     return `<span class="list-item">${v.map(x => valueHtml(x, ids, meta)).join('</span><span class="list-item">')}</span>`;
-  if (v && typeof v === "object")
+  if (v && typeof v === "object") {
+    const nested = inlineClass(v, meta);
     return `<dl class="nested-fields">${Object.entries(v).map(([k, value]) =>
-      `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids)}</dd>`).join("")}</dl>`;
+      `<dt>${esc(k)}</dt><dd>${valueHtml(value, ids, (nested && own(nested.attributes, k)) || {})}</dd>`).join("")}</dl>`;
+  }
   const s = String(v);
   if (ids.has(s)) return `<button class="ref" data-goto="${esc(s)}">${esc(s)}</button>`;
   const pv = own(meta.enum && meta.enum.values, s);
@@ -1115,7 +1210,11 @@ function modelDetailsHtml(cls, fields) {
   if (cls.uri) html += `<p class="insp-desc"><strong>Class URI</strong> ${referenceHtml(cls.uri)}</p>`;
   if (cls.mappings && cls.mappings.length)
     html += `<p class="insp-desc"><strong>Mappings</strong> ${mappingsHtml(cls.mappings)}</p>`;
-  html += `<dl class="fields">`;
+  return html + modelFieldsHtml(cls, fields) + `</details>`;
+}
+
+function modelFieldsHtml(cls, fields) {
+  let html = `<dl class="fields">`;
   for (const [key, value] of Object.entries(fields)) {
     const meta = own(cls.attributes, key);
     if (!meta) continue;
@@ -1133,9 +1232,13 @@ function modelDetailsHtml(cls, fields) {
         if (pv.description) html += `<div class="why">${textHtml(pv.description)}</div>`;
       }
     }
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const nested = item && typeof item === "object" ? inlineClass(item, meta) : null;
+      if (nested) html += modelFieldsHtml(nested, item);
+    }
     html += `</dd></div>`;
   }
-  return html + `</dl></details>`;
+  return html + `</dl>`;
 }
 
 function paragraphCitationsHtml(paragraph, graph) {
@@ -1155,16 +1258,18 @@ function accountOverviewHtml(node, graph) {
   const fields = node.fields;
   let html = `<section class="scientific-account"><h3>Scientific account</h3>`;
   const prose = (label, text) => text ? `<p><strong>${esc(label)}</strong><br>${esc(text)}</p>` : "";
-  if (fields.question) {
-    const question = byId.get(fields.question);
-    html += prose("Question", question?.fields.text || fields.question);
-    if (question?.cls === "KnowledgeGap") html += prose("Knowledge gap", question.fields.gap_description);
-    html += prose("Gap kind", question?.fields.gap_kind);
-    if (question?.fields.about_entities?.length) html += `<p><strong>Entity context</strong><br>${valueHtml(question.fields.about_entities, new Set(byId.keys()))}</p>`;
-  }
-  if (fields.hypothesis) {
-    const proposition = byId.get(fields.hypothesis);
-    html += prose("Hypothesis under investigation", proposition?.fields.statement || fields.hypothesis);
+  for (const ref of fields.framing || []) {
+    const framing = byId.get(ref);
+    if (framing?.cls === "Hypothesis") {
+      const proposition = byId.get(framing.fields.proposition);
+      html += prose("Hypothesis under investigation",
+        framing.fields.text || proposition?.fields.statement || framing.fields.proposition);
+    } else {
+      html += prose(framing?.cls === "KnowledgeGap" ? "Knowledge gap" : "Question", framing?.fields.text || ref);
+      if (framing?.cls === "KnowledgeGap") html += prose("Missing knowledge", framing.fields.gap_description);
+      html += prose("Gap kind", framing?.fields.gap_kind);
+    }
+    if (framing?.fields.about_entities?.length) html += `<p><strong>Entity context</strong><br>${valueHtml(framing.fields.about_entities, new Set(byId.keys()))}</p>`;
   }
   html += prose("Context", fields.context);
   for (const assumption of fields.assumptions || []) html += prose("Assumption", assumption);

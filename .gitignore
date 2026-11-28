@@ -12,7 +12,6 @@ dapp-out/
 # macOS
 .DS_Store
 
-# Graphify machine-local caches and interpreter paths; keep graph outputs portable.
-graphify-out/cache/
-graphify-out/.graphify_python
-graphify-out/.graphify_root
+# Graphify knowledge-graph output and config are local to each checkout.
+graphify-out/
+.graphifyignore

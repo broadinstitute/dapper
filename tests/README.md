@@ -5,8 +5,8 @@ uv run --with-requirements tests/requirements.txt pytest tests/ -q
 node --test tests/portal.test.cjs
 ```
 
-Nothing to install first. The code under test — `schema/converter/geneset_to_dapper.py`,
-`schema/identity/dapper_identity.py`, `portal/build.py` — is a set of standalone PEP-723
+Nothing to install first. The code under test — `converter/geneset_to_dapper.py`,
+`identity/dapper_identity.py`, `portal/build.py` — is a set of standalone PEP-723
 scripts that declare their dependencies inline, so there is no package to install in
 editable mode. `tests/requirements.txt` exists only so `uv` can assemble one environment
 holding pytest *and* those scripts' dependencies at once. `tests/conftest.py` puts the two
@@ -29,7 +29,9 @@ isolation between scientific objects, paragraphs, and citation metadata.
 | `test_identity.py` | the minting algorithm: the GA4GH digest primitive, `digest_of` parsing, what constitutes identity, `assign_ids`/`verify`, the frozen vectors, and `DOC_GROUPS` coverage |
 | `test_document_prefixes.py` | document namespace declarations, unresolved CURIE failures, mixed URI/CURIE graphs, GMT file references, and validated URI export with rewritten content IDs |
 | `test_gene_set_collections.py` | collection membership, GMT row selectors, distinct gene counts, location expansion, and converter library detection |
-| `test_examples.py` | every `schema/examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
+| `test_examples.py` | every `examples/*.yaml`: parses, ids match content, no duplicates, `_illustrative` points at real nodes |
+| `test_croissant.py` | the Croissant example: every FileObject matches a DAPPER File by sha256, location and media type; the record is kept and used by the publication; declared columns exist |
+| `test_result_collections.py` | result-collection versions, dimension and file-role checks, the mixed-method warning, claim identity independent of the collection, and byte-exact value locators |
 | `test_claims.py` | scientific accounts, hypothesis roles, Question/KnowledgeGap inheritance, evidence targets, paragraph rendering, and content identity |
 | `test_files.py` | generic intermediate files, stable IDs across relocation and DRS registration, converter provenance, and portal inheritance |
 | `test_ancestry.py` | ancestry validation and identity, qualified ontology mappings, example scope, and optional DIG folder consistency checks |
@@ -45,7 +47,7 @@ invalid; `test_lint_provenance.py` checks their intended acceptance or rejection
 
 `fixtures/geneset-hubmap-hz2/` is a real `dig.geneset` run — HuBMAP gene set
 `402cf4a1f3682a2e5bf1b002`, 9 File / 2 AnalysisType / 1 GeneSet nodes and 11 edges. It
-moved here from `schema/examples/`, which is the model's worked examples in DAPPER's own
+moved here from `examples/`, which is the model's worked examples in DAPPER's own
 YAML; this is raw upstream input, and only the converter and its docs ever read it.
 
 ## Two things these tests deliberately do differently
@@ -65,6 +67,6 @@ feeds its digest, external ORCID/ROR ids survive minting — so a regression nam
 
 | Failure | Usually means |
 |---|---|
-| `has stale identifiers` | content changed without re-minting → `uv run schema/identity/mint.py <file> -o <file>`, or substitute the reported digest |
+| `has stale identifiers` | content changed without re-minting → `uv run identity/mint.py <file> -o <file>`, or substitute the reported digest |
 | `add these to DOC_GROUPS` | a new Node class needs a document-list key in `dapper_identity.py`, or the portal and minter will disagree about it |
-| a permanent vector fails | **fix the code, never the vector** — see `schema/identity/README.md`. A changed algorithm is `DAPPER-ID-2` under a new prefix |
+| a permanent vector fails | **fix the code, never the vector** — see `identity/README.md`. A changed algorithm is `DAPPER-ID-2` under a new prefix |

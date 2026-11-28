@@ -164,7 +164,7 @@ def test_claim_graph_export_preserves_dependent_reference_identity(sv, tmp_path,
 def test_cli_writes_only_a_valid_export_and_preserves_output_on_error(graph, tmp_path):
     source, output = tmp_path / "source.yaml", tmp_path / "expanded.yaml"
     source.write_text(yaml.safe_dump(graph))
-    cmd = [sys.executable, str(REPO_ROOT / "schema/expand_prefixes.py"), str(source), "-o", str(output)]
+    cmd = [sys.executable, str(REPO_ROOT / "tools/expand_prefixes.py"), str(source), "-o", str(output)]
     result = subprocess.run(cmd, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     before = output.read_bytes()

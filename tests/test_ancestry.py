@@ -4,7 +4,7 @@ from copy import deepcopy
 import pytest
 import yaml
 
-from conftest import EXAMPLES, SCHEMA
+from conftest import EXAMPLES, SCHEMA, set_context
 from dapper_identity import assign_ids, compute_id, verify
 import lint_provenance as lp
 import lint_dig_ancestry as dig
@@ -21,24 +21,27 @@ def ancestry_validator():
 @pytest.mark.parametrize("class_name", ["Dataset", "Activity"])
 @pytest.mark.parametrize("code", [None, *CODES])
 def test_ancestry_accepts_known_codes_or_omission(class_name, code, ancestry_validator):
-    node = {"id": "urn:test:ancestry", "name": "Genetic analysis"}
-    if code is not None:
-        node["ancestry"] = code
+    node = set_context({"id": "urn:test:ancestry", "name": "Genetic analysis"},
+                       "AncestryContext", "ancestry", code)
     assert not ancestry_validator.validate(node, class_name).results
 
 
 @pytest.mark.parametrize("class_name", ["Dataset", "Activity"])
 @pytest.mark.parametrize("code", ["aa", "mixed", "AFR", "unknown", ["AA", "EU"], 42])
 def test_ancestry_rejects_unrecognized_values(class_name, code, ancestry_validator):
-    assert ancestry_validator.validate(
-        {"id": "urn:test:ancestry", "ancestry": code}, class_name).results
+    node = {"id": "urn:test:ancestry",
+            "contexts": [{"context_type": "AncestryContext", "ancestry": code}]}
+    assert ancestry_validator.validate(node, class_name).results
+    # The pre-0.3.0 top-level field is no longer accepted.
+    assert ancestry_validator.validate({"id": "urn:test:ancestry", "ancestry": "AA"}, class_name).results
 
 
 @pytest.mark.parametrize("class_name", ["Dataset", "Activity"])
 def test_ancestry_constitutes_identity(class_name, sv):
     node = {"name": "Genetic analysis"}
     ids = {compute_id(node, class_name, sv)}
-    ids.update(compute_id({**node, "ancestry": code}, class_name, sv) for code in CODES)
+    ids.update(compute_id(set_context(dict(node), "AncestryContext", "ancestry", code), class_name, sv)
+               for code in CODES)
     assert len(ids) == 1 + len(CODES)
 
 
@@ -51,18 +54,22 @@ def test_mapping_strength_does_not_equate_ethnicity_or_admixture(sv):
     assert values["HS"].close_mappings == ["HANCESTRO:0014"]
     assert values["Mixed"].meaning is None
     assert not values["Mixed"].exact_mappings
-    assert "ancestry" not in sv.class_slots("File")
-    assert "ancestry" not in sv.class_slots("DrsObject")
+    assert "ancestry" in sv.class_slots("AncestryContext")
+    assert "Context" in sv.class_ancestors("AncestryContext")
+    assert "contexts" not in sv.class_slots("File")
+    assert "contexts" not in sv.class_slots("DrsObject")
 
 
 def test_example_annotates_only_explicitly_scoped_records(sv):
     doc = yaml.safe_load((EXAMPLES / "example_bottom_line_af_aa.yaml").read_text())
-    assert doc["datasets"][0]["ancestry"] == "AA"
-    assert sum("ancestry" in n for n in doc["datasets"]) == 7
-    assert sum("ancestry" in n for n in doc["activities"]) == 5
+    def ancestry(node):
+        return lp.context_value(node, "AncestryContext", "ancestry")
+    assert ancestry(doc["datasets"][0]) == "AA"
+    assert sum(ancestry(n) is not None for n in doc["datasets"]) == 7
+    assert sum(ancestry(n) is not None for n in doc["activities"]) == 5
     for node in doc["datasets"][1:] + doc["activities"]:
-        assert (node.get("ancestry") == "AA") == ("ancestry=AA" in node["description"])
-    assert all("ancestry" not in f for f in doc["files"])
+        assert (ancestry(node) == "AA") == ("ancestry=AA" in node["description"])
+    assert all("contexts" not in f for f in doc["files"])
     assert not verify(doc, sv)
     original = deepcopy(doc)
     assign_ids(doc, sv)
@@ -92,10 +99,7 @@ def test_dig_parser_reads_only_the_documented_path_segment(location, expected):
 def test_dig_distribution_check(declared, folder, errors, reified, tmp_path, sv, ancestry_validator):
     raw = yaml.safe_load((EXAMPLES / "example_bottom_line_af_aa.yaml").read_text())
     dataset = raw["datasets"][0]
-    if declared is None:
-        dataset.pop("ancestry")
-    else:
-        dataset["ancestry"] = declared
+    set_context(dataset, "AncestryContext", "ancestry", declared)
     raw["files"][0]["location"] = (
         f"s3://dig-open-bottom-line-analysis/bottom-line/{folder}/AF.sumstats.tsv.gz")
     if reified:
@@ -118,10 +122,38 @@ def test_dig_distribution_check(declared, folder, errors, reified, tmp_path, sv,
 
 def test_dig_checks_dataset_prefix_without_distribution(tmp_path, sv):
     path = tmp_path / "candidate.yaml"
-    path.write_text(yaml.safe_dump({"datasets": [{"id": "urn:example:data", "ancestry": "AA",
+    path.write_text(yaml.safe_dump({"datasets": [{"id": "urn:example:data",
+        "contexts": [{"context_type": "AncestryContext", "ancestry": "AA"}],
         "location": "s3://dig-open-bottom-line-analysis/bottom-line/EU/"}]}))
     vocab = lp.Vocabulary.build(sv, yaml.safe_load(lp.PROFILES_PATH.read_text()))
     report = lp.Report(path=path)
     dig.check_ancestry(lp.Document.load(path, vocab), vocab, sv, report)
     assert len(report.errors) == 1
     assert report.errors[0].check == "dig-ancestry"
+
+
+def _lint_contexts(contexts, tmp_path, sv):
+    path = tmp_path / "candidate.yaml"
+    path.write_text(yaml.safe_dump({"datasets": [{"id": "urn:example:data", "contexts": contexts}]}))
+    vocab = lp.Vocabulary.build(sv, yaml.safe_load(lp.PROFILES_PATH.read_text()))
+    report = lp.Report(path=path)
+    lp.check_contexts(lp.Document.load(path, vocab), report)
+    return report
+
+
+def test_one_context_of_each_kind(tmp_path, sv):
+    twice = [{"context_type": "TraitContext", "trait": "KPN.TRAIT:0000096"},
+             {"context_type": "TraitContext", "trait": "KPN.TRAIT:0000001"}]
+    report = _lint_contexts(twice, tmp_path, sv)
+    assert [f.check for f in report.errors] == ["contexts"]
+
+
+def test_contexts_out_of_order_warn_because_order_is_identity(tmp_path, sv):
+    unsorted = [{"context_type": "TraitContext", "trait": "KPN.TRAIT:0000096"},
+                {"context_type": "AncestryContext", "ancestry": "AA"}]
+    report = _lint_contexts(unsorted, tmp_path, sv)
+    assert not report.errors
+    assert [f.check for f in report.findings] == ["contexts"]
+    node = {"name": "x"}
+    assert (compute_id({**node, "contexts": unsorted}, "Dataset", sv)
+            != compute_id({**node, "contexts": unsorted[::-1]}, "Dataset", sv))

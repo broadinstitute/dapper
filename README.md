@@ -5,27 +5,58 @@ related biomedical knowledge products.
 
 ## Release
 
-Use [0.2.0](https://github.com/broadinstitute/dapper/releases/tag/0.2.0)
-to pin the gene-set/GMT, scientific provenance, and embedding model described
-here. See the [release and migration notes](docs/releases/0.2.0.md). Pull
-that tag when generating or validating its identifiers; the 0.2.0 alphas and
-0.1.0 use different gene-set and claims models.
+Use [0.3.0-a1](https://github.com/broadinstitute/dapper/releases/tag/0.3.0-a1)
+to pin the model described here. It splits the schema into concept modules
+(`core.yaml`, `claims.yaml` and one per domain) that `dapper.yaml` imports,
+flattens the repository layout, and adds value locators and result collections to
+[0.2.0](docs/releases/0.2.0.md). It also reshapes DISMECH links, account
+framing and ancestry/trait context, so records using those re-mint. See the
+[release and migration notes](docs/releases/0.3.0-a1.md). Pull the tag when
+generating or validating its identifiers; the 0.2.0 alphas and 0.1.0 use
+different gene-set and claims models.
+
+Documents written for 0.2.1-a1 convert with `converter/migrate.py`, which
+re-mints them and reports every old id and its new one:
+
+```bash
+uv run converter/migrate.py old.yaml --from 0.2.1-a1 -o new.yaml --id-map ids.json
+```
+
+**Every release ships its own converter.** A release that changes any shape
+must include a step in `converter/migrate.py` from the previous release, with
+fixtures of that release and tests, before it is tagged. DAPPER owns these
+converters; stores that vendor DAPPER run them and never write their own. See
+[Releasing a DAPPER version](docs/guides/releasing.md).
 
 ## Repository layout
 
-The root `schema/` directory is the model boundary. Keep schema modules,
-examples, converters, and model-specific documentation relative to that
-directory so the repository can grow without mixing model concerns with
-repository tooling.
+`schema/` holds only the LinkML modules. Everything else sits beside it at the
+root.
 
 ```text
 schema/
-  dapper.yaml               # current root model
-  claims.yaml               # propositions, claims, scores, and scientific accounts
-  trusty-identifiers.md     # Trusty URI and nanopublication design notes
-  identity/                 # computed content identifiers (DAPPER-ID-1)
-  examples/                 # LinkML instance and graph examples
-  converter/                # Source-data to model converters
+  dapper.yaml               # root model: imports every module below, defines nothing
+  core.yaml                 # what is tracked: identity, attribution, provenance, files, collections
+  claims.yaml               # scientific reasoning: propositions, claims, evidence, accounts
+  genesets.yaml             # GeneSet, GeneSetCollection, GeneSetLibrary
+  cell_programs.yaml        # GeneProgram, CellState
+  mechanisms.yaml           # MechanisticModel (a CausalGraph), MechanisticLink, Mechanism
+  scm.yaml                  # StructuralCausalModel, CausalEstimand, DiscriminatingExperiment
+  genetics.yaml             # GenotypeVariable, GeneticAssociation, GeneticEffectEstimate
+  nanopub.yaml              # nanopublications
+  dismech.yaml              # DISMECH cross-walk edge
+  replay.yaml               # AgenticWorkspace
+  cfde.yaml                 # C2M2File
+  biology.yaml              # ancestry, trait, tissue, cell type, cell line, organism contexts
+examples/                   # LinkML instance and graph examples
+identity/                   # computed content identifiers (DAPPER-ID-1)
+lint/                       # provenance-graph linter and modality profiles
+converter/                  # source-data converters, and migrate.py: release-to-release document converter
+citations/                  # JSON Schema and example for external citation records
+docs/                       # site landing page, release notes, and guides/
+tools/                      # docs build, prefix expansion, claims and citation checks
+portal/                     # provenance inspector
+tests/
 ```
 
 ## Identifiers
@@ -39,11 +70,11 @@ change an identifier; changing the analysis does.
 it. To turn a pile of gene-set runs into one identified collection:
 
 ```bash
-uv run schema/identity/mint.py /path/to/your/genesets -o collection.yaml
-uv run schema/identity/dapper_identity.py verify collection.yaml
+uv run identity/mint.py /path/to/your/genesets -o collection.yaml
+uv run identity/dapper_identity.py verify collection.yaml
 ```
 
-`schema/identity/README.md` has the walkthrough, the full `DAPPER-ID-1` profile, and why this is
+`identity/README.md` has the walkthrough, the full `DAPPER-ID-1` profile, and why this is
 deliberately *not* a Trusty URI.
 
 Additional model types should be added as separate YAML modules under
@@ -58,29 +89,41 @@ Provenance Profile it's named after. It covers citation, funding, PROV
 lineage, file identity, controlled-access terms, workflow provenance,
 nanopublications, scientific accounts, and agentic replay.
 
+The model is split into modules. `schema/core.yaml` holds what is tracked
+(the graph skeleton, identity, attribution, provenance, files, DRS, DUO,
+embeddings, collections) and can be imported on its own. `schema/claims.yaml`
+is the scientific reasoning layer. Each domain (gene sets, gene programs and
+cell states, mechanistic models, nanopublications, the DISMECH cross-walk,
+agentic replay, CFDE files, biological contexts) has its own module. `schema/dapper.yaml` only
+imports them. Tools and validation always start from `dapper.yaml`, and every
+module is linted on its own.
+
 Scientific assessments use `Claim`, reusable `Proposition` records, and typed
-`ClaimScore` values. `ScientificAccount` organizes a question, hypothesis role,
-context, claims, and optional conclusions. Its question references `Question`
-or the `KnowledgeGap` subclass. `EvidenceItem` records how source
-claims bear on a target proposition; `MechanisticModel` supplies optional
-biological structure. `Paragraph` saves a textual expression of an account.
-See the [Scientific Claims design](schema/docs/claims.md) and the
-[fictional account example](schema/examples/example_scientific_account.yaml).
+`ClaimScore` values. `ScientificAccount` organizes its framing (one or more
+`Question`, `KnowledgeGap` or `Hypothesis` records), context, claims, and
+optional conclusions. `EvidenceItem` records how source claims or result
+values bear on a target proposition. Causal content is interventionist:
+`CausalLink` propositions relate `CausalVariable`s, and a `CausalGraph` (or
+its biological kind, `MechanisticModel`) organizes them, acyclic unless it
+declares feedback. `Paragraph` saves a textual expression of an account.
+See the [Scientific Claims design](docs/guides/claims.md), the
+[causality guide](docs/guides/causality.md) and the
+[fictional account example](examples/example_scientific_account.yaml).
 Questions and gaps can carry entity context; gaps can specify `gap_kind`.
 Paragraph citations pin exact scientific objects and citation metadata revisions.
-The separate [citation metadata contract](schema/docs/citations.md) records ordered
+The separate [citation metadata contract](docs/guides/citations.md) records ordered
 credit, dates, repository metadata, and publication state without changing the
 scientific object's digest.
 
 ```bash
-uv run schema/lint/lint_provenance.py schema/examples/example_scientific_account.yaml
-uv run schema/scientific_claims.py schema/examples/example_scientific_account.yaml
+uv run lint/lint_provenance.py examples/example_scientific_account.yaml
+uv run tools/scientific_claims.py examples/example_scientific_account.yaml
 ```
 
 Use `File` for generic inputs, intermediates, and outputs, and `C2M2File` for
 files carrying C2M2 metadata. Optional DRS representations are separate nodes.
-See [files and DRS](schema/docs/files-and-drs.md) and the
-[intermediate-file example](schema/examples/example_file_graph.yaml).
+See [files and DRS](docs/guides/files-and-drs.md) and the
+[intermediate-file example](examples/example_file_graph.yaml).
 
 `GeneSetCollection` represents a library of named `GeneSet` records and links
 its GMT serialization through `has_gmt_file`. A single set selects its row
@@ -88,8 +131,8 @@ with `in_gmt_file` plus `gmt_entry`. Direct membership uses collection `members`
 and the set's inverse `in_gene_set_collection` list. Collection `n_sets` counts sets and
 `n_genes` counts their distinct gene union. Locations and checksums belong on
 the referenced `File` or `C2M2File`. See the
-[gene-set authoring guide](schema/docs/geneset-authoring.md) and
-[two-row example](schema/examples/example_geneset_collection_rows.yaml).
+[gene-set authoring guide](docs/guides/geneset-authoring.md) and
+[two-row example](examples/example_geneset_collection_rows.yaml).
 
 `Embedding` records a vector that a model computed from text derived from
 any node (`embedding_of`; the node's inverse `has_embedding` list is
@@ -97,14 +140,24 @@ unhashable, so embedding a node never changes its identifier). The vector
 bytes live as one row of a shared matrix `File`, located by `has_vector_file`
 plus `vector_row`; model, provider, dimensions, dtype, normalization, the
 embedded text, its template and `vector_sha256` make up the identity. See the
-[embeddings guide](schema/docs/embeddings.md) and
-[example](schema/examples/example_embedding_graph.yaml).
+[embeddings guide](docs/guides/embeddings.md) and
+[example](examples/example_embedding_graph.yaml).
+
+`ResultCollection` is one immutable version of a method's results: member
+`Dataset`s placed by `dimension_values` and `file_roles`, plus the claim and
+query template files. It and `GeneSetCollection` both specialize the abstract
+`Collection`, a versioned `Set` of DAPPER records. `ValueLocator` pins the
+exact bytes of a value in a result file so evidence can ground there. See the
+[result collections guide](docs/guides/result-collections.md) and
+[example](examples/example_result_collection.yaml). Results that a
+repository already describes with Croissant map onto these classes directly;
+see [Croissant and DAPPER](docs/guides/croissant.md).
 
 Validate a single instance from the repository root with:
 
 ```bash
 uv run --with linkml linkml-validate \
-  -s schema/dapper.yaml -C Dataset schema/examples/example_dataset.yaml
+  -s schema/dapper.yaml -C Dataset examples/example_dataset.yaml
 ```
 
 ## End-result documents
@@ -118,35 +171,36 @@ so pointing it at a graph document raises rather than validating; it only works
 on one node at a time against a named class. Lint a whole document with:
 
 ```bash
-uv run schema/lint/lint_provenance.py path/to/result.yaml   # modality auto-detected
-uv run schema/lint/lint_provenance.py --list-profiles
+uv run lint/lint_provenance.py path/to/result.yaml   # modality auto-detected
+uv run lint/lint_provenance.py --list-profiles
 ```
 
 On top of per-node schema conformance, it checks the document shape, typed edge endpoints, referential
 integrity, identifier correctness, and that every node is reachable from the end
 result. Modalities are declared as data in
-[`schema/lint/profiles.yaml`](schema/lint/profiles.yaml) Please see [schema/lint/README.md](schema/lint/README.md) for additional documentation.
+[`lint/profiles.yaml`](lint/profiles.yaml) Please see [lint/README.md](lint/README.md) for additional documentation.
 
 ## Model documentation
 
-The [gene-set authoring guide](schema/docs/geneset-authoring.md) shows document-local
+The [gene-set authoring guide](docs/guides/geneset-authoring.md) shows document-local
 `prefixes`, digest-based GMT file references, and a corrected HuBMAP export.
-Use `uv run schema/expand_prefixes.py input.yaml --output expanded.yaml` to
+Use `uv run tools/expand_prefixes.py input.yaml --output expanded.yaml` to
 resolve identifier/URI fields and re-mint affected records. The provenance
 linter rejects undeclared prefixes in these fields.
 
-The [AF / AA bottom-line mapping](schema/docs/bottom-line-results.md) shows how
+The [AF / AA bottom-line mapping](docs/guides/bottom-line-results.md) shows how
 to represent S3 prefix collections, pipeline activities, and a published File
 distribution without inventing C2M2 or DRS registrations. Its
-[complete YAML example](schema/examples/example_bottom_line_af_aa.yaml) passes
+[complete YAML example](examples/example_bottom_line_af_aa.yaml) passes
 the provenance linter and is included in the portal.
 
-The [ancestry guide](schema/docs/ancestry.md) describes `AncestryEnum`, its
-HANCESTRO mappings, and the optional `ancestry` field on Dataset and Activity.
+The [ancestry guide](docs/guides/ancestry.md) describes `AncestryEnum`, its
+HANCESTRO mappings, and the `AncestryContext` a Dataset or Activity can list
+in its `contexts`.
 The AF / AA example includes explicit ancestry scope. Use
-`uv run schema/lint/lint_dig_ancestry.py path/to/result.yaml` to also check
+`uv run lint/lint_dig_ancestry.py path/to/result.yaml` to also check
 declared ancestry against DIG's public/staging export folder conventions.
-The example also uses `trait: KPN.TRAIT:0000096` for atrial fibrillation;
+The example also uses a `TraitContext` with `KPN.TRAIT:0000096` for atrial fibrillation;
 the portal links this CURIE to the renamed KPN trait catalog.
 
 Build the searchable LinkML reference and the provenance inspector together:
@@ -159,7 +213,7 @@ uv run tools/build_docs.py --serve --port 8000
 The preview is at `http://127.0.0.1:8000/model/`, with the inspector at `/`.
 The reference includes class inheritance diagrams, inherited slots, enums,
 ontology mappings, and full-text search. Reference pages come directly from
-`schema/dapper.yaml`; the landing page and theme live in `docs/`.
+`schema/dapper.yaml` and the modules it imports; the landing page and theme live in `docs/`.
 
 The inspector orders inputs before outputs in both arrow views. **Stored predicates**
 points each arrow from its statement's subject to its object; `prov:wasGeneratedBy`

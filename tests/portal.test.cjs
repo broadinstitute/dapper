@@ -27,7 +27,7 @@ test('scientific accounts show roles, evidence, and a saved paragraph without as
   const rendered = run(`(() => {
     const graph = JSON.parse(JSON.stringify(DATA.graphs.find(g => g.key === "scientific_account")));
     const account = graph.nodes.find(n => n.cls === "ScientificAccount");
-    graph.nodes.find(n => n.id === account.fields.question).fields.text = '<img src=x onerror=alert(1)>';
+    graph.nodes.find(n => n.id === account.fields.framing[0]).fields.text = '<img src=x onerror=alert(1)>';
     const conclusion = graph.nodes.find(n => n.id === account.fields.conclusion_claims[0]);
     delete conclusion.fields.statement;
     conclusion.fields.direction = 'DISPUTES';
@@ -62,7 +62,7 @@ test('citation excerpts count Unicode code points and escape authored text', () 
 test('uploaded scientific accounts open at the account even when a paragraph is its terminal expression', () => {
   const { run } = runtime();
   const graph = run(`graphFromDoc({
-    scientific_accounts: [{id: "account", question: "question", component_claims: ["claim"]}],
+    scientific_accounts: [{id: "account", framing: ["question"], component_claims: ["claim"]}],
     questions: [{id: "question", text: "What was found?"}],
     claims: [{id: "claim", proposition: "proposition"}],
     propositions: [{id: "proposition", statement: "An illustrative result."}],
@@ -117,8 +117,8 @@ test('gene-set membership pointers navigate both ways with a consistent flow lay
 
 test('enum values link to definitions with explicitly qualified ontology mappings', () => {
   const { run } = runtime();
-  const render = value => run(`valueHtml(${JSON.stringify(value)}, new Set(), DATA.schema.Dataset.attributes.ancestry)`);
-  const details = value => run(`modelDetailsHtml(DATA.schema.Dataset, {ancestry: ${JSON.stringify(value)}})`);
+  const render = value => run(`valueHtml(${JSON.stringify(value)}, new Set(), DATA.schema.AncestryContext.attributes.ancestry)`);
+  const details = value => run(`modelDetailsHtml(DATA.schema.AncestryContext, {ancestry: ${JSON.stringify(value)}})`);
   assert.match(render('AA'), /href="model\/reference\/enums\/AncestryEnum\/"/);
   assert.match(render('AA'), /href="http:\/\/purl.obolibrary.org\/obo\/HANCESTRO_0016"/);
   assert.match(details('AA'), /Meaning:.*HANCESTRO_0016/);
@@ -264,4 +264,32 @@ test('a result keeps its file and DRS access visible without tracing downstream 
     run('clearTrace()');
     assert.equal(cy.elements('.lit, .dim, .context').length, 0);
   } finally { cy.destroy(); }
+});
+
+test('a Dataset shows its contexts with the ancestry enum and trait catalog links', () => {
+  const { run } = runtime();
+  const dataset = `(() => { const g = DATA.graphs.find(g => g.key === "bottom_line_af_aa");
+                              return g.nodes.find(n => n.id === g.start); })()`;
+  // Field values: each context's fields use its own class's metadata.
+  const values = run(`fieldsHtml(${dataset}.fields, DATA.schema.Dataset, new Set())`);
+  assert.match(values, /href="model\/reference\/enums\/AncestryEnum\/"/);
+  assert.match(values, /href="https:\/\/broadinstitute.github.io\/kpn-data-models\/kpn.trait\/0000096\/"/);
+  // Model details document the nested context fields, with the enum meaning.
+  const details = run(`modelDetailsHtml(DATA.schema.Dataset, ${dataset}.fields)`);
+  assert.match(details, /href="model\/reference\/slots\/ancestry\/"/);
+  assert.match(details, /Vocabulary: .*AncestryEnum/);
+  assert.match(details, /AA — Meaning: .*HANCESTRO_0016/);
+});
+
+test('a mechanistic model shows its graph entries with directness and link targets', () => {
+  const { run } = runtime();
+  const model = `(() => { const g = DATA.graphs.find(g => g.source === "example_claim_provenance_trace.yaml");
+                            return g.nodes.find(n => n.cls === "MechanisticModel"); })()`;
+  const values = run(`fieldsHtml(${model}.fields, DATA.schema.MechanisticModel, new Set())`);
+  assert.match(values, /INDIRECT_KNOWN_INTERMEDIATES/);
+  assert.match(values, /megalin\/cubilin/);
+  assert.match(values, /CausalLink\./);
+  const details = run(`modelDetailsHtml(DATA.schema.MechanisticModel, ${model}.fields)`);
+  assert.match(details, /href="model\/reference\/slots\/link_type\/"/);
+  assert.match(details, /CausalLinkTypeEnum/);
 });

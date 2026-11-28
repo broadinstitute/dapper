@@ -14,10 +14,12 @@ ontology mappings. Search by a class or field name to jump straight to its defin
 - **[GeneSet](reference/classes/GeneSet.md)**, **[GeneSetCollection](reference/classes/GeneSetCollection.md)**, and **[GeneProgram](reference/classes/GeneProgram.md)** — individual sets, libraries of sets, and coordinated gene activity.
 - **[Embedding](reference/classes/Embedding.md)** — a model-computed vector representing any node, stored as a row of a shared matrix file.
 - **[Claim](reference/classes/Claim.md)** — an attributed assessment of a proposition, with scores and provenance.
-- **[ScientificAccount](reference/classes/ScientificAccount.md)** — question, hypothesis, context, claims, and optional conclusions.
-- **[Question](reference/classes/Question.md)** and **[KnowledgeGap](reference/classes/KnowledgeGap.md)** — reusable inquiries; KnowledgeGap inherits from Question.
-- **[Proposition](reference/classes/Proposition.md)** — reusable content that may play the hypothesis role in an account.
-- **[MechanisticModel](reference/classes/MechanisticModel.md)** — optional biological structure, assessed through Claims.
+- **[ScientificAccount](reference/classes/ScientificAccount.md)** — framing, context, claims, and optional conclusions.
+- **[Question](reference/classes/Question.md)**, **[KnowledgeGap](reference/classes/KnowledgeGap.md)** and **[Hypothesis](reference/classes/Hypothesis.md)** — the framings an account addresses.
+- **[Proposition](reference/classes/Proposition.md)** — reusable content that claims assess; a Hypothesis puts one forward.
+- **[CausalLink](reference/classes/CausalLink.md)** and **[CausalGraph](reference/classes/CausalGraph.md)** — interventionist causal content: links between variables, organized as graphs ([guide](guides/causality.md)).
+- **[MechanisticModel](reference/classes/MechanisticModel.md)** — a causal graph proposed as a biological mechanism, assessed through Claims.
+- **[StructuralCausalModel](reference/classes/StructuralCausalModel.md)** and **[CausalEstimand](reference/classes/CausalEstimand.md)** — a causal graph with variable domains, distributions and structural equations, and the causal quantities defined in it.
 
 ## Browse the reference
 
@@ -72,6 +74,12 @@ load your own DAPPER YAML.
 
 The [citation guide](guides/citations.md) covers exact object references,
 paragraph spans, and the separate versioned citation metadata contract.
+
+[Result collections](guides/result-collections.md) version a method's results
+together with the templates that turn them into claims. Value locators pin the
+exact bytes behind each number. [Croissant and DAPPER](guides/croissant.md)
+shows how a repository's Croissant record imports into a collection, and how
+to publish DAPPER results as Croissant.
 
 These reference pages are generated from [the schema](schema/dapper.yaml).
 Class pages include direct and inherited slots; shared slot pages show how a
