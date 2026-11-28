@@ -229,20 +229,35 @@ evidence_items:
 ### What a claim's direction rests on
 
 A Claim's `direction` says which way the evidence points; its
-`evidence_basis` says how close that evidence comes to the proposition's own
-contexts. They are separate because they fail separately: a link shown in
-mouse colon and a link contradicted in human colon differ in basis, not only
-in sign.
+`evidence_basis` says how close that evidence comes to the proposition. They
+are separate because they fail separately: a link shown in mouse colon and a
+link contradicted in human colon differ in basis, not only in sign.
 
-| `evidence_basis` | The direction rests on |
-|---|---|
-| `IN_CONTEXT` | Evidence obtained in the proposition's own contexts. |
-| `BY_ANALOGY` | Direct evidence from other contexts only: another organism, a cell line, another cell type or tissue. |
-| `INDIRECT` | Evidence about neighbouring propositions (an upstream or downstream link, an association). |
-| `UNTESTED` | Nothing. Absence of evidence, recorded as a finding; no direction, or `UNKNOWN`. |
+Closeness has two parts: the **variables** the evidence is about and the
+**contexts** it was obtained in. Changing the context makes evidence an
+analogy; changing the variable makes it indirect.
 
-With mixed evidence, the basis is the strongest among the items that carry
-the claim's direction. The evidence items' `contexts` let a reader check it.
+| `evidence_basis` | Same variables? | Same contexts? | Example, for "DLD activity increases nuclear succinyl-CoA in human colonocytes" |
+|---|---|---|---|
+| `IN_CONTEXT` | yes | yes | DLD knockdown in human colonocytes lowers nuclear succinyl-CoA. |
+| `BY_ANALOGY` | yes | no | DLD knockdown in a mouse, or in HEK293 cells, lowers nuclear succinyl-CoA. |
+| `INDIRECT` | no | either | DLST (a sibling subunit) knockdown lowers it; or DLD knockdown lowers histone succinylation, a different readout. |
+| `UNTESTED` | no evidence | | Nothing found. Absence of evidence, recorded as a finding; no direction, or `UNKNOWN`. |
+
+An EvidenceItem's `measured_variables` names the variables it set or
+measured. When the evidence carrying a claim's direction names its variables,
+an `IN_CONTEXT` or `BY_ANALOGY` claim needs at least one item that measured
+all of the proposition's own variables (a link's cause and effect, an
+estimand's treatment and outcome); the scientific-content check refuses one
+that doesn't. With mixed evidence, the basis is the strongest among the
+items that carry the claim's direction. The items' `contexts` and
+`measured_variables` let a reader check it.
+
+**Whole-system results** (a gene knockout's effect on colitis) skip the
+graph's intermediate steps: they measure the gene's total effect on the
+disease. Record them on a `CausalEstimand` (`AVERAGE_EFFECT`, treatment the
+gene's variable, outcome the disease's) and assess that, rather than
+attaching them to the hypothesis as a whole.
 
 ## Genetic variants
 

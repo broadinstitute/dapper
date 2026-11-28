@@ -66,6 +66,26 @@ def test_untested_claim_has_no_direction(doc, direction, ok):
     assert any("UNTESTED" in p for p in problems(doc)) != ok
 
 
+def test_direct_basis_needs_evidence_on_the_propositions_own_variables(doc):
+    """Evidence that measured another variable makes a claim INDIRECT, not IN_CONTEXT."""
+    evidence = doc["evidence_items"][0]
+    sibling = by_name(doc, "causal_variables", "Barrier integrity")["id"]
+    evidence["measured_variables"] = [evidence["measured_variables"][0], sibling]
+    assert any("no evidence carrying its direction measured all of" in p for p in problems(doc))
+    by_name(doc, "claims", "Genotype lowers G expression")["evidence_basis"] = "INDIRECT"
+    assert problems(doc) == []
+
+
+def test_evidence_without_measured_variables_is_not_checked(doc):
+    doc["evidence_items"][0].pop("measured_variables")
+    assert problems(doc) == []
+
+
+def test_measured_variables_must_be_variables(doc):
+    doc["evidence_items"][0]["measured_variables"].append(doc["questions"][0]["id"])
+    assert any("must resolve to CausalVariable" in p for p in problems(doc))
+
+
 def test_evidence_basis_rejects_unknown_values(doc, validator):
     claim = {**by_name(doc, "claims", "Genotype lowers G expression"), "evidence_basis": "ANALOGUE"}
     assert validator.validate(claim, "Claim").results

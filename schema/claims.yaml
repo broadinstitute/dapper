@@ -242,18 +242,22 @@ enums:
     permissible_values:
       IN_CONTEXT:
         description: >-
-          Evidence obtained in the proposition's own contexts (its organism,
-          tissue, cell type) bears directly on the proposition.
+          Evidence on the proposition's own variables (the same cause and
+          effect), obtained in its own contexts (its organism, tissue, cell
+          type).
       BY_ANALOGY:
         description: >-
-          Evidence bears directly on the proposition but was obtained only
-          in other contexts: another organism, a cell line, another cell
-          type or tissue. The proposition is untested where it is claimed.
+          Evidence on the proposition's own variables, obtained only in other
+          contexts: another organism, a cell line, another cell type or
+          tissue. The same dependence, shown elsewhere; untested where it is
+          claimed.
       INDIRECT:
         description: >-
-          Evidence bears only on neighbouring propositions (an upstream or
-          downstream link, an association, a measurement), from which this
-          one is inferred.
+          Evidence on other variables only (a sibling gene or subunit, a
+          different readout, an upstream or downstream link, an association),
+          from which this proposition is inferred. Changing the variable
+          makes evidence indirect; changing only the context makes it an
+          analogy.
       UNTESTED:
         description: >-
           No evidence bearing on the proposition was found. Absence of
@@ -1194,6 +1198,20 @@ classes:
         description: >-
           How the evidence was obtained relative to the intervention a causal
           target proposition is about. Omission means not classified.
+      measured_variables:
+        is_a: relationship
+        mixins: [hashable]
+        range: CausalVariable
+        inlined: false
+        multivalued: true
+        slot_uri: dapper:measured_variables
+        description: >-
+          The variables this evidence itself set or measured: what was
+          intervened on or varied, and what was read out. For a causal target,
+          evidence naming the target's own cause and effect bears on it
+          directly (in its contexts, or by analogy in others); evidence that
+          names other variables (a sibling gene, another readout) bears on it
+          only indirectly. Add a CausalVariable for a variable the model lacks.
       evidence_source:
         is_a: literal
         mixins: [hashable]

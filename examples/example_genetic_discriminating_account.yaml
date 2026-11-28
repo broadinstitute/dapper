@@ -24,8 +24,8 @@ _illustrative:
 - dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
 - dapper:GeneticEffectEstimate.pmOYj53ivMt4lU7DTPcLg5-_Wf50wHjO
 - dapper:Claim.LBkPvo5H3Q9y9a9ANm-gKTSKV_Usdfqe
-- dapper:EvidenceItem.HRU-xWviAwi3e0Q2G3QwssbxyUaU5VoI
-- dapper:Claim.faNya3BQ68GF-ofPtsLZGY83QkriewRV
+- dapper:EvidenceItem.IxA5xVm-uiX_2nrOhCjrmbS6nkBBCvli
+- dapper:Claim.phQVuRdCnVVqoxPRcc_qcS8QUD1bw7yK
 - dapper:Claim.Jdmb1vdNvEF9ze0Ux4CV9B0gV3KCB0bH
 - dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk
 - dapper:CausalEstimand.TYKyuqs8iPrLDxatj291Mn-C51ST6_J-
@@ -35,7 +35,7 @@ _illustrative:
 - dapper:Hypothesis.msWtRRUgkDuQf4L45MgzxX5XD3TW8-Aw
 - dapper:Hypothesis.Zj6LehilWmPywS_HTAOPPgvVqLm5isI7
 - dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
-- dapper:ScientificAccount.HAkMmpLc1M8V218VPDvm2F-MRdxmmCVK
+- dapper:ScientificAccount.ifpN38IkD33RD-J72EQg3_BywzZMUzev
 genotype_variables:
 - id: dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
   name: rs-risk genotype
@@ -208,13 +208,13 @@ claims:
   was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
   was_attributed_to:
   - urn:example:research-team
-- id: dapper:Claim.faNya3BQ68GF-ofPtsLZGY83QkriewRV
+- id: dapper:Claim.phQVuRdCnVVqoxPRcc_qcS8QUD1bw7yK
   name: Genotype lowers G expression
   proposition: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
   direction: SUPPORTS
   evidence_basis: IN_CONTEXT
   has_evidence:
-  - dapper:EvidenceItem.HRU-xWviAwi3e0Q2G3QwssbxyUaU5VoI
+  - dapper:EvidenceItem.IxA5xVm-uiX_2nrOhCjrmbS6nkBBCvli
   was_generated_by: dapper:Activity.3s5AaXWvKzI4xIRMhdY87e9HY-Wy0aDi
   was_attributed_to:
   - urn:example:research-team
@@ -227,12 +227,15 @@ claims:
   was_attributed_to:
   - urn:example:research-team
 evidence_items:
-- id: dapper:EvidenceItem.HRU-xWviAwi3e0Q2G3QwssbxyUaU5VoI
+- id: dapper:EvidenceItem.IxA5xVm-uiX_2nrOhCjrmbS6nkBBCvli
   target_proposition: dapper:CausalLink.MzGVKBdYFwM2O-lyNKxwdgq02-lSTujM
   source_claims:
   - dapper:Claim.LBkPvo5H3Q9y9a9ANm-gKTSKV_Usdfqe
   direction: SUPPORTS
   evidence_design: NATURAL_EXPERIMENT
+  measured_variables:
+  - dapper:GenotypeVariable.ra_3OM4galw8Rv6se6cpBhU8m2lp3S2r
+  - dapper:CausalVariable.y5Pbn69vXk6LL8AGrKopdFYkjPRXGwKW
   context: The eQTL in transverse colon; genotype is fixed at conception, so it is not caused by expression.
   explanation: The association, with the variant fine-mapped in this illustration, is read as a cis effect of the T allele on G.
   contexts:
@@ -330,7 +333,7 @@ used_edges:
   predicate: prov:used
   object: dapper:GeneticAssociation.oROc0W8O29Eh0raVUv1YYsnIMwfKYxsq
 scientific_accounts:
-- id: dapper:ScientificAccount.HAkMmpLc1M8V218VPDvm2F-MRdxmmCVK
+- id: dapper:ScientificAccount.ifpN38IkD33RD-J72EQg3_BywzZMUzev
   name: Illustrative risk-allele account
   framing:
   - dapper:Question.bTqGQoPFwhaKMOipPVttRH2OOI1QkKOk
@@ -340,7 +343,7 @@ scientific_accounts:
   explanatory_model: dapper:MechanisticModel.VFV3wH61NhI4g0nNpAhpQ7y-ZJCbEolw
   component_claims:
   - dapper:Claim.LBkPvo5H3Q9y9a9ANm-gKTSKV_Usdfqe
-  - dapper:Claim.faNya3BQ68GF-ofPtsLZGY83QkriewRV
+  - dapper:Claim.phQVuRdCnVVqoxPRcc_qcS8QUD1bw7yK
   - dapper:Claim.Jdmb1vdNvEF9ze0Ux4CV9B0gV3KCB0bH
   identified_gaps:
   - dapper:KnowledgeGap.7zb7rHY0QsgiEIhaoUVkfPDP5xpXFesk

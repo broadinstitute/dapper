@@ -182,6 +182,40 @@ def check_discriminating_experiment(nid: str, experiment: dict,
     return problems
 
 
+def target_variables(cls: str | None, proposition: dict) -> set[str] | None:
+    """The variables a causal proposition is about: a link's cause and effect, an
+    estimand's treatment and outcome. None for a proposition with no variables."""
+    if _accepts("CausalLink", cls):
+        return {proposition.get("cause"), proposition.get("effect")} - {None}
+    if _accepts("CausalEstimand", cls):
+        return {proposition.get("treatment"), proposition.get("outcome")} - {None}
+    return None
+
+
+DIRECT_BASES = {"IN_CONTEXT", "BY_ANALOGY"}
+
+
+def check_evidence_basis_variables(nid: str, claim: dict,
+                                   nodes: dict[str, tuple[str, dict]]) -> list[tuple[str, str]]:
+    """IN_CONTEXT and BY_ANALOGY say the evidence is on the proposition's own
+    variables. When the evidence carrying the claim's direction names the
+    variables it measured, at least one item must name all of them."""
+    if claim.get("evidence_basis") not in DIRECT_BASES:
+        return []
+    cls, proposition = nodes.get(claim.get("proposition"), (None, {}))
+    wanted = target_variables(cls, proposition)
+    if not wanted:
+        return []
+    carrying = [nodes.get(ref, (None, {}))[1] for ref in _refs(claim, "has_evidence")]
+    carrying = [e for e in carrying if e.get("direction") == claim.get("direction")]
+    named = [set(_refs(e, "measured_variables")) for e in carrying if e.get("measured_variables")]
+    if named and not any(wanted <= v for v in named):
+        return [(nid, f"evidence_basis {claim['evidence_basis']} says the evidence is on the proposition's own "
+                      f"variables, but no evidence carrying its direction measured all of {sorted(wanted)}; "
+                      "evidence on other variables makes the basis INDIRECT")]
+    return []
+
+
 GENOTYPE_PROPOSITIONS = {"GeneticAssociation": "genotype", "CausalLink": "cause"}
 
 
@@ -278,7 +312,7 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
         "KnowledgeGap": {"concerns": "Proposition"},
         "Hypothesis": {"proposition": "Proposition", "alternative_to": "Hypothesis"},
         "EvidenceItem": {"source_claims": "Claim", "target_proposition": "Proposition",
-                         "explanatory_model": "ExplanatoryModel"},
+                         "explanatory_model": "ExplanatoryModel", "measured_variables": "CausalVariable"},
         "Paragraph": {"scientific_account": "ScientificAccount"},
     }
     for nid, (cls, node) in nodes.items():
@@ -309,6 +343,7 @@ def check_scientific_content(nodes: dict[str, tuple[str, dict]]) -> list[tuple[s
                 problems.append((nid, "an UNTESTED claim has no evidence to give it a direction; "
                                  f"omit direction or use UNKNOWN, not {node['direction']}"))
             problems.extend(check_genetic_estimates(nid, node, nodes))
+            problems.extend(check_evidence_basis_variables(nid, node, nodes))
         if cls == "Hypothesis" and nid in _refs(node, "alternative_to"):
             problems.append((f"{nid}.alternative_to", "a hypothesis is not an alternative to itself"))
         if cls == "DiscriminatingExperiment":
